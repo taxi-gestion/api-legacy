@@ -75,5 +75,5 @@ jobs:
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.PAT_TOKEN }}
-          repository: taxi-gestion/api-infrastructure
+          repository: taxi-gestion/registry-infrastructure
           event-type: remote-trigger
