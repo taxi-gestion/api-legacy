@@ -36,7 +36,6 @@ jobs:
             package-lock.json
             build
 
-
   build-and-push-docker-image:
     name: Build Docker image and push to registry if on master branch
     runs-on: ubuntu-latest
