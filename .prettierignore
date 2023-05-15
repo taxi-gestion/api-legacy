@@ -1,0 +1,10 @@
+.angular/
+.git/
+.idea/
+.vscode/
+build/
+coverage/
+dist/
+build/
+node_modules/
+docker-data/

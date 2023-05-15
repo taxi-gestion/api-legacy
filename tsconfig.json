@@ -1,6 +1,3 @@
 {
-    "extends": [
-        "@tsconfig/esm/tsconfig",
-        "@tsconfig/node-lts/tsconfig",
-    ]
+  "extends": ["@tsconfig/esm/tsconfig", "@tsconfig/node-lts/tsconfig"]
 }

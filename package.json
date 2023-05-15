@@ -6,14 +6,22 @@
   "scripts": {
     "build": "tsc --noEmit && esbuild src/server.ts --outdir=build --bundle --platform=node --packages=external --minify --format=esm",
     "start": "node build/server.js",
-    "start-local": "PORT=3000 DATABASE_URL=postgres://postgres:password@localhost/database node build/server.js"
+    "start-local": "PORT=3000 DATABASE_URL=postgres://postgres:password@localhost/database node build/server.js",
+    "lint.es": "echo 'TODO'",
+    "lint.commit": "echo 'TODO'",
+    "test": "echo 'TODO'",
+    "prettier.fix": "prettier --write --ignore-unknown .",
+    "prettier.check": "prettier --check --ignore-unknown ."
   },
   "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/__OWNER/__REPOSITORY.git"
   },
-  "keywords": ["__PROJECT", "api"],
+  "keywords": [
+    "__PROJECT",
+    "api"
+  ],
   "author": "__OWNER",
   "license": "MIT",
   "bugs": {
@@ -33,10 +41,13 @@
     "@types/node": "^20.1.4",
     "@types/pg": "^8.6.6",
     "esbuild": "^0.17.19",
+    "prettier": "^2.8.8",
     "typescript": "^5.0.4"
   },
   "release": {
-    "branches": ["main"],
+    "branches": [
+      "main"
+    ],
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",

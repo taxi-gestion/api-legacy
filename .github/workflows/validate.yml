@@ -1,0 +1,32 @@
+name: Validate on push, create PR
+
+on:
+  push:
+    branches:
+      - 'build/*'
+      - 'chore/*'
+      - 'ci/*'
+      - 'docs/*'
+      - 'feat/*'
+      - 'fix/*'
+      - 'perf/*'
+      - 'refactor/*'
+      - 'revert/*'
+      - 'style/*'
+      - 'test/*'
+
+jobs:
+  create-or-update-pr:
+    uses: ./.github/workflows/_create-or-update-pr.yml
+    with:
+      branch: ${{ github.ref_name }}
+    secrets:
+      PAT: ${{ secrets.PAT }}
+
+  call-validation-workflow:
+    uses: ./.github/workflows/_validation-matrix-workflow.yml
+    with:
+      validation-commands: '["npm run build", "npm run lint.es", "npm run prettier.check", "npm run test"]'
+      fail-fast: false
+    secrets:
+      DISCORD_NOTIFY_HOOK_URL: ${{ secrets.DISCORD_FAILURES_WEBHOOK }}

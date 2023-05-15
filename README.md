@@ -1,4 +1,5 @@
 # Fastify api
+
 A ready to deploy api for quick prototyping
 
 ## Table of Contents
@@ -33,13 +34,14 @@ npm install
 These commands are used in the context of application development and should be run from the root of the workspace.
 
 ### Launch the local API server
+
 ```bash
 npm run build
 npm run start-local
 ```
 
-
 ### Database for local development
+
 Common development commands are found in the scripts field of package.json
 The API relies on a [PostgreSQL](https://www.postgresql.org/) database service which can be set up locally on docker.
 
@@ -59,21 +61,23 @@ docker run -d \
 postgres:14.6
 ```
 
-
 Testing
+
 ```shell
 ❯ curl  http://0.0.0.0:3000                                                                                                                                                                                                                                          1.64   14,6G   0,B   100% 
 OK
 ```
 
 Without a database
+
 ```shell
 Copy code
 ❯ curl  http://0.0.0.0:3000/database-status                                                                                                                                                                                                                                1.60   14,6G   0,B   100% 
 {"statusCode":500,"code":"ECONNREFUSED","error":"Internal Server Error","message":"connect ECONNREFUSED 127.0.0.1:5432"}%
-````
+```
 
 With a blank database
+
 ```shell
 Copy code
 ❯ curl  http://0.0.0.0:3000/database-status                                                                                                                                                                                                                                1.18   14,8G   0,B   100% 
@@ -81,24 +85,28 @@ Copy code
 ```
 
 ### Contribution
+
 The project is currently not open to contributions.
 
-
 ### Tools
+
 #### CI/CD
 
 [Github Actions](https://docs.github.com/en/actions) is the integrated Continuous Integration and Deployment tool in GitHub
 
 The deployment history is available [under the Actions tab](https://github.com/codingones-github-templates/fastify-api/actions/)
+
 - Repository Secrets:
-    - `AWS_ACCESS_KEY_ID`: The ID of the key for the programmatic account that allows pushing the container image onto ECR
-        - Provisioned by the organization deployer of the parent AWS organization account
-    - `AWS_SECRET_ACCESS_KEY`: The secret key of the programmatic account that allows pushing the container image onto ECR
-        - Provisioned by the organization deployer of the parent AWS organization account
+
+  - `AWS_ACCESS_KEY_ID`: The ID of the key for the programmatic account that allows pushing the container image onto ECR
+    - Provisioned by the organization deployer of the parent AWS organization account
+  - `AWS_SECRET_ACCESS_KEY`: The secret key of the programmatic account that allows pushing the container image onto ECR
+    - Provisioned by the organization deployer of the parent AWS organization account
 
 - [AWS](https://aws.amazon.com/) is the Cloud services platform offered by Amazon.
-    - User: `__PROJECT.api.ci`
-    - Group: `api.deployer`
+
+  - User: `__PROJECT.api.ci`
+  - Group: `api.deployer`
 
 - [ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html) Amazon Elastic Container Registry (Amazon ECR) is a managed container image registry service by AWS.
 
