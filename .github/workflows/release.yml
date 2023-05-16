@@ -1,29 +1,39 @@
 name: Release
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - 'main'
 
 jobs:
   release:
-    name: Release on merge
-    runs-on: ubuntu-latest
+    uses: codingones/github-actions-workflows/.github/workflows/semantic-release.yml@main
+    secrets:
+      PAT: ${{ secrets.PAT }}
 
-    steps:
-      - name: Checkout repo with complete history
-        uses: actions/checkout@v3
+  notify-on-error:
+    needs:
+      - release
+    if: ${{ always() && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) }}
+    uses: codingones/github-actions-workflows/.github/workflows/notify-discord.yml@main
+    with:
+      bot-username: Failures Bot
+      notification-content: 'A release has failed for ${{ github.repository }} this should not happen, invest some time in your CI/CD ?'
+      embed-title: Go to the workflow
+      embed-url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    secrets:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_FAILURES_WEBHOOK }}
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 'lts/*'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Link the semantic release config and release
-        env:
-          GH_TOKEN: ${{ secrets.PAT }}
-        run: |
-          npx semantic-release
+  notify-on-success:
+    needs:
+      - release
+    if: ${{ always() && needs.release.result == 'success' }}
+    uses: codingones/github-actions-workflows/.github/workflows/notify-discord.yml@main
+    with:
+      bot-username: Releases Bot
+      notification-content: 'A new ${{ github.repository }} version: ${{ needs.release.outputs.next-version }} has been released ! :tada:'
+      embed-title: Go to the changelog
+      embed-url: https://github.com/${{ github.repository }}/blob/main/docs/CHANGELOG.md
+    secrets:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASES_WEBHOOK }}

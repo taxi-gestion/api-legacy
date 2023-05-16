@@ -16,17 +16,44 @@ on:
       - 'test/*'
 
 jobs:
-  create-or-update-pr:
-    uses: ./.github/workflows/_create-or-update-pr.yml
+  pull-request:
+    name: Pull Request
+    uses: codingones/github-actions-workflows/.github/workflows/create-or-update-pull-request.yml@main
     with:
       branch: ${{ github.ref_name }}
     secrets:
       PAT: ${{ secrets.PAT }}
 
-  call-validation-workflow:
-    uses: ./.github/workflows/_validation-matrix-workflow.yml
+  validation:
+    name: Validation
+    uses: codingones/github-actions-workflows/.github/workflows/node-validation-matrix.yml@main
     with:
       validation-commands: '["npm run build", "npm run lint.es", "npm run lint.commit", "npm run prettier.check", "npm run test"]'
-      fail-fast: false
+
+  notify-on-error:
+    needs:
+      - pull-request
+      - validation
+    if: ${{ always() && (contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')) }}
+    uses: codingones/github-actions-workflows/.github/workflows/notify-discord.yml@main
+    with:
+      bot-username: Failures Bot
+      notification-content: Some validation checks have failed for branch **${{ github.ref_name }}**
+      embed-title: Go to the workflow
+      embed-url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
     secrets:
-      DISCORD_NOTIFY_HOOK_URL: ${{ secrets.DISCORD_FAILURES_WEBHOOK }}
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_FAILURES_WEBHOOK }}
+
+  notify-on-success:
+    needs:
+      - pull-request
+      - validation
+    if: ${{ always() && needs.pull-request.result == 'success' && needs.validation.result == 'success' }}
+    uses: codingones/github-actions-workflows/.github/workflows/notify-discord.yml@main
+    with:
+      bot-username: Successes Bot
+      notification-content: All checks have passed for branch **${{ github.ref_name }}** !
+      embed-title: Go to the ${{ github.ref_name }} pull request
+      embed-url: ${{ needs.pull-request.outputs.pull-request-url }}
+    secrets:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_SUCCESSES_WEBHOOK }}
