@@ -1,4 +1,5 @@
 import type { PostgresDb } from '@fastify/postgres';
+import type { PoolClient, QueryResult } from 'pg';
 
 export type PgInfos = {
   databaseSize: number;
@@ -7,22 +8,25 @@ export type PgInfos = {
   listOfAllPublicTables: string;
 };
 
-export const getDatabaseInfos = (db: PostgresDb) => async (): Promise<PgInfos | Error> => {
-  const client = await db.connect();
+export const getDatabaseInfos = (db: PostgresDb) => async (): Promise<Error | PgInfos> => {
+  const client: PoolClient = await db.connect();
   try {
-    const [size, numberOfConnexions, numberOfActiveConnexions, listOfAllPublicTables] = await Promise.all([
-      client.query(getDatabaseSize),
-      client.query(getDatabaseNumberOfConnections),
-      client.query(getDatabaseNumberOfActiveConnections),
-      client.query(listAllTableNames)
-    ]);
+    const [size, numberOfConnexions, numberOfActiveConnexions, listOfAllPublicTables]: Awaited<QueryResult>[] =
+      await Promise.all([
+        client.query(getDatabaseSize),
+        client.query(getDatabaseNumberOfConnections),
+        client.query(getDatabaseNumberOfActiveConnections),
+        client.query(listAllTableNames)
+      ]);
 
+    /* eslint-disable @typescript-eslint/no-unsafe-assignment */
     return {
       databaseSize: size.rows[0],
       numberOfConnexions: numberOfConnexions.rows[0],
       numberOfActiveConnexions: numberOfActiveConnexions.rows[0],
       listOfAllPublicTables: JSON.stringify(listOfAllPublicTables.rows)
     };
+    /* eslint-enable @typescript-eslint/no-unsafe-assignment */
   } catch (error: unknown) {
     return new Error((error as Error).message);
   } finally {
