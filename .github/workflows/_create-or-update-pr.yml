@@ -1,4 +1,4 @@
-name: Create or Update PR
+name: zReusable - Create or Update PR
 
 on:
   workflow_call:

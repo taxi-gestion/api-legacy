@@ -1,4 +1,4 @@
-name: Validation Matrix Workflow
+name: zReusable - Validation Matrix Workflow
 
 on:
   workflow_call:
