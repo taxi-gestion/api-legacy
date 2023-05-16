@@ -8,7 +8,7 @@
     "start": "node build/server.js",
     "start-local": "PORT=3000 DATABASE_URL=postgres://postgres:password@localhost/database node build/server.js",
     "lint.es": "echo 'TODO'",
-    "lint.commit": "echo 'TODO'",
+    "lint.commit": "mv tsconfig.json tsconfig.jso && commitlint --from $(git rev-list --max-parents=0 HEAD | head -1) --to HEAD --config .commitlint.config.cjs ; mv tsconfig.jso tsconfig.json",
     "test": "jest --passWithNoTests",
     "prettier.fix": "prettier --write --ignore-unknown .",
     "prettier.check": "prettier --check --ignore-unknown ."
@@ -34,6 +34,8 @@
     "pg": "^8.10.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.6.3",
+    "@commitlint/config-conventional": "^17.6.3",
     "@rimac-technology/semantic-release-ecr": "^1.2.0",
     "@tsconfig/esm": "^1.0.3",
     "@tsconfig/node-lts": "^18.12.2",

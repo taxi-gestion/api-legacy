@@ -26,7 +26,7 @@ jobs:
   call-validation-workflow:
     uses: ./.github/workflows/_validation-matrix-workflow.yml
     with:
-      validation-commands: '["npm run build", "npm run lint.es", "npm run prettier.check", "npm run test"]'
+      validation-commands: '["npm run build", "npm run lint.es", "npm run lint.commit", "npm run prettier.check", "npm run test"]'
       fail-fast: false
     secrets:
       DISCORD_NOTIFY_HOOK_URL: ${{ secrets.DISCORD_FAILURES_WEBHOOK }}
