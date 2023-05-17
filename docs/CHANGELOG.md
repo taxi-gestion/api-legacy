@@ -1,9 +1,8 @@
 # [1.2.0](https://github.com/codingones-github-templates/fastify-api/compare/v1.1.0...v1.2.0) (2023-05-17)
 
-
 ### Features
 
-* add github release to releaserc ([#15](https://github.com/codingones-github-templates/fastify-api/issues/15)) ([2270391](https://github.com/codingones-github-templates/fastify-api/commit/22703918f0c33f66931924367317100b52ddd396))
+- add github release to releaserc ([#15](https://github.com/codingones-github-templates/fastify-api/issues/15)) ([2270391](https://github.com/codingones-github-templates/fastify-api/commit/22703918f0c33f66931924367317100b52ddd396))
 
 # [1.1.0](https://github.com/codingones-github-templates/fastify-api/compare/v1.0.0...v1.1.0) (2023-05-17)
 
