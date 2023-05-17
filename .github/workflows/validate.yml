@@ -29,6 +29,7 @@ jobs:
     uses: codingones/github-actions-workflows/.github/workflows/node-validation-matrix.yml@main
     with:
       validation-commands: '["npm run build", "npm run lint.es", "npm run lint.commit", "npm run prettier.check", "npm run test"]'
+      fail-fast: true
 
   notify-on-error:
     needs:

@@ -32,7 +32,7 @@ jobs:
     uses: codingones/github-actions-workflows/.github/workflows/notify-discord.yml@main
     with:
       bot-username: Releases Bot
-      notification-content: 'A new ${{ github.repository }} version: ${{ needs.release.outputs.next-version }} has been released ! :tada:'
+      notification-content: 'A new ${{ github.repository }} version: ${{ needs.release.outputs.version }} has been released ! :tada:'
       embed-title: Go to the changelog
       embed-url: https://github.com/${{ github.repository }}/blob/main/docs/CHANGELOG.md
     secrets:
