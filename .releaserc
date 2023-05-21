@@ -1,5 +1,4 @@
 {
-    "repositoryUrl": "https://github.com/codingones-github-templates/fastify-api.git",
     "branches": ["main"],
     "plugins": [
       "@semantic-release/commit-analyzer",
@@ -16,6 +15,13 @@
           "assets": ["docs/CHANGELOG.md"]
         }
       ],
-      "@semantic-release/github"
+      "@semantic-release/github",
+      [
+        "@rimac-technology/semantic-release-ecr",
+        {
+          "buildImage": "docker build . -t api",
+          "imageName": "api"
+        }
+      ]
     ]
 }
