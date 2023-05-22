@@ -15,6 +15,18 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
 
+  trigger-registry:
+    needs:
+      - terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger registry
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PAT }}
+          repository: ${{ github.repository_owner }}/registry-infrastructure
+          event-type: remote-trigger
+
   notify-on-error:
     needs:
       - release
