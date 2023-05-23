@@ -22,12 +22,12 @@
     "__PROJECT",
     "api"
   ],
-  "author": "__OWNER",
+  "author": "__ORGANIZATION",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/__OWNER/__REPOSITORY/issues"
+    "url": "https://github.com/__ORGANIZATION/__REPOSITORY/issues"
   },
-  "homepage": "https://github.com/__OWNER/__REPOSITORY#readme",
+  "homepage": "https://github.com/__ORGANIZATION/__REPOSITORY#readme",
   "dependencies": {
     "@fastify/postgres": "^5.2.0",
     "fastify": "^4.17.0",

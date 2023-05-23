@@ -1,6 +1,6 @@
-# Fastify api
+# \_\_PROJECT api
 
-A ready to deploy api for quick prototyping
+\_\_ABOUT
 
 ## Table of Contents
 
@@ -94,7 +94,7 @@ The project is currently not open to contributions.
 
 [Github Actions](https://docs.github.com/en/actions) is the integrated Continuous Integration and Deployment tool in GitHub
 
-The deployment history is available [under the Actions tab](https://github.com/codingones-github-templates/fastify-api/actions/)
+The deployment history is available [under the Actions tab](https://github.com/__ORGANIZATION/__REPOSITORY/actions/)
 
 - Repository Secrets:
 
