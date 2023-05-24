@@ -17,7 +17,7 @@ jobs:
 
   trigger-registry:
     needs:
-      - terraform
+      - release
     runs-on: ubuntu-latest
     steps:
       - name: Trigger registry

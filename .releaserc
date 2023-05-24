@@ -16,6 +16,9 @@
         }
       ],
       "@semantic-release/github",
+      ["@semantic-release/exec", {
+        "prepareCmd": "npm run build"
+      }],
       [
         "@rimac-technology/semantic-release-ecr",
         {
