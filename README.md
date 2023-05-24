@@ -1,6 +1,6 @@
-# __PROJECT api
+# taxi-gestion api
 
-__ABOUT
+Description
 
 ## Table of Contents
 
@@ -94,7 +94,7 @@ The project is currently not open to contributions.
 
 [Github Actions](https://docs.github.com/en/actions) is the integrated Continuous Integration and Deployment tool in GitHub
 
-The deployment history is available [under the Actions tab](https://github.com/__ORGANIZATION/__REPOSITORY/actions/)
+The deployment history is available [under the Actions tab](https://github.com/taxi-gestion/api/actions/)
 
 - Repository Secrets:
 
@@ -105,7 +105,7 @@ The deployment history is available [under the Actions tab](https://github.com/_
 
 - [AWS](https://aws.amazon.com/) is the Cloud services platform offered by Amazon.
 
-  - User: `__PROJECT.api.ci`
+  - User: `taxi-gestion.api.ci`
   - Group: `api.deployer`
 
 - [ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html) Amazon Elastic Container Registry (Amazon ECR) is a managed container image registry service by AWS.
