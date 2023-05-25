@@ -22,10 +22,13 @@ Description
 ## Installation
 
 Clone the project
+```shell
+git clone git@github.com:taxi-gestion/api.git
+```
 
 ### Setting up the prerequisites
 
-```bash
+```shell
 npm install
 ```
 
@@ -35,7 +38,7 @@ These commands are used in the context of application development and should be 
 
 ### Launch the local API server
 
-```bash
+```shell
 npm run build
 npm run start-local
 ```
