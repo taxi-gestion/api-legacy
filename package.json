@@ -10,7 +10,7 @@
     "lint.es": "eslint ./src",
     "lint.commit": "mv tsconfig.json tsconfig.jso && commitlint --from $(git rev-list --max-parents=0 HEAD | head -1) --to HEAD --config .commitlint.config.cjs ; mv tsconfig.jso tsconfig.json",
     "test": "jest --passWithNoTests",
-    "prepare": "husky install && chmod -R +x .husky",
+    "prepare": "if [ -z \"$CI\" ]; then husky install && chmod -R +x .husky; fi",
     "prettier.fix": "prettier --write --ignore-unknown .",
     "prettier.check": "prettier --check --ignore-unknown ."
   },
