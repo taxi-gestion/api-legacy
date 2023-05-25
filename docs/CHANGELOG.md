@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/taxi-gestion/api/compare/v1.0.0...v1.1.0) (2023-05-25)
+
+
+### Features
+
+* force ecr release ([#6](https://github.com/taxi-gestion/api/issues/6)) ([22477ef](https://github.com/taxi-gestion/api/commit/22477efa0ff3405c869af0b1a984fa0a6de3e996))
+
 # 1.0.0 (2023-05-25)
 
 
