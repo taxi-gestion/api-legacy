@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/taxi-gestion/api/compare/v1.1.0...v1.1.1) (2023-05-30)
+
+
+### Bug Fixes
+
+* merge-failure ([#7](https://github.com/taxi-gestion/api/issues/7)) ([50d5a06](https://github.com/taxi-gestion/api/commit/50d5a06d75d6bb2716562e2024601947d069846f))
+
 # [1.1.0](https://github.com/taxi-gestion/api/compare/v1.0.0...v1.1.0) (2023-05-25)
 
 
