@@ -24,7 +24,6 @@ server.get('/database-status', async (_request: FastifyRequest, reply: FastifyRe
   await reply.send(infos);
 });
 
-await start({ server, nodeProcess: process });
 server.get('/fares/:date', async (req: FareByDayRequest, reply) => {
   const fares: FarePg[] | Error = await getFaresByDayPg(server.pg)(req.params.date);
 
