@@ -28,7 +28,7 @@ export const start = async ({ server, nodeProcess }: ServerAndProcess): Promise<
   try {
     // eslint-disable-next-line @typescript-eslint/await-thenable
     await server.listen(
-      { port: parseInt(nodeProcess.env.PORT ?? '', 10), host: '0.0.0.0' },
+      { port: parseInt(nodeProcess.env['PORT'] ?? '', 10), host: '0.0.0.0' },
       (error: Error | null, address: string): void => {
         if (error != null) {
           // eslint-disable-next-line no-console

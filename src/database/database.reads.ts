@@ -21,10 +21,10 @@ export const getDatabaseInfos = (db: PostgresDb) => async (): Promise<Error | Pg
 
     /* eslint-disable @typescript-eslint/no-unsafe-assignment */
     return {
-      databaseSize: size.rows[0],
-      numberOfConnexions: numberOfConnexions.rows[0],
-      numberOfActiveConnexions: numberOfActiveConnexions.rows[0],
-      listOfAllPublicTables: JSON.stringify(listOfAllPublicTables.rows)
+      databaseSize: size?.rows[0] ?? NaN,
+      numberOfConnexions: numberOfConnexions?.rows[0] ?? NaN,
+      numberOfActiveConnexions: numberOfActiveConnexions?.rows[0] ?? NaN,
+      listOfAllPublicTables: JSON.stringify(listOfAllPublicTables?.rows ?? '')
     };
     /* eslint-enable @typescript-eslint/no-unsafe-assignment */
   } catch (error: unknown) {
