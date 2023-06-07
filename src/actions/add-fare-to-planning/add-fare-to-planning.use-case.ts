@@ -1,16 +1,17 @@
 import { FareDraft, FareReady, FareReadyWithoutRules } from './add-fare-to-planning.provider';
-import { either } from 'fp-ts';
 import type { Validation } from 'io-ts';
 
+import { either } from 'fp-ts';
+// eslint-disable-next-line @typescript-eslint/typedef
 const { isRight, isLeft } = either;
 
-export const addFareToPlanningUseCase = (fareDraft: FareDraft): FareReady | Error => {
+export const addFareToPlanningUseCase = (fareDraft: FareDraft): Error | FareReady => {
   const fareReady: Validation<FareReadyWithoutRules> = FareReadyWithoutRules.decode(toReadyFare(fareDraft));
   if (isLeft(fareReady)) return new Error('FareReady typecheck failure');
 
-  const rulecheck: Validation<FareReady> = FareReady.decode(fareReady.right);
+  const rulesCheck: Validation<FareReady> = FareReady.decode(fareReady.right);
 
-  return isRight(rulecheck) ? rulecheck.right : new Error('FareReady rulecheck failure');
+  return isRight(rulesCheck) ? rulesCheck.right : new Error('FareReady rulesCheck failure');
 };
 
 const toReadyFare = (fareDraft: FareDraft): FareReadyWithoutRules => ({

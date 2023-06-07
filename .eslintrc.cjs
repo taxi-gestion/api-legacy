@@ -27,8 +27,7 @@ const lintProjects = () => {
       plugins: ['@typescript-eslint'],
       rules: {
         ...require('./.eslint-rules/eslint.rules.cjs'),
-        ...require('./.eslint-rules/typescript-eslint.rules.cjs'),
-        ...require('./.eslint-rules/to-review.rules.cjs')
+        ...require('./.eslint-rules/typescript-eslint.rules.cjs')
       }
     }
   ];

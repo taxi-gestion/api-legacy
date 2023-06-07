@@ -35,7 +35,7 @@ describe('Specification tests', (): void => {
   it.each([
     [{}, new Error('Transfer typecheck failed')],
     [{ clientIdentity: 'JohnDoe' }, new Error('Transfer typecheck failed')],
-    [invalidPhone, new Error('Domain rulecheck failed')],
+    [invalidPhone, new Error('Domain rulesCheck failed')],
     [validTransfer, expectedFareDraft]
   ])(
     'should return %s when the transfer request payload is %s',
