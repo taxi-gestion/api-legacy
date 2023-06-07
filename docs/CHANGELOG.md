@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/taxi-gestion/api/compare/v1.1.1...v1.2.0) (2023-06-07)
+
+
+### Features
+
+* add fare to planning and use esnext target ([#8](https://github.com/taxi-gestion/api/issues/8)) ([a156eb1](https://github.com/taxi-gestion/api/commit/a156eb19129aef60b0f338c78a93c749fb83ea79))
+
 ## [1.1.1](https://github.com/taxi-gestion/api/compare/v1.1.0...v1.1.1) (2023-05-30)
 
 
