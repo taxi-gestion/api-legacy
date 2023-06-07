@@ -3,7 +3,7 @@ import { addFareToPlanningUseCase } from './add-fare-to-planning.use-case';
 
 describe('Specification tests', (): void => {
   const fareDraft: FareDraftWithoutRules = {
-    driver: undefined,
+    planning: 'unassigned',
     client: 'Bob',
     date: '2019-05-05',
     departure: '17 Avenue des Canuts, 69120',
@@ -16,7 +16,7 @@ describe('Specification tests', (): void => {
   };
 
   const expectedWithHarcodedValues: FareReadyWithoutRules = {
-    driver: 'unassigned',
+    planning: 'unassigned',
     client: 'Bob',
     date: '2019-05-05',
     departure: '17 Avenue des Canuts, 69120',

@@ -24,7 +24,7 @@ const toFareDraft = (fareTransfer: AddFareToPlanningTransfer): Error | FareDraft
   const typecheck: Validation<FareDraftWithoutRules> = FareDraftWithoutRules.decode({
     client: fareTransfer.clientIdentity,
     date: fareTransfer.date,
-    driver: fareTransfer.driverIdentity,
+    planning: fareTransfer.planning,
     departure: fareTransfer.driveFrom,
     kind: fareTransfer.driveKind,
     nature: fareTransfer.driveNature,

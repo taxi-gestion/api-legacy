@@ -19,6 +19,5 @@ const toReadyFare = (fareDraft: FareDraft): FareReadyWithoutRules => ({
   status: 'ready',
   duration: 20,
   distance: 1000,
-  creator: 'romain.cambonie@gmail.com',
-  driver: 'unassigned'
+  creator: 'romain.cambonie@gmail.com'
 });
