@@ -24,21 +24,7 @@ export const addFareToPlanningPersist =
   async (farePg: FarePg): Promise<Error | QueryResult> => {
     const client: PoolClient = await db.connect();
     try {
-      return await client.query(addFareToPlanningQuery, [
-        farePg.client,
-        farePg.creator,
-        farePg.date,
-        farePg.departure,
-        farePg.destination,
-        farePg.distance,
-        farePg.driver,
-        farePg.duration,
-        farePg.kind,
-        farePg.nature,
-        farePg.phone,
-        farePg.status,
-        farePg.time
-      ]);
+      return await insertFareSQLQueryBuilder(client, farePg);
     } catch (error: unknown) {
       return new Error((error as Error).message);
     } finally {
@@ -46,7 +32,24 @@ export const addFareToPlanningPersist =
     }
   };
 
-export const addFareToPlanningQuery: string = `
+const insertFareSQLQueryBuilder = async (client: PoolClient, farePg: FarePg): Promise<QueryResult> =>
+  client.query(insertFareSQLQueryString, [
+    farePg.client,
+    farePg.creator,
+    farePg.date,
+    farePg.departure,
+    farePg.destination,
+    farePg.distance,
+    farePg.driver,
+    farePg.duration,
+    farePg.kind,
+    farePg.nature,
+    farePg.phone,
+    farePg.status,
+    farePg.time
+  ]);
+
+const insertFareSQLQueryString: string = `
       INSERT INTO fares (
           client, 
           creator, 

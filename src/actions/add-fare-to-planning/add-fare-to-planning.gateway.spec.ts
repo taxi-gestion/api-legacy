@@ -1,7 +1,7 @@
 import { addFareToPlanningGateway } from './add-fare-to-planning.gateway';
 import { FareDraftWithoutRules } from './add-fare-to-planning.provider';
 
-describe('Specification tests', () => {
+describe('Specification tests', (): void => {
   const validTransfer: object = {
     clientIdentity: 'JohnDoe',
     clientPhone: '0684319514',
@@ -35,11 +35,11 @@ describe('Specification tests', () => {
   it.each([
     [{}, new Error('Transfer typecheck failed')],
     [{ clientIdentity: 'JohnDoe' }, new Error('Transfer typecheck failed')],
-    [invalidPhone, new Error('Domain rulecheck failed')],
+    [invalidPhone, new Error('Domain rulesCheck failed')],
     [validTransfer, expectedFareDraft]
   ])(
     'should return %s when the transfer request payload is %s',
-    (payload: unknown, expectedResult: Error | FareDraftWithoutRules) => {
+    (payload: unknown, expectedResult: Error | FareDraftWithoutRules): void => {
       expect(addFareToPlanningGateway(payload)).toStrictEqual(expectedResult);
     }
   );

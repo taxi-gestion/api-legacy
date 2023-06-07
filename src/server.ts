@@ -15,6 +15,7 @@ const server: FastifyInstance = fastify();
 
 closeGracefullyOnSignalInterrupt({ server, nodeProcess: process });
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 server.register(postgres, {
   connectionString: process.env['DATABASE_URL'] ?? ''
 });
@@ -29,14 +30,15 @@ server.get('/database-status', async (_request: FastifyRequest, reply: FastifyRe
 });
 
 server.post('/add-fare-to-planning', async (req: AddFareToPlanningRequest, reply: FastifyReply): Promise<void> => {
-  const fareDraft: FareDraft | Error = addFareToPlanningGateway(req.body);
+  const fareDraft: Error | FareDraft = addFareToPlanningGateway(req.body);
   if (!FareDraft.is(fareDraft)) return reply.send(fareDraft);
 
-  const fareReady: FareReady | Error = addFareToPlanningUseCase(fareDraft);
+  const fareReady: Error | FareReady = addFareToPlanningUseCase(fareDraft);
   if (fareReady instanceof Error) return reply.send(fareReady);
 
   const inserted: Error | QueryResult = await addFareToPlanningPersist(server.pg)(toFarePg(fareReady));
   return inserted instanceof Error ? reply.send(inserted) : reply.send({ status: 'success' });
 });
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 start({ server, nodeProcess: process });

@@ -4,10 +4,7 @@ import { FrenchPhoneNumber } from '../../types/FrenchPhoneNumber.type';
 import { Positive } from '../../types/Positive.type';
 import type { FastifyRequest } from 'fastify';
 
-export type AddFareToPlanningRequest = FastifyRequest<{
-  Body: AddFareToPlanningTransfer;
-}>;
-
+/* eslint-disable @typescript-eslint/naming-convention,@typescript-eslint/typedef */
 const DriveKind = t.keyof({ 'one-way': null, outward: null, 'go-back': null });
 const DriveNature = t.keyof({ medical: null, standard: null });
 
@@ -43,11 +40,6 @@ const FareDraftBusinessRules = t.type({
 });
 
 export const FareDraft = t.intersection([FareDraftWithoutRules, FareDraftBusinessRules]);
-
-export type AddFareToPlanningTransfer = t.TypeOf<typeof AddFareToPlanningTransfer>;
-export type FareDraftWithoutRules = t.TypeOf<typeof FareDraftWithoutRules>;
-export type FareDraft = t.TypeOf<typeof FareDraft>;
-
 export const FareReadyWithoutRules = t.type({
   client: t.string,
   creator: t.string,
@@ -72,5 +64,15 @@ const FareReadyBusinessRules = t.type({
 
 export const FareReady = t.intersection([FareReadyWithoutRules, FareReadyBusinessRules]);
 
+/* eslint-enable @typescript-eslint/naming-convention,@typescript-eslint/typedef */
+
+export type AddFareToPlanningRequest = FastifyRequest<{
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  Body: AddFareToPlanningTransfer;
+}>;
+
+export type AddFareToPlanningTransfer = t.TypeOf<typeof AddFareToPlanningTransfer>;
+export type FareDraftWithoutRules = t.TypeOf<typeof FareDraftWithoutRules>;
+export type FareDraft = t.TypeOf<typeof FareDraft>;
 export type FareReadyWithoutRules = t.TypeOf<typeof FareReadyWithoutRules>;
 export type FareReady = t.TypeOf<typeof FareReady>;
