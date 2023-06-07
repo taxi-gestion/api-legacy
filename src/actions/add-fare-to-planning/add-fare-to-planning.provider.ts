@@ -16,7 +16,7 @@ export const AddFareToPlanningTransfer = excess(
     driveFrom: t.string,
     driveKind: DriveKind,
     driveNature: DriveNature,
-    driverIdentity: t.union([t.string, t.undefined]),
+    planning: t.string,
     driveTo: t.string,
     startTime: t.string
   })
@@ -27,7 +27,7 @@ export const FareDraftWithoutRules = t.type({
   date: t.string,
   departure: t.string,
   destination: t.string,
-  driver: t.union([t.string, t.undefined]),
+  planning: t.string,
   kind: DriveKind,
   nature: DriveNature,
   phone: t.string,
@@ -47,7 +47,7 @@ export const FareReadyWithoutRules = t.type({
   departure: t.string,
   destination: t.string,
   distance: t.number,
-  driver: t.union([t.string, t.undefined]),
+  planning: t.string,
   duration: t.number,
   kind: DriveKind,
   nature: DriveNature,
@@ -58,8 +58,7 @@ export const FareReadyWithoutRules = t.type({
 
 const FareReadyBusinessRules = t.type({
   duration: t.intersection([t.Int, Positive]),
-  distance: t.intersection([t.Int, Positive]),
-  driver: t.string
+  distance: t.intersection([t.Int, Positive])
 });
 
 export const FareReady = t.intersection([FareReadyWithoutRules, FareReadyBusinessRules]);

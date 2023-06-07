@@ -1,20 +1,20 @@
 import { addFareToPlanningGateway } from './add-fare-to-planning.gateway';
-import { FareDraftWithoutRules } from './add-fare-to-planning.provider';
+import { AddFareToPlanningTransfer, FareDraftWithoutRules } from './add-fare-to-planning.provider';
 
 describe('Specification tests', (): void => {
-  const validTransfer: object = {
+  const validTransfer: AddFareToPlanningTransfer = {
     clientIdentity: 'JohnDoe',
     clientPhone: '0684319514',
     date: '2023-06-06',
     driveFrom: 'Location A',
     driveKind: 'one-way',
     driveNature: 'medical',
-    driverIdentity: undefined,
+    planning: 'unassigned',
     driveTo: 'Location B',
     startTime: '10:00'
   };
 
-  const invalidPhone: object = {
+  const invalidPhone: AddFareToPlanningTransfer = {
     ...validTransfer,
     clientPhone: '+3368431955555555'
   };
@@ -22,7 +22,7 @@ describe('Specification tests', (): void => {
   const expectedFareDraft: FareDraftWithoutRules = {
     client: 'JohnDoe',
     date: '2023-06-06',
-    driver: undefined,
+    planning: 'unassigned',
     departure: 'Location A',
     kind: 'one-way',
     nature: 'medical',
