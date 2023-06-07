@@ -1,7 +1,7 @@
 import { FareDraft, FareDraftWithoutRules, FareReadyWithoutRules } from './add-fare-to-planning.provider';
 import { addFareToPlanningUseCase } from './add-fare-to-planning.use-case';
 
-describe('Specification tests', () => {
+describe('Specification tests', (): void => {
   const fareDraft: FareDraftWithoutRules = {
     driver: undefined,
     client: 'Bob',
@@ -36,7 +36,7 @@ describe('Specification tests', () => {
     [fareDraft, expectedWithHarcodedValues]
   ])(
     'should return %s when the transfer request payload is %s',
-    (payload: FareDraftWithoutRules, expectedResult: Error | FareReadyWithoutRules) => {
+    (payload: FareDraftWithoutRules, expectedResult: Error | FareReadyWithoutRules): void => {
       expect(addFareToPlanningUseCase(payload as FareDraft)).toStrictEqual(expectedResult);
     }
   );

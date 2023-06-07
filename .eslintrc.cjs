@@ -55,8 +55,7 @@ const lintTests = () => {
         ...require('./.eslint-rules/eslint.test.rules.cjs'),
         ...require('./.eslint-rules/typescript-eslint.rules.cjs'),
         ...require('./.eslint-rules/typescript-eslint.test.rules.cjs'),
-        ...require('./.eslint-rules/jest.rules.cjs'),
-        ...require('./.eslint-rules/to-review.test.rules.cjs')
+        ...require('./.eslint-rules/jest.rules.cjs')
       }
     }
   ];
