@@ -5,11 +5,16 @@ import { closeGracefullyOnSignalInterrupt, start } from './server.utils';
 import type { PgInfos } from './database/database.reads';
 import { getDatabaseInfos } from './database/database.reads';
 import { addFareToPlanningGateway } from './actions/add-fare-to-planning/add-fare-to-planning.gateway';
-import type { AddFareToPlanningRequest } from './actions/add-fare-to-planning/add-fare-to-planning.provider';
+import type {
+  AddFareToPlanningRequest,
+  FareDraftWithoutRules
+} from './actions/add-fare-to-planning/add-fare-to-planning.provider';
 import { FareDraft, FareReady } from './actions/add-fare-to-planning/add-fare-to-planning.provider';
 import { addFareToPlanningUseCase } from './actions/add-fare-to-planning/add-fare-to-planning.use-case';
 import { addFareToPlanningPersist, toFarePg } from './actions/add-fare-to-planning/add-fare-to-planning.postgresql.adapter';
 import type { QueryResult } from 'pg';
+import { Either } from 'fp-ts/Either';
+import { Errors } from 'io-ts';
 
 const server: FastifyInstance = fastify();
 
@@ -30,7 +35,8 @@ server.get('/database-status', async (_request: FastifyRequest, reply: FastifyRe
 });
 
 server.post('/add-fare-to-planning', async (req: AddFareToPlanningRequest, reply: FastifyReply): Promise<void> => {
-  const fareDraft: Error | FareDraft = addFareToPlanningGateway(req.body);
+  const fareDraft: Either<Errors, FareDraftWithoutRules> = addFareToPlanningGateway(req.body);
+  // TODO Remove and finish
   if (!FareDraft.is(fareDraft)) return reply.send(fareDraft);
 
   const fareReady: Error | FareReady = addFareToPlanningUseCase(fareDraft);

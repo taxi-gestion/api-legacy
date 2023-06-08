@@ -1,45 +1,59 @@
 import * as t from 'io-ts';
+import { StringC } from 'io-ts';
 import excess from 'io-ts-excess';
-import { FrenchPhoneNumber } from '../../types/FrenchPhoneNumber.type';
-import { Positive } from '../../types/Positive.type';
+import { isFrenchPhoneNumber } from '../../rules/FrenchPhoneNumber.rule';
+import { isPositive } from '../../rules/Positive.rule';
 import type { FastifyRequest } from 'fastify';
+import { isRegisteredClient } from '../../rules/RegisteredClient.rule';
+import { withMessage } from 'io-ts-types';
 
 /* eslint-disable @typescript-eslint/naming-convention,@typescript-eslint/typedef */
 const DriveKind = t.keyof({ 'one-way': null, outward: null, 'go-back': null });
 const DriveNature = t.keyof({ medical: null, standard: null });
 
+const typecheckFailedMessage = (): string => `Typecheck failed for input`;
+const stringTypecheckFailedMessage: StringC = withMessage(t.string, typecheckFailedMessage);
 export const AddFareToPlanningTransfer = excess(
   t.type({
-    clientIdentity: t.string,
-    clientPhone: t.string,
-    date: t.string,
-    driveFrom: t.string,
+    clientIdentity: stringTypecheckFailedMessage,
+    clientPhone: stringTypecheckFailedMessage,
+    date: stringTypecheckFailedMessage,
+    driveFrom: stringTypecheckFailedMessage,
     driveKind: DriveKind,
     driveNature: DriveNature,
-    planning: t.string,
-    driveTo: t.string,
-    startTime: t.string
+    planning: stringTypecheckFailedMessage,
+    driveTo: stringTypecheckFailedMessage,
+    startTime: stringTypecheckFailedMessage
   })
 );
 
-export const FareDraftWithoutRules = t.type({
-  client: t.string,
-  date: t.string,
-  departure: t.string,
-  destination: t.string,
-  planning: t.string,
-  kind: DriveKind,
-  nature: DriveNature,
-  phone: t.string,
-  status: t.literal('draft'),
-  time: t.string
+export const FareDraftWithoutRules = withMessage(
+  t.type({
+    client: t.string,
+    date: t.string,
+    departure: t.string,
+    destination: t.string,
+    planning: t.string,
+    kind: DriveKind,
+    nature: DriveNature,
+    phone: t.string,
+    status: t.literal('draft'),
+    time: t.string
+  }),
+  (): string => 'Typecheck failed after convertion to core model, this should not happen'
+);
+
+const FareDraftRules = t.type({
+  client: isRegisteredClient,
+  //date: DateFromISOString,
+  //departure: isValidAddress,
+  //destination: isValidAddress,
+  //planning: t.intersection([isDriverPlanning, isUnassigned]),
+  phone: isFrenchPhoneNumber
+  //time: isLaterTime,
 });
 
-const FareDraftBusinessRules = t.type({
-  phone: FrenchPhoneNumber
-});
-
-export const FareDraft = t.intersection([FareDraftWithoutRules, FareDraftBusinessRules]);
+export const FareDraft = t.intersection([FareDraftWithoutRules, FareDraftRules]);
 export const FareReadyWithoutRules = t.type({
   client: t.string,
   creator: t.string,
@@ -57,8 +71,8 @@ export const FareReadyWithoutRules = t.type({
 });
 
 const FareReadyBusinessRules = t.type({
-  duration: t.intersection([t.Int, Positive]),
-  distance: t.intersection([t.Int, Positive])
+  duration: t.intersection([t.Int, isPositive]),
+  distance: t.intersection([t.Int, isPositive])
 });
 
 export const FareReady = t.intersection([FareReadyWithoutRules, FareReadyBusinessRules]);

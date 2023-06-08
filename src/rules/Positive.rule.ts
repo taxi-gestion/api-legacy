@@ -7,10 +7,10 @@ type PositiveBrand = {
 };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const Positive: BrandC<NumberC, PositiveBrand> = t.brand(
+export const isPositive: BrandC<NumberC, PositiveBrand> = t.brand(
   t.number, // a codec representing the type to be refined
   (num: number): num is t.Branded<number, PositiveBrand> => num > 0, // a custom type guard using the build-in helper `Branded`
   'Positive' // the name must match the readonly field in the brand
 );
 
-export type Positive = t.TypeOf<typeof Positive>;
+export type Positive = t.TypeOf<typeof isPositive>;
