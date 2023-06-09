@@ -7,6 +7,7 @@ import { isFrenchPhoneNumber } from '../../rules/FrenchPhoneNumber.rule';
 import { isPositive } from '../../rules/Positive.rule';
 import { isRegisteredClient } from '../../rules/RegisteredClient.rule';
 import { isDateISO8601String } from '../../rules/DateISO8601.rule';
+import { isTimeISO8601String } from '../../rules/TimeISO8601.rule';
 
 /* eslint-disable @typescript-eslint/naming-convention,@typescript-eslint/typedef */
 const DriveKind = t.keyof({ 'one-way': null, outward: null, 'go-back': null });
@@ -49,8 +50,8 @@ export const FareDraftRules = t.intersection([
     //departure: isValidAddress,
     //destination: isValidAddress,
     //planning: t.intersection([isDriverPlanning, isUnassigned]),
-    phone: isFrenchPhoneNumber
-    //time: isLaterTime,
+    phone: isFrenchPhoneNumber,
+    time: isTimeISO8601String
   })
 ]);
 

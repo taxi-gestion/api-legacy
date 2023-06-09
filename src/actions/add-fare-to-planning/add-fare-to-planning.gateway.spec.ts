@@ -15,7 +15,7 @@ describe('Add Fare To Planning gateway tests', (): void => {
     driveNature: 'medical',
     planning: 'unassigned',
     driveTo: 'Location B',
-    startTime: '10:00'
+    startTime: 'T10:00'
   };
 
   const missingPlanning: AddFareToPlanningTransfer = {
@@ -42,7 +42,7 @@ describe('Add Fare To Planning gateway tests', (): void => {
     nature: 'medical',
     phone: '0684319514',
     status: 'draft',
-    time: '10:00',
+    time: 'T10:00',
     destination: 'Location B'
   };
 
