@@ -1,9 +1,9 @@
 import { Errors } from 'io-ts';
-import { Either, fold } from 'fp-ts/Either';
-import { addFareToPlanningGateway } from './add-fare-to-planning.gateway';
+import { Either, fold as foldEither } from 'fp-ts/Either';
 import { AddFareToPlanningTransfer, FareDraft } from './add-fare-to-planning.provider';
-import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
+import { addFareToPlanningGateway } from './add-fare-to-planning.gateway';
 import { iso8601DateString } from '../../rules/DateISO8601.rule';
+import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
 
 describe('Add Fare To Planning gateway tests', (): void => {
   const valid: AddFareToPlanningTransfer = {
@@ -78,7 +78,7 @@ describe('Add Fare To Planning gateway tests', (): void => {
     'should return %s when the transfer request payload is %s',
     (payload: unknown, expectedValue: DevFriendlyError[] | FareDraft): void => {
       const either: Either<Errors, FareDraft> = addFareToPlanningGateway(payload);
-      fold(
+      foldEither(
         (): void => {
           expect(HttpReporter.report(either)).toStrictEqual(expectedValue);
         },

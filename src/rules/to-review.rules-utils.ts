@@ -1,5 +1,5 @@
-import { Either } from 'fp-ts/Either';
 import { Errors } from 'io-ts';
+import { Either } from 'fp-ts/Either';
 
 type Decodable<T> = {
   decode: (input: unknown) => Either<Errors, T>;

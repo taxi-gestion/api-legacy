@@ -1,6 +1,6 @@
+import { withMessage } from 'io-ts-types';
 import * as t from 'io-ts';
 import { BrandC, StringC } from 'io-ts';
-import { withMessage } from 'io-ts-types';
 
 export const isTimeISO8601String: BrandC<StringC, TimeISO8601Brand> = withMessage(
   t.brand(

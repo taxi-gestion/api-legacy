@@ -1,15 +1,19 @@
+import { QueryResult } from 'pg';
+import { Errors } from 'io-ts';
+import { fold as foldTaskEither } from 'fp-ts/TaskEither';
+import { Task } from 'fp-ts/Task';
+import { pipe } from 'fp-ts/lib/function';
+import { left } from 'fp-ts/Either';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fastify from 'fastify';
 import postgres from '@fastify/postgres';
 import { closeGracefullyOnSignalInterrupt, start } from './server.utils';
 import type { PgInfos } from './database/database.reads';
 import { getDatabaseInfos } from './database/database.reads';
-import { addFareToPlanningGateway } from './actions/add-fare-to-planning/add-fare-to-planning.gateway';
-import type { AddFareToPlanningRequest, FareReady } from './actions/add-fare-to-planning/add-fare-to-planning.provider';
 import { addFareToPlanningUseCase } from './actions/add-fare-to-planning/add-fare-to-planning.use-case';
-import { fold, left } from 'fp-ts/Either';
-import { Errors } from 'io-ts';
-import { pipe } from 'fp-ts/lib/function';
+import type { AddFareToPlanningRequest } from './actions/add-fare-to-planning/add-fare-to-planning.provider';
+import { addFareToPlanningPersist, toFarePg } from './actions/add-fare-to-planning/add-fare-to-planning.postgresql.adapter';
+import { addFareToPlanningGateway } from './actions/add-fare-to-planning/add-fare-to-planning.gateway';
 
 const server: FastifyInstance = fastify();
 
@@ -33,12 +37,17 @@ server.post('/add-fare-to-planning', async (req: AddFareToPlanningRequest, reply
   await pipe(
     addFareToPlanningGateway(req.body),
     addFareToPlanningUseCase,
-    //addFareToPlanningPersist(server.pg)(toFarePg(fareReady.right)); // This will remove fareReady: FareReady from the fold
-    fold(
-      async (errors: Errors): Promise<void> => reply.code(500).send(left(errors)),
-      async (fareReady: FareReady): Promise<void> => reply.code(200).send(fareReady)
+    toFarePg,
+    addFareToPlanningPersist(server.pg),
+    foldTaskEither(
+      (errors: Errors): Task<void> =>
+        async (): Promise<void> =>
+          reply.code(500).send(left(errors)),
+      (queryResult: QueryResult): Task<void> =>
+        async (): Promise<void> =>
+          reply.code(200).send(queryResult)
     )
-  );
+  )();
 });
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

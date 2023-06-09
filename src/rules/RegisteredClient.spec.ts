@@ -1,8 +1,8 @@
-import { isRegisteredClient, RegisteredClient } from './RegisteredClient.rule';
 import { Validation } from 'io-ts';
-import HttpReporter, { DevFriendlyError } from '../reporter/HttpReporter';
-import { fold } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/lib/function';
+import { fold } from 'fp-ts/Either';
+import { isRegisteredClient, RegisteredClient } from './RegisteredClient.rule';
+import HttpReporter, { DevFriendlyError } from '../reporter/HttpReporter';
 
 describe('isRegisteredClient specification tests', (): void => {
   it.each([
