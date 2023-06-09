@@ -1,19 +1,19 @@
+import { QueryResult } from 'pg';
+import { Errors } from 'io-ts';
+import { fold as foldTaskEither } from 'fp-ts/TaskEither';
+import { Task } from 'fp-ts/Task';
+import { pipe } from 'fp-ts/lib/function';
+import { left } from 'fp-ts/Either';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fastify from 'fastify';
 import postgres from '@fastify/postgres';
 import { closeGracefullyOnSignalInterrupt, start } from './server.utils';
 import type { PgInfos } from './database/database.reads';
 import { getDatabaseInfos } from './database/database.reads';
-import { addFareToPlanningGateway } from './actions/add-fare-to-planning/add-fare-to-planning.gateway';
-import type { AddFareToPlanningRequest } from './actions/add-fare-to-planning/add-fare-to-planning.provider';
 import { addFareToPlanningUseCase } from './actions/add-fare-to-planning/add-fare-to-planning.use-case';
-import { left } from 'fp-ts/Either';
-import { Errors } from 'io-ts';
-import { pipe } from 'fp-ts/lib/function';
+import type { AddFareToPlanningRequest } from './actions/add-fare-to-planning/add-fare-to-planning.provider';
 import { addFareToPlanningPersist, toFarePg } from './actions/add-fare-to-planning/add-fare-to-planning.postgresql.adapter';
-import { fold as foldTaskEither } from 'fp-ts/TaskEither';
-import { QueryResult } from 'pg';
-import { Task } from 'fp-ts/Task';
+import { addFareToPlanningGateway } from './actions/add-fare-to-planning/add-fare-to-planning.gateway';
 
 const server: FastifyInstance = fastify();
 

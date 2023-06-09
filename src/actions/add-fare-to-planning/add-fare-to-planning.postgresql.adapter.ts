@@ -1,15 +1,20 @@
-import type { PostgresDb } from '@fastify/postgres';
+import {
+  chain as chainTaskEither,
+  fromEither as taskFromEither,
+  TaskEither,
+  tryCatch as tryCatchTaskEither
+} from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
-import type { FareReady } from './add-fare-to-planning.provider';
-import { Either, map } from 'fp-ts/Either';
 import { Errors } from 'io-ts';
 import { pipe } from 'fp-ts/lib/function';
-import { chain as chainTaskEither, fromEither, TaskEither, tryCatch as tryCatchTaskEither } from 'fp-ts/TaskEither';
+import { Either, map as mapEither } from 'fp-ts/Either';
+import type { PostgresDb } from '@fastify/postgres';
+import type { FareReady } from './add-fare-to-planning.provider';
 
 export type FarePg = FareReady;
 
 export const toFarePg = (fare: Either<Errors, FareReady>): Either<Errors, FarePg> =>
-  map(
+  mapEither(
     (fareReady: FareReady): FarePg => ({
       client: fareReady.client,
       creator: fareReady.creator,
@@ -27,12 +32,10 @@ export const toFarePg = (fare: Either<Errors, FareReady>): Either<Errors, FarePg
     })
   )(fare);
 
-// helper function to handle the async operation
-
 export const addFareToPlanningPersist =
   (db: PostgresDb) =>
   (farePg: Either<Errors, FarePg>): TaskEither<Errors, QueryResult> =>
-    pipe(farePg, fromEither, chainTaskEither(insertFare(db)));
+    pipe(farePg, taskFromEither, chainTaskEither(insertFare(db)));
 
 const insertFare =
   (db: PostgresDb) =>

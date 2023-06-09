@@ -1,5 +1,5 @@
-import type { PostgresDb } from '@fastify/postgres';
 import type { PoolClient, QueryResult } from 'pg';
+import type { PostgresDb } from '@fastify/postgres';
 
 export type PgInfos = {
   databaseSize: number;

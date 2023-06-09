@@ -1,6 +1,6 @@
+import { DateFromISOString, withMessage } from 'io-ts-types';
 import * as t from 'io-ts';
 import { BrandC, Errors, StringC } from 'io-ts';
-import { DateFromISOString, withMessage } from 'io-ts-types';
 import { pipe } from 'fp-ts/function';
 import { getOrElseW } from 'fp-ts/Either';
 import { isEqual, isValid, parseISO } from 'date-fns';

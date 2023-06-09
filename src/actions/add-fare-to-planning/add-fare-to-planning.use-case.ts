@@ -1,22 +1,23 @@
-import { chain, Either, right } from 'fp-ts/Either';
 import { Errors } from 'io-ts';
 import { pipe } from 'fp-ts/lib/function';
+import * as either from 'fp-ts/Either';
+import { Either } from 'fp-ts/Either';
 import { FareDraft, FareReady, FareReadyRules } from './add-fare-to-planning.provider';
 
 export const addFareToPlanningUseCase = (fareDraft: Either<Errors, FareDraft>): Either<Errors, FareReady> =>
-  pipe(fareDraft, chain(toDomainFareReady), chain(typeCheckFareReady), chain(ruleCheckFareReady));
+  pipe(fareDraft, either.chain(toDomainFareReady), either.chain(typeCheckFareReady), either.chain(ruleCheckFareReady));
 
 //Alternative
 //export const addFareToPlanningUseCase = (fareDraft: Either<Errors, FareDraft>): Either<Errors, FareReady> =>
 //    pipe(
 //        fareDraft,
-//        chain(toDomainFareReady),
-//        chain(typeCheck(FareReady)),
-//        chain(ruleCheck(FareReadyRules))
+//        either.chain(toDomainFareReady),
+//        either.chain(typeCheck(FareReady)),
+//        either.chain(ruleCheck(FareReadyRules))
 //    );
 
 const toDomainFareReady = (fareDraft: FareDraft): Either<Errors, FareReady> =>
-  right({
+  either.right({
     ...fareDraft,
     status: 'ready',
     duration: 20,

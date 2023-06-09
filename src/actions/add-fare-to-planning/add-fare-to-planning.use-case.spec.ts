@@ -1,7 +1,7 @@
-import { Either, fold, right } from 'fp-ts/Either';
 import { Errors } from 'io-ts';
-import { FareDraft, FareReady } from './add-fare-to-planning.provider';
+import { Either, fold as foldEither, right as rightEither } from 'fp-ts/Either';
 import { addFareToPlanningUseCase } from './add-fare-to-planning.use-case';
+import { FareDraft, FareReady } from './add-fare-to-planning.provider';
 import { iso8601DateString } from '../../rules/DateISO8601.rule';
 import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
 
@@ -35,11 +35,11 @@ describe('Add Fare To Planning use case tests', (): void => {
     creator: 'romain.cambonie@gmail.com'
   };
 
-  it.each([[right(fareDraft), expectedWithHarcodedValues]])(
+  it.each([[rightEither(fareDraft), expectedWithHarcodedValues]])(
     'should return %s when the fare draft is %s',
     (payload: Either<Errors, FareDraft>, expectedValue: DevFriendlyError[] | FareReady): void => {
       const either: Either<Errors, FareReady> = addFareToPlanningUseCase(payload);
-      fold(
+      foldEither(
         (): void => {
           expect(HttpReporter.report(either)).toStrictEqual(expectedValue);
         },

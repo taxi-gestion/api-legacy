@@ -1,13 +1,13 @@
+import { withMessage } from 'io-ts-types';
+import excess from 'io-ts-excess';
 import * as t from 'io-ts';
 import { StringC } from 'io-ts';
-import excess from 'io-ts-excess';
-import { withMessage } from 'io-ts-types';
 import type { FastifyRequest } from 'fastify';
-import { isFrenchPhoneNumber } from '../../rules/FrenchPhoneNumber.rule';
-import { isPositive } from '../../rules/Positive.rule';
-import { isRegisteredClient } from '../../rules/RegisteredClient.rule';
-import { isDateISO8601String } from '../../rules/DateISO8601.rule';
 import { isTimeISO8601String } from '../../rules/TimeISO8601.rule';
+import { isRegisteredClient } from '../../rules/RegisteredClient.rule';
+import { isPositive } from '../../rules/Positive.rule';
+import { isFrenchPhoneNumber } from '../../rules/FrenchPhoneNumber.rule';
+import { isDateISO8601String } from '../../rules/DateISO8601.rule';
 
 /* eslint-disable @typescript-eslint/naming-convention,@typescript-eslint/typedef */
 const DriveKind = t.keyof({ 'one-way': null, outward: null, 'go-back': null });
