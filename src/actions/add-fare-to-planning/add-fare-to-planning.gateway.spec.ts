@@ -1,11 +1,15 @@
+import { Errors } from 'io-ts';
+import { Either, fold } from 'fp-ts/Either';
 import { addFareToPlanningGateway } from './add-fare-to-planning.gateway';
-import { AddFareToPlanningTransfer, FareDraftWithoutRules } from './add-fare-to-planning.provider';
+import { AddFareToPlanningTransfer, FareDraft } from './add-fare-to-planning.provider';
+import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
+import { iso8601DateString } from '../../rules/DateISO8601.rule';
 
-describe('Specification tests', (): void => {
-  const validTransfer: AddFareToPlanningTransfer = {
-    clientIdentity: 'JohnDoe',
+describe('Add Fare To Planning gateway tests', (): void => {
+  const valid: AddFareToPlanningTransfer = {
+    clientIdentity: 'romain',
     clientPhone: '0684319514',
-    date: '2023-06-06',
+    date: '2023-06-06T00:00:00.000Z',
     driveFrom: 'Location A',
     driveKind: 'one-way',
     driveNature: 'medical',
@@ -14,14 +18,24 @@ describe('Specification tests', (): void => {
     startTime: '10:00'
   };
 
+  const missingPlanning: AddFareToPlanningTransfer = {
+    ...valid,
+    planning: undefined
+  } as unknown as AddFareToPlanningTransfer;
+
+  const clientNotRegistered: AddFareToPlanningTransfer = {
+    ...valid,
+    clientIdentity: 'JohnDoe'
+  } as unknown as AddFareToPlanningTransfer;
+
   const invalidPhone: AddFareToPlanningTransfer = {
-    ...validTransfer,
+    ...valid,
     clientPhone: '+3368431955555555'
   };
 
-  const expectedFareDraft: FareDraftWithoutRules = {
-    client: 'JohnDoe',
-    date: '2023-06-06',
+  const validFareDraft: FareDraft = {
+    client: 'romain',
+    date: iso8601DateString('2023-06-06'),
     planning: 'unassigned',
     departure: 'Location A',
     kind: 'one-way',
@@ -33,14 +47,43 @@ describe('Specification tests', (): void => {
   };
 
   it.each([
-    [{}, new Error('Transfer typecheck failed')],
-    [{ clientIdentity: 'JohnDoe' }, new Error('Transfer typecheck failed')],
-    [invalidPhone, new Error('Domain rulesCheck failed')],
-    [validTransfer, expectedFareDraft]
+    [
+      missingPlanning,
+      [{ humanReadable: 'Typecheck failed for input', inputKey: 'planning', inputValue: 'undefined', failingRule: 'string' }]
+    ],
+    [
+      clientNotRegistered,
+      [
+        {
+          failingRule: 'isRegisteredClient',
+          inputValue: 'JohnDoe',
+          inputKey: 'client',
+          humanReadable: "Rulecheck failed, 'JohnDoe' is not included in the registered users list"
+        }
+      ]
+    ],
+    [
+      invalidPhone,
+      [
+        {
+          failingRule: 'isFrenchPhoneNumber',
+          inputValue: '+3368431955555555',
+          inputKey: 'phone',
+          humanReadable: `Rulecheck failed, '+3368431955555555' is not a valid french phone number that match '/^(?:(?:\\+|00)33|0)[1-9]\\d{8}$/gu' regex`
+        }
+      ]
+    ],
+    [valid, validFareDraft]
   ])(
     'should return %s when the transfer request payload is %s',
-    (payload: unknown, expectedResult: Error | FareDraftWithoutRules): void => {
-      expect(addFareToPlanningGateway(payload)).toStrictEqual(expectedResult);
+    (payload: unknown, expectedValue: DevFriendlyError[] | FareDraft): void => {
+      const either: Either<Errors, FareDraft> = addFareToPlanningGateway(payload);
+      fold(
+        (): void => {
+          expect(HttpReporter.report(either)).toStrictEqual(expectedValue);
+        },
+        (value: FareDraft): void => expect(value).toStrictEqual(expectedValue)
+      )(either);
     }
   );
 });

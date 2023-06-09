@@ -1,23 +1,29 @@
-import { FareDraft, FareReady, FareReadyWithoutRules } from './add-fare-to-planning.provider';
-import type { Validation } from 'io-ts';
+import { chain, Either, right } from 'fp-ts/Either';
+import { Errors } from 'io-ts';
+import { pipe } from 'fp-ts/lib/function';
+import { FareDraft, FareReady, FareReadyRules } from './add-fare-to-planning.provider';
 
-import { either } from 'fp-ts';
-// eslint-disable-next-line @typescript-eslint/typedef
-const { isRight, isLeft } = either;
+export const addFareToPlanningUseCase = (fareDraft: Either<Errors, FareDraft>): Either<Errors, FareReady> =>
+  pipe(fareDraft, chain(toDomainFareReady), chain(typeCheckFareReady), chain(ruleCheckFareReady));
 
-export const addFareToPlanningUseCase = (fareDraft: FareDraft): Error | FareReady => {
-  const fareReady: Validation<FareReadyWithoutRules> = FareReadyWithoutRules.decode(toReadyFare(fareDraft));
-  if (isLeft(fareReady)) return new Error('FareReady typecheck failure');
+//Alternative
+//export const addFareToPlanningUseCase = (fareDraft: Either<Errors, FareDraft>): Either<Errors, FareReady> =>
+//    pipe(
+//        fareDraft,
+//        chain(toDomainFareReady),
+//        chain(typeCheck(FareReady)),
+//        chain(ruleCheck(FareReadyRules))
+//    );
 
-  const rulesCheck: Validation<FareReady> = FareReady.decode(fareReady.right);
+const toDomainFareReady = (fareDraft: FareDraft): Either<Errors, FareReady> =>
+  right({
+    ...fareDraft,
+    status: 'ready',
+    duration: 20,
+    distance: 1000,
+    creator: 'romain.cambonie@gmail.com'
+  });
 
-  return isRight(rulesCheck) ? rulesCheck.right : new Error('FareReady rulesCheck failure');
-};
+const typeCheckFareReady = (fareReady: FareReady): Either<Errors, FareReady> => FareReady.decode(fareReady);
 
-const toReadyFare = (fareDraft: FareDraft): FareReadyWithoutRules => ({
-  ...fareDraft,
-  status: 'ready',
-  duration: 20,
-  distance: 1000,
-  creator: 'romain.cambonie@gmail.com'
-});
+const ruleCheckFareReady = (fareReady: FareReady): Either<Errors, FareReady> => FareReadyRules.decode(fareReady);

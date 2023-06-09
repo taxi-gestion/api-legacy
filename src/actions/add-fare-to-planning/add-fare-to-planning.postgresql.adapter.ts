@@ -1,8 +1,8 @@
-import type { FareReady, FareReadyWithoutRules } from './add-fare-to-planning.provider';
 import type { PostgresDb } from '@fastify/postgres';
 import type { PoolClient, QueryResult } from 'pg';
+import type { FareReady } from './add-fare-to-planning.provider';
 
-export type FarePg = FareReadyWithoutRules;
+export type FarePg = FareReady;
 export const toFarePg = (fare: FareReady): FarePg => ({
   client: fare.client,
   creator: fare.creator,

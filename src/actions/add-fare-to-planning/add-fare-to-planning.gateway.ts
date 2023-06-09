@@ -1,27 +1,23 @@
-import { AddFareToPlanningTransfer, FareDraft, FareDraftWithoutRules } from './add-fare-to-planning.provider';
-import type { Validation } from 'io-ts';
+import type { Errors, Validation } from 'io-ts';
+import { chain, Either } from 'fp-ts/Either';
+import { pipe } from 'fp-ts/function';
+import { AddFareToPlanningTransfer, FareDraft, FareDraftRules } from './add-fare-to-planning.provider';
 
-import { either } from 'fp-ts';
-// eslint-disable-next-line @typescript-eslint/typedef
-const { isRight } = either;
+export const addFareToPlanningGateway = (addFareToPlanning: unknown): Either<Errors, FareDraft> =>
+  pipe(typeCheckTransfer(addFareToPlanning), chain(toDomainFareDraft), chain(ruleCheckDomain));
 
-export const addFareToPlanningGateway = (addFareToPlanningTransfer: unknown): Error | FareDraft => {
-  const transfer: AddFareToPlanningTransfer | Error = addFareToPlanningTransferTypecheck(addFareToPlanningTransfer);
-  if (transfer instanceof Error) return transfer;
+//Alternative
+//export const addFareToPlanningGateway = (addFareToPlanning: unknown): Either<Errors, FareDraft> =>
+//    pipe(
+//        typeCheck(AddFareToPlanningTransfer)(addFareToPlanning),
+//        chain(toDomainFareDraft),
+//        chain(ruleCheck(FareDraftRules))
+//    );
 
-  const fareDraft: Error | FareDraftWithoutRules = toFareDraft(transfer);
-  if (fareDraft instanceof Error) return fareDraft;
-
-  return checkFareDraftRules(fareDraft);
-};
-
-const addFareToPlanningTransferTypecheck = (addFareToPlanningTransfer: unknown): AddFareToPlanningTransfer | Error => {
-  const typecheck: Validation<AddFareToPlanningTransfer> = AddFareToPlanningTransfer.decode(addFareToPlanningTransfer);
-  return isRight(typecheck) ? typecheck.right : new Error('Transfer typecheck failed');
-};
-
-const toFareDraft = (fareTransfer: AddFareToPlanningTransfer): Error | FareDraftWithoutRules => {
-  const typecheck: Validation<FareDraftWithoutRules> = FareDraftWithoutRules.decode({
+const typeCheckTransfer = (addFareToPlanningTransfer: unknown): Validation<AddFareToPlanningTransfer> =>
+  AddFareToPlanningTransfer.decode(addFareToPlanningTransfer);
+const toDomainFareDraft = (fareTransfer: AddFareToPlanningTransfer): Validation<FareDraft> =>
+  FareDraft.decode({
     client: fareTransfer.clientIdentity,
     date: fareTransfer.date,
     planning: fareTransfer.planning,
@@ -34,10 +30,4 @@ const toFareDraft = (fareTransfer: AddFareToPlanningTransfer): Error | FareDraft
     destination: fareTransfer.driveTo
   });
 
-  return isRight(typecheck) ? typecheck.right : new Error('Domain typecheck failed');
-};
-
-const checkFareDraftRules = (fareDraft: FareDraftWithoutRules): Error | FareDraft => {
-  const rulesCheck: Validation<FareDraft> = FareDraft.decode(fareDraft);
-  return isRight(rulesCheck) ? rulesCheck.right : new Error('Domain rulesCheck failed');
-};
+const ruleCheckDomain = (fareDraft: FareDraft): Validation<FareDraftRules> => FareDraftRules.decode(fareDraft);
