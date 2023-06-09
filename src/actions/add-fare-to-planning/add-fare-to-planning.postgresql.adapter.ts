@@ -1,6 +1,6 @@
-import type { FareReady } from './add-fare-to-planning.provider';
 import type { PostgresDb } from '@fastify/postgres';
 import type { PoolClient, QueryResult } from 'pg';
+import type { FareReady } from './add-fare-to-planning.provider';
 
 export type FarePg = FareReady;
 export const toFarePg = (fare: FareReady): FarePg => ({

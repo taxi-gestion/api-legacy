@@ -1,9 +1,9 @@
+import { Either, fold, right } from 'fp-ts/Either';
+import { Errors } from 'io-ts';
 import { FareDraft, FareReady } from './add-fare-to-planning.provider';
 import { addFareToPlanningUseCase } from './add-fare-to-planning.use-case';
 import { iso8601DateString } from '../../rules/DateISO8601.rule';
 import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
-import { Either, fold, right } from 'fp-ts/Either';
-import { Errors } from 'io-ts';
 
 describe('Add Fare To Planning use case tests', (): void => {
   const fareDraft: FareDraft = {

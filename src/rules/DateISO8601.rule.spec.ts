@@ -1,6 +1,6 @@
-import * as E from 'fp-ts/lib/Either';
 import { pipe } from 'fp-ts/lib/function';
 import { Validation } from 'io-ts';
+import { fold } from 'fp-ts/Either';
 import HttpReporter, { DevFriendlyError } from '../reporter/HttpReporter';
 import { DateISO8601, isDateISO8601String } from './DateISO8601.rule';
 
@@ -74,7 +74,7 @@ describe('isDateISO8601 specification tests', (): void => {
   ])("when the date is '%s' return '%o'", (payload: unknown, expectedResult: DevFriendlyError[] | string): void => {
     expect(
       pipe(isDateISO8601String.decode(payload), (validation: Validation<DateISO8601>): DevFriendlyError[] | string =>
-        E.fold(
+        fold(
           (): DevFriendlyError[] | string => HttpReporter.report(validation),
           (right: string): string => right
         )(validation)

@@ -1,7 +1,7 @@
-import { addFareToPlanningGateway } from './add-fare-to-planning.gateway';
-import { AddFareToPlanningTransfer, FareDraft } from './add-fare-to-planning.provider';
 import { Errors } from 'io-ts';
 import { Either, fold } from 'fp-ts/Either';
+import { addFareToPlanningGateway } from './add-fare-to-planning.gateway';
+import { AddFareToPlanningTransfer, FareDraft } from './add-fare-to-planning.provider';
 import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
 import { iso8601DateString } from '../../rules/DateISO8601.rule';
 

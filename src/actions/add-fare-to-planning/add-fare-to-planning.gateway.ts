@@ -1,7 +1,7 @@
-import { AddFareToPlanningTransfer, FareDraftRules, FareDraft } from './add-fare-to-planning.provider';
 import type { Errors, Validation } from 'io-ts';
 import { chain, Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
+import { AddFareToPlanningTransfer, FareDraft, FareDraftRules } from './add-fare-to-planning.provider';
 
 export const addFareToPlanningGateway = (addFareToPlanning: unknown): Either<Errors, FareDraft> =>
   pipe(typeCheckTransfer(addFareToPlanning), chain(toDomainFareDraft), chain(ruleCheckDomain));

@@ -1,7 +1,7 @@
-import { FareDraft, FareReady, FareReadyRules } from './add-fare-to-planning.provider';
 import { chain, Either, right } from 'fp-ts/Either';
 import { Errors } from 'io-ts';
 import { pipe } from 'fp-ts/lib/function';
+import { FareDraft, FareReady, FareReadyRules } from './add-fare-to-planning.provider';
 
 export const addFareToPlanningUseCase = (fareDraft: Either<Errors, FareDraft>): Either<Errors, FareReady> =>
   pipe(fareDraft, chain(toDomainFareReady), chain(typeCheckFareReady), chain(ruleCheckFareReady));

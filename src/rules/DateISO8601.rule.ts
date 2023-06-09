@@ -4,6 +4,7 @@ import { DateFromISOString, withMessage } from 'io-ts-types';
 import { pipe } from 'fp-ts/function';
 import { getOrElseW } from 'fp-ts/Either';
 import { isEqual, isValid, parseISO } from 'date-fns';
+
 export const isDateISO8601String: BrandC<StringC, DateISO8601Brand> = withMessage(
   t.brand(
     t.string,

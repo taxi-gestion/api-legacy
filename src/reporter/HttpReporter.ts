@@ -1,28 +1,26 @@
 import { Reporter } from 'io-ts/Reporter';
-import * as t from 'io-ts';
+import { Context, ContextEntry, Errors, Validation, ValidationError } from 'io-ts';
 import { pipe } from 'fp-ts/lib/function';
-import * as E from 'fp-ts/lib/Either';
-import { Context, ContextEntry, Errors, ValidationError } from 'io-ts';
+import { fold, mapLeft } from 'fp-ts/Either';
 
-export const reporter = <T>(validation: t.Validation<T>): DevFriendlyError[] =>
+export const reporter = <T>(validation: Validation<T>): DevFriendlyError[] =>
   pipe(
     validation,
-    E.mapLeft((errors: Errors): DevFriendlyError[] => formatValidationErrors(errors)),
-    E.fold(
+    mapLeft((errors: Errors): DevFriendlyError[] => formatValidationErrors(errors)),
+    fold(
       (errors: DevFriendlyError[]): DevFriendlyError[] => errors,
       (): DevFriendlyError[] => []
     )
   );
 
 type HttpReporter = Reporter<DevFriendlyError[]> & {
-  report: <T>(validation: t.Validation<T>) => DevFriendlyError[];
+  report: <T>(validation: Validation<T>) => DevFriendlyError[];
 };
 
 const toDevFriendlyError = (error: ValidationError): DevFriendlyError => {
   const errorContext: Context = error.context;
-
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const actualContext: ContextEntry = errorContext.at(errorContext.length - 1)!;
+  const actualContext: ContextEntry = errorContext[errorContext.length - 1]!;
 
   return {
     inputValue: String(error.value),

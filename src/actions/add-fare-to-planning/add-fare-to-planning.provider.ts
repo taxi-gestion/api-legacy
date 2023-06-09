@@ -1,11 +1,11 @@
 import * as t from 'io-ts';
 import { StringC } from 'io-ts';
 import excess from 'io-ts-excess';
+import { withMessage } from 'io-ts-types';
+import type { FastifyRequest } from 'fastify';
 import { isFrenchPhoneNumber } from '../../rules/FrenchPhoneNumber.rule';
 import { isPositive } from '../../rules/Positive.rule';
-import type { FastifyRequest } from 'fastify';
 import { isRegisteredClient } from '../../rules/RegisteredClient.rule';
-import { withMessage } from 'io-ts-types';
 import { isDateISO8601String } from '../../rules/DateISO8601.rule';
 
 /* eslint-disable @typescript-eslint/naming-convention,@typescript-eslint/typedef */
@@ -28,21 +28,18 @@ export const AddFareToPlanningTransfer = excess(
   })
 );
 
-export const FareDraft = withMessage(
-  t.type({
-    client: t.string,
-    date: t.string,
-    departure: t.string,
-    destination: t.string,
-    planning: t.string,
-    kind: DriveKind,
-    nature: DriveNature,
-    phone: t.string,
-    status: t.literal('draft'),
-    time: t.string
-  }),
-  (): string => 'Typecheck failed after convertion to core model, this should not happen'
-);
+export const FareDraft = t.type({
+  client: t.string,
+  date: t.string,
+  departure: t.string,
+  destination: t.string,
+  planning: t.string,
+  kind: DriveKind,
+  nature: DriveNature,
+  phone: t.string,
+  status: t.literal('draft'),
+  time: t.string
+});
 
 export const FareDraftRules = t.intersection([
   FareDraft,
@@ -80,8 +77,8 @@ export const FareReadyRules = t.intersection([
     duration: t.intersection([t.Int, isPositive])
   })
 ]);
-
 /* eslint-enable @typescript-eslint/naming-convention,@typescript-eslint/typedef */
+
 export type AddFareToPlanningTransfer = t.TypeOf<typeof AddFareToPlanningTransfer>;
 export type FareDraft = t.TypeOf<typeof FareDraft>;
 export type FareDraftRules = t.TypeOf<typeof FareDraftRules>;
