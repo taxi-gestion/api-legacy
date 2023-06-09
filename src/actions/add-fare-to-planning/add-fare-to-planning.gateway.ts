@@ -1,19 +1,23 @@
-import { AddFareToPlanningTransfer, FareDraft, FareDraftWithoutRules } from './add-fare-to-planning.provider';
+import { AddFareToPlanningTransfer, FareDraftRules, FareDraft } from './add-fare-to-planning.provider';
 import type { Errors, Validation } from 'io-ts';
-
 import { chain, Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/function';
 
-export const addFareToPlanningGateway = (addFareToPlanningTransfer: unknown): Either<Errors, FareDraftWithoutRules> =>
-  pipe(
-    AddFareToPlanningTransfer.decode(addFareToPlanningTransfer),
-    chain(toFareDraftWithoutRules),
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    chain(FareDraft.decode)
-  );
+export const addFareToPlanningGateway = (addFareToPlanning: unknown): Either<Errors, FareDraft> =>
+  pipe(typeCheckTransfer(addFareToPlanning), chain(toDomainFareDraft), chain(ruleCheckDomain));
 
-const toFareDraftWithoutRules = (fareTransfer: AddFareToPlanningTransfer): Validation<FareDraftWithoutRules> =>
-  FareDraftWithoutRules.decode({
+//Alternative
+//export const addFareToPlanningGateway = (addFareToPlanning: unknown): Either<Errors, FareDraft> =>
+//    pipe(
+//        typeCheck(AddFareToPlanningTransfer)(addFareToPlanning),
+//        chain(toDomainFareDraft),
+//        chain(ruleCheck(FareDraftRules))
+//    );
+
+const typeCheckTransfer = (addFareToPlanningTransfer: unknown): Validation<AddFareToPlanningTransfer> =>
+  AddFareToPlanningTransfer.decode(addFareToPlanningTransfer);
+const toDomainFareDraft = (fareTransfer: AddFareToPlanningTransfer): Validation<FareDraft> =>
+  FareDraft.decode({
     client: fareTransfer.clientIdentity,
     date: fareTransfer.date,
     planning: fareTransfer.planning,
@@ -25,3 +29,5 @@ const toFareDraftWithoutRules = (fareTransfer: AddFareToPlanningTransfer): Valid
     time: fareTransfer.startTime,
     destination: fareTransfer.driveTo
   });
+
+const ruleCheckDomain = (fareDraft: FareDraft): Validation<FareDraftRules> => FareDraftRules.decode(fareDraft);

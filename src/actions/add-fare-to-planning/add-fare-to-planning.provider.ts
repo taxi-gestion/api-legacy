@@ -6,13 +6,14 @@ import { isPositive } from '../../rules/Positive.rule';
 import type { FastifyRequest } from 'fastify';
 import { isRegisteredClient } from '../../rules/RegisteredClient.rule';
 import { withMessage } from 'io-ts-types';
+import { isDateISO8601String } from '../../rules/DateISO8601.rule';
 
 /* eslint-disable @typescript-eslint/naming-convention,@typescript-eslint/typedef */
 const DriveKind = t.keyof({ 'one-way': null, outward: null, 'go-back': null });
 const DriveNature = t.keyof({ medical: null, standard: null });
-
 const typecheckFailedMessage = (): string => `Typecheck failed for input`;
 const stringTypecheckFailedMessage: StringC = withMessage(t.string, typecheckFailedMessage);
+
 export const AddFareToPlanningTransfer = excess(
   t.type({
     clientIdentity: stringTypecheckFailedMessage,
@@ -27,7 +28,7 @@ export const AddFareToPlanningTransfer = excess(
   })
 );
 
-export const FareDraftWithoutRules = withMessage(
+export const FareDraft = withMessage(
   t.type({
     client: t.string,
     date: t.string,
@@ -43,18 +44,20 @@ export const FareDraftWithoutRules = withMessage(
   (): string => 'Typecheck failed after convertion to core model, this should not happen'
 );
 
-const FareDraftRules = t.type({
-  client: isRegisteredClient,
-  //date: DateFromISOString,
-  //departure: isValidAddress,
-  //destination: isValidAddress,
-  //planning: t.intersection([isDriverPlanning, isUnassigned]),
-  phone: isFrenchPhoneNumber
-  //time: isLaterTime,
-});
+export const FareDraftRules = t.intersection([
+  FareDraft,
+  t.type({
+    client: isRegisteredClient,
+    date: isDateISO8601String,
+    //departure: isValidAddress,
+    //destination: isValidAddress,
+    //planning: t.intersection([isDriverPlanning, isUnassigned]),
+    phone: isFrenchPhoneNumber
+    //time: isLaterTime,
+  })
+]);
 
-export const FareDraft = t.intersection([FareDraftWithoutRules, FareDraftRules]);
-export const FareReadyWithoutRules = t.type({
+export const FareReady = t.type({
   client: t.string,
   creator: t.string,
   date: t.string,
@@ -70,22 +73,21 @@ export const FareReadyWithoutRules = t.type({
   time: t.string
 });
 
-const FareReadyBusinessRules = t.type({
-  duration: t.intersection([t.Int, isPositive]),
-  distance: t.intersection([t.Int, isPositive])
-});
-
-export const FareReady = t.intersection([FareReadyWithoutRules, FareReadyBusinessRules]);
+export const FareReadyRules = t.intersection([
+  FareReady,
+  t.type({
+    distance: t.intersection([t.Int, isPositive]),
+    duration: t.intersection([t.Int, isPositive])
+  })
+]);
 
 /* eslint-enable @typescript-eslint/naming-convention,@typescript-eslint/typedef */
+export type AddFareToPlanningTransfer = t.TypeOf<typeof AddFareToPlanningTransfer>;
+export type FareDraft = t.TypeOf<typeof FareDraft>;
+export type FareDraftRules = t.TypeOf<typeof FareDraftRules>;
+export type FareReady = t.TypeOf<typeof FareReady>;
 
 export type AddFareToPlanningRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Body: AddFareToPlanningTransfer;
 }>;
-
-export type AddFareToPlanningTransfer = t.TypeOf<typeof AddFareToPlanningTransfer>;
-export type FareDraftWithoutRules = t.TypeOf<typeof FareDraftWithoutRules>;
-export type FareDraft = t.TypeOf<typeof FareDraft>;
-export type FareReadyWithoutRules = t.TypeOf<typeof FareReadyWithoutRules>;
-export type FareReady = t.TypeOf<typeof FareReady>;

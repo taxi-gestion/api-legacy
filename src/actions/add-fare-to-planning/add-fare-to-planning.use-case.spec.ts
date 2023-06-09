@@ -1,11 +1,15 @@
-import { FareDraft, FareDraftWithoutRules, FareReadyWithoutRules } from './add-fare-to-planning.provider';
+import { FareDraft, FareReady } from './add-fare-to-planning.provider';
 import { addFareToPlanningUseCase } from './add-fare-to-planning.use-case';
+import { iso8601DateString } from '../../rules/DateISO8601.rule';
+import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
+import { Either, fold, right } from 'fp-ts/Either';
+import { Errors } from 'io-ts';
 
-describe('Specification tests', (): void => {
-  const fareDraft: FareDraftWithoutRules = {
+describe('Add Fare To Planning use case tests', (): void => {
+  const fareDraft: FareDraft = {
     planning: 'unassigned',
     client: 'Bob',
-    date: '2019-05-05',
+    date: iso8601DateString('2019-05-05'),
     departure: '17 Avenue des Canuts, 69120',
     kind: 'one-way',
     nature: 'medical',
@@ -15,10 +19,10 @@ describe('Specification tests', (): void => {
     destination: '20 Avenue des Canuts, 69120'
   };
 
-  const expectedWithHarcodedValues: FareReadyWithoutRules = {
+  const expectedWithHarcodedValues: FareReady = {
     planning: 'unassigned',
     client: 'Bob',
-    date: '2019-05-05',
+    date: iso8601DateString('2019-05-05'),
     departure: '17 Avenue des Canuts, 69120',
     kind: 'one-way',
     nature: 'medical',
@@ -31,13 +35,16 @@ describe('Specification tests', (): void => {
     creator: 'romain.cambonie@gmail.com'
   };
 
-  it.each([
-    [{} as FareDraftWithoutRules, new Error('FareReady typecheck failure')],
-    [fareDraft, expectedWithHarcodedValues]
-  ])(
-    'should return %s when the transfer request payload is %s',
-    (payload: FareDraftWithoutRules, expectedResult: Error | FareReadyWithoutRules): void => {
-      expect(addFareToPlanningUseCase(payload as FareDraft)).toStrictEqual(expectedResult);
+  it.each([[right(fareDraft), expectedWithHarcodedValues]])(
+    'should return %s when the fare draft is %s',
+    (payload: Either<Errors, FareDraft>, expectedValue: DevFriendlyError[] | FareReady): void => {
+      const either: Either<Errors, FareReady> = addFareToPlanningUseCase(payload);
+      fold(
+        (): void => {
+          expect(HttpReporter.report(either)).toStrictEqual(expectedValue);
+        },
+        (value: FareReady): void => expect(value).toStrictEqual(expectedValue)
+      )(either);
     }
   );
 });

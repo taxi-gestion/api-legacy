@@ -2,13 +2,6 @@ import * as t from 'io-ts';
 import { BrandC, StringC } from 'io-ts';
 import { withMessage } from 'io-ts-types';
 
-const inMemoryClients: string[] = ['romain', 'marc', 'marie'];
-const isIncludedInMemory = (client: string): boolean => inMemoryClients.includes(client.toLowerCase());
-
-type RegisteredClientBrand = {
-  readonly isRegisteredClient: unique symbol;
-};
-
 export const isRegisteredClient: BrandC<StringC, RegisteredClientBrand> = withMessage(
   t.brand(
     t.string,
@@ -19,3 +12,10 @@ export const isRegisteredClient: BrandC<StringC, RegisteredClientBrand> = withMe
 );
 
 export type RegisteredClient = t.TypeOf<typeof isRegisteredClient>;
+
+const inMemoryClients: string[] = ['romain', 'marc', 'marie'];
+const isIncludedInMemory = (client: string): boolean => inMemoryClients.includes(client.toLowerCase());
+
+type RegisteredClientBrand = {
+  readonly isRegisteredClient: unique symbol;
+};
