@@ -49,7 +49,7 @@ export const FareDraftRules = t.intersection([
     date: isDateISO8601String,
     //departure: isValidAddress,
     //destination: isValidAddress,
-    //planning: t.intersection([isDriverPlanning, isUnassigned]),
+    //planning: t.intersection([isDriverPlanning, isUnassignedPlanning]),
     phone: isFrenchPhoneNumber,
     time: isTimeISO8601String
   })
