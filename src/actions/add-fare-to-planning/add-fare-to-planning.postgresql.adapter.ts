@@ -38,11 +38,11 @@ export const addFareToPlanningPersist =
     pipe(farePg, taskFromEither, chainTaskEither(insertFare(db)));
 
 const insertFare =
-  (db: PostgresDb) =>
+  (database: PostgresDb) =>
   (fare: FarePg): TaskEither<Errors, QueryResult> =>
     tryCatchTaskEither(
       async (): Promise<QueryResult> => {
-        const client: PoolClient = await db.connect();
+        const client: PoolClient = await database.connect();
         try {
           return await insertFareSQLQueryBuilder(client, fare);
         } finally {
