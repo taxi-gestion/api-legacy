@@ -1,8 +1,8 @@
-import {FastifyRequest} from "fastify";
+import { FastifyRequest } from 'fastify';
 
 export type FareForDateRequest = FastifyRequest<{
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    Params: {
-        date: string;
-    };
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  Params: {
+    date: string;
+  };
 }>;

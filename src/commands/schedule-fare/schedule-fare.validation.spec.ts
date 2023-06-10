@@ -1,12 +1,12 @@
 import { Errors } from 'io-ts';
-import { Either, fold as foldEither } from 'fp-ts/Either';
-import { AddFareToPlanningTransfer, FareDraft } from './add-fare-to-planning.provider';
-import { addFareToPlanningGateway } from './add-fare-to-planning.gateway';
+import { Either, fold as eitherFold } from 'fp-ts/Either';
+import { FareToScheduleTransfer, FareToSchedule } from './schedule-fare.definitions';
+import { scheduleFareValidation } from './schedule-fare.validation';
 import { iso8601DateString } from '../../rules/DateISO8601.rule';
 import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
 
 describe('Add Fare To Planning gateway tests', (): void => {
-  const valid: AddFareToPlanningTransfer = {
+  const valid: FareToScheduleTransfer = {
     clientIdentity: 'romain',
     clientPhone: '0684319514',
     date: '2023-06-06T00:00:00.000Z',
@@ -18,22 +18,22 @@ describe('Add Fare To Planning gateway tests', (): void => {
     startTime: 'T10:00'
   };
 
-  const missingPlanning: AddFareToPlanningTransfer = {
+  const missingPlanning: FareToScheduleTransfer = {
     ...valid,
     planning: undefined
-  } as unknown as AddFareToPlanningTransfer;
+  } as unknown as FareToScheduleTransfer;
 
-  const clientNotRegistered: AddFareToPlanningTransfer = {
+  const clientNotRegistered: FareToScheduleTransfer = {
     ...valid,
     clientIdentity: 'JohnDoe'
-  } as unknown as AddFareToPlanningTransfer;
+  } as unknown as FareToScheduleTransfer;
 
-  const invalidPhone: AddFareToPlanningTransfer = {
+  const invalidPhone: FareToScheduleTransfer = {
     ...valid,
     clientPhone: '+3368431955555555'
   };
 
-  const validFareDraft: FareDraft = {
+  const validFareDraft: FareToSchedule = {
     client: 'romain',
     date: iso8601DateString('2023-06-06'),
     planning: 'unassigned',
@@ -41,7 +41,7 @@ describe('Add Fare To Planning gateway tests', (): void => {
     kind: 'one-way',
     nature: 'medical',
     phone: '0684319514',
-    status: 'draft',
+    status: 'to-schedule',
     time: 'T10:00',
     destination: 'Location B'
   };
@@ -49,7 +49,7 @@ describe('Add Fare To Planning gateway tests', (): void => {
   it.each([
     [
       missingPlanning,
-      [{ humanReadable: 'Typecheck failed for input', inputKey: 'planning', inputValue: 'undefined', failingRule: 'string' }]
+      [{ humanReadable: 'Type check failed', inputKey: 'planning', inputValue: 'undefined', failingRule: 'string' }]
     ],
     [
       clientNotRegistered,
@@ -76,13 +76,13 @@ describe('Add Fare To Planning gateway tests', (): void => {
     [valid, validFareDraft]
   ])(
     'should return %s when the transfer request payload is %s',
-    (payload: unknown, expectedValue: DevFriendlyError[] | FareDraft): void => {
-      const either: Either<Errors, FareDraft> = addFareToPlanningGateway(payload);
-      foldEither(
+    (payload: unknown, expectedValue: DevFriendlyError[] | FareToSchedule): void => {
+      const either: Either<Errors, FareToSchedule> = scheduleFareValidation(payload);
+      eitherFold(
         (): void => {
           expect(HttpReporter.report(either)).toStrictEqual(expectedValue);
         },
-        (value: FareDraft): void => expect(value).toStrictEqual(expectedValue)
+        (value: FareToSchedule): void => expect(value).toStrictEqual(expectedValue)
       )(either);
     }
   );
