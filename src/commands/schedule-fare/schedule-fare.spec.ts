@@ -1,12 +1,12 @@
 import { Errors } from 'io-ts';
 import { Either, fold as foldEither, right as rightEither } from 'fp-ts/Either';
-import { addFareToPlanningUseCase } from './add-fare-to-planning.use-case';
-import { FareDraft, FareReady } from './add-fare-to-planning.provider';
+import { scheduleFare } from './schedule-fare';
+import { FareToSchedule, ScheduledFare } from './schedule-fare.definitions';
 import { iso8601DateString } from '../../rules/DateISO8601.rule';
 import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
 
 describe('Add Fare To Planning use case tests', (): void => {
-  const fareDraft: FareDraft = {
+  const fareDraft: FareToSchedule = {
     planning: 'unassigned',
     client: 'Bob',
     date: iso8601DateString('2019-05-05'),
@@ -14,12 +14,12 @@ describe('Add Fare To Planning use case tests', (): void => {
     kind: 'one-way',
     nature: 'medical',
     phone: '+33684319514',
-    status: 'draft',
+    status: 'to-schedule',
     time: '10:00',
     destination: '20 Avenue des Canuts, 69120'
   };
 
-  const expectedWithHarcodedValues: FareReady = {
+  const expectedWithHarcodedValues: ScheduledFare = {
     planning: 'unassigned',
     client: 'Bob',
     date: iso8601DateString('2019-05-05'),
@@ -27,7 +27,7 @@ describe('Add Fare To Planning use case tests', (): void => {
     kind: 'one-way',
     nature: 'medical',
     phone: '+33684319514',
-    status: 'ready',
+    status: 'scheduled',
     time: '10:00',
     destination: '20 Avenue des Canuts, 69120',
     duration: 20,
@@ -36,14 +36,14 @@ describe('Add Fare To Planning use case tests', (): void => {
   };
 
   it.each([[rightEither(fareDraft), expectedWithHarcodedValues]])(
-    'should return %s when the fare draft is %s',
-    (payload: Either<Errors, FareDraft>, expectedValue: DevFriendlyError[] | FareReady): void => {
-      const either: Either<Errors, FareReady> = addFareToPlanningUseCase(payload);
+    'should return %s when the fare to-schedule is %s',
+    (payload: Either<Errors, FareToSchedule>, expectedValue: DevFriendlyError[] | ScheduledFare): void => {
+      const either: Either<Errors, ScheduledFare> = scheduleFare(payload);
       foldEither(
         (): void => {
           expect(HttpReporter.report(either)).toStrictEqual(expectedValue);
         },
-        (value: FareReady): void => expect(value).toStrictEqual(expectedValue)
+        (value: ScheduledFare): void => expect(value).toStrictEqual(expectedValue)
       )(either);
     }
   );
