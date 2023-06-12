@@ -9,7 +9,7 @@ export const isFrenchPhoneNumber: BrandC<StringC, FrenchPhoneNumberBrand> = with
     'isFrenchPhoneNumber'
   ),
   (input: unknown): string =>
-    `Rulecheck failed, '${String(
+    `Rules check failed, '${String(
       input
     )}' is not a valid french phone number that match '/^(?:(?:\\+|00)33|0)[1-9]\\d{8}$/gu' regex`
 );

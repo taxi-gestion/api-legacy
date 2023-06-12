@@ -10,10 +10,12 @@ describe('isDateISO8601 specification tests', (): void => {
       'T00:0',
       [
         {
+          code: '422',
           failingRule: 'isTimeISO8601',
-          inputValue: 'T00:0',
+          errorValue: 'T00:0',
           inputKey: '',
-          humanReadable: "Rulecheck failed, 'T00:0' is not a valid Time ISO8601 extended format string representation (Thh:mm)"
+          humanReadable:
+            "Rules check failed, 'T00:0' is not a valid Time ISO8601 extended format string representation (Thh:mm)"
         }
       ]
     ],
@@ -23,10 +25,12 @@ describe('isDateISO8601 specification tests', (): void => {
       'T24:01',
       [
         {
+          code: '422',
           failingRule: 'isTimeISO8601',
-          inputValue: 'T24:01',
+          errorValue: 'T24:01',
           inputKey: '',
-          humanReadable: "Rulecheck failed, 'T24:01' is not a valid Time ISO8601 extended format string representation (Thh:mm)"
+          humanReadable:
+            "Rules check failed, 'T24:01' is not a valid Time ISO8601 extended format string representation (Thh:mm)"
         }
       ]
     ],
@@ -34,10 +38,12 @@ describe('isDateISO8601 specification tests', (): void => {
       'T25:00',
       [
         {
+          code: '422',
           failingRule: 'isTimeISO8601',
-          inputValue: 'T25:00',
+          errorValue: 'T25:00',
           inputKey: '',
-          humanReadable: "Rulecheck failed, 'T25:00' is not a valid Time ISO8601 extended format string representation (Thh:mm)"
+          humanReadable:
+            "Rules check failed, 'T25:00' is not a valid Time ISO8601 extended format string representation (Thh:mm)"
         }
       ]
     ]
