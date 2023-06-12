@@ -16,7 +16,7 @@ import { getDatabaseInfos, PgInfos } from './queries/database-status/database-st
 import { FareForDateRequest } from './queries/fares-for-date/fares-for-date.provider';
 import HttpReporter from './reporter/HttpReporter';
 import { isDateISO8601String } from './rules/DateISO8601.rule';
-import { faresForTheDateQuery } from './queries/fares-for-date/fares-for-date.postgresql.adapter';
+import { faresForTheDateQuery } from './queries/fares-for-date/fares-for-date.persistence';
 
 const server: FastifyInstance = fastify();
 
@@ -63,7 +63,7 @@ server.get('/fares-for-date/:date', async (req: FareForDateRequest, reply: Fasti
   await pipe(
     isDateISO8601String.decode(req.params.date),
     faresForTheDateQuery(server.pg),
-    taskEitherFold(onTaskWithErrors(reply), () => async (): Promise<void> => reply.code(200).send({ success: 'plip' }))
+    taskEitherFold(onTaskWithErrors(reply), onTaskWithQueryResult(reply))
   )();
   //await pipe(
   //  isDateISO8601String.decode(req.params.date),
