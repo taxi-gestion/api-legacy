@@ -1,10 +1,10 @@
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
-import { Errors } from 'io-ts';
 import { pipe } from 'fp-ts/lib/function';
 import { Either, map as eitherMap } from 'fp-ts/Either';
 import type { PostgresDb } from '@fastify/postgres';
 import type { ScheduledFare } from './schedule-fare.definitions';
+import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
 
 export type FarePersistence = ScheduledFare;
 
@@ -12,6 +12,7 @@ export const persistScheduledFare =
   (database: PostgresDb) =>
   (farePersistence: Either<Errors, FarePersistence>): TaskEither<Errors, QueryResult> =>
     pipe(farePersistence, fromEither, taskEitherChain(insertFareIn(database)));
+
 export const toScheduledFarePersistence = (fare: Either<Errors, ScheduledFare>): Either<Errors, FarePersistence> =>
   eitherMap(
     (fareReady: ScheduledFare): FarePersistence => ({
@@ -48,11 +49,13 @@ const insertIntoFares = (database: PostgresDb) => (fare: FarePersistence) => asy
 const onInsertFareError = (error: unknown): Errors =>
   [
     {
-      message: `Error - insertFare: ${(error as Error).message}`,
+      isInfrastructureError: true,
+      message: `insertFareIn database error - ${(error as Error).message}`,
       // eslint-disable-next-line id-denylist
       value: (error as Error).name,
-      context: []
-    }
+      stack: (error as Error).stack ?? 'no stack available',
+      code: '503'
+    } satisfies InfrastructureError
   ] satisfies Errors;
 
 const insertFareQuery = async (client: PoolClient, farePg: FarePersistence): Promise<QueryResult> =>

@@ -9,7 +9,7 @@ export const isTimeISO8601String: BrandC<StringC, TimeISO8601Brand> = withMessag
     'isTimeISO8601'
   ),
   (input: unknown): string =>
-    `Rulecheck failed, '${String(input)}' is not a valid Time ISO8601 extended format string representation (Thh:mm)`
+    `Rules check failed, '${String(input)}' is not a valid Time ISO8601 extended format string representation (Thh:mm)`
 );
 
 export type TimeISO8601 = t.TypeOf<typeof isTimeISO8601String>;

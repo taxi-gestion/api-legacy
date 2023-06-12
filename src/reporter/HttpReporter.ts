@@ -1,32 +1,70 @@
 import { Reporter } from 'io-ts/Reporter';
-import { Context, ContextEntry, Errors, Validation, ValidationError } from 'io-ts';
+import { Context, ContextEntry } from 'io-ts';
 import { pipe } from 'fp-ts/lib/function';
-import { fold, mapLeft } from 'fp-ts/Either';
+import { Either, fold, mapLeft } from 'fp-ts/Either';
 
-export const reporter = <T>(validation: Validation<T>): DevFriendlyError[] =>
+export type InfrastructureError = {
+  isInfrastructureError: true;
+  message: string;
+  // eslint-disable-next-line id-denylist
+  value: string;
+  stack: string;
+  code: string;
+  //context?: Record<string, unknown>;
+};
+
+export type ValidationError = {
+  // eslint-disable-next-line id-denylist
+  readonly value: unknown;
+  readonly context: Context;
+  readonly message?: string;
+};
+
+export type Errors = (InfrastructureError | ValidationError)[];
+
+export const reporter = <T>(errors: Either<Errors, T>): DevFriendlyError[] =>
   pipe(
-    validation,
-    mapLeft((errors: Errors): DevFriendlyError[] => formatValidationErrors(errors)),
+    errors,
+    mapLeft(formatValidationErrors),
     fold(
-      (errors: DevFriendlyError[]): DevFriendlyError[] => errors,
+      (formattedErrors: DevFriendlyError[]): DevFriendlyError[] => formattedErrors,
       (): DevFriendlyError[] => []
     )
   );
 
 type HttpReporter = Reporter<DevFriendlyError[]> & {
-  report: <T>(validation: Validation<T>) => DevFriendlyError[];
+  report: <T>(errors: Either<Errors, T>) => DevFriendlyError[];
 };
 
-const toDevFriendlyError = (error: ValidationError): DevFriendlyError => {
+const isInfrastructureError = (error: InfrastructureError | ValidationError): error is InfrastructureError =>
+  'isInfrastructureError' in error;
+
+// I do not have a better alternative for now without a lot of work with io-ts
+const getCodeFromMessage = (error: ValidationError): '400' | '422' =>
+  String(error.message).toLowerCase().startsWith('type') ? '400' : '422';
+
+const toDevFriendlyError = (error: InfrastructureError | ValidationError): DevFriendlyError => {
+  if (isInfrastructureError(error)) {
+    return {
+      errorValue: error.value,
+      humanReadable: `A technical dependency of the service is unavailable - ${error.message}`,
+      code: '503'
+    };
+  }
+
+  // We are certain to have a validation error with a context.
   const errorContext: Context = error.context;
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const actualContext: ContextEntry = errorContext[errorContext.length - 1]!;
 
   return {
-    inputValue: String(error.value),
+    errorValue: String(error.value),
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     failingRule: actualContext.type.name,
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     inputKey: actualContext.key,
-    humanReadable: String(error.message)
+    humanReadable: String(error.message),
+    code: getCodeFromMessage(error)
   };
 };
 
@@ -36,8 +74,9 @@ const httpReporter: HttpReporter = { report: reporter };
 export default httpReporter;
 
 export type DevFriendlyError = {
-  inputValue: string;
-  inputKey: string;
+  errorValue: string;
+  inputKey?: string;
   humanReadable: string;
-  failingRule: string;
+  failingRule?: string;
+  code: string;
 };

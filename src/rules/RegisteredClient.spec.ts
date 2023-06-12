@@ -10,10 +10,11 @@ describe('isRegisteredClient specification tests', (): void => {
       'Julien',
       [
         {
+          code: '422',
           failingRule: 'isRegisteredClient',
-          inputValue: 'Julien',
+          errorValue: 'Julien',
           inputKey: '',
-          humanReadable: "Rulecheck failed, 'Julien' is not included in the registered users list"
+          humanReadable: "Rules check failed, 'Julien' is not included in the registered users list"
         }
       ]
     ],

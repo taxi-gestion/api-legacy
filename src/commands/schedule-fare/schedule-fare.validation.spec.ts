@@ -49,16 +49,25 @@ describe('Add Fare To Planning gateway tests', (): void => {
   it.each([
     [
       missingPlanning,
-      [{ humanReadable: 'Type check failed', inputKey: 'planning', inputValue: 'undefined', failingRule: 'string' }]
+      [
+        {
+          code: '400',
+          humanReadable: 'Type check failed',
+          inputKey: 'planning',
+          errorValue: 'undefined',
+          failingRule: 'string'
+        }
+      ]
     ],
     [
       clientNotRegistered,
       [
         {
+          code: '422',
           failingRule: 'isRegisteredClient',
-          inputValue: 'JohnDoe',
+          errorValue: 'JohnDoe',
           inputKey: 'client',
-          humanReadable: "Rulecheck failed, 'JohnDoe' is not included in the registered users list"
+          humanReadable: "Rules check failed, 'JohnDoe' is not included in the registered users list"
         }
       ]
     ],
@@ -66,10 +75,11 @@ describe('Add Fare To Planning gateway tests', (): void => {
       invalidPhone,
       [
         {
+          code: '422',
           failingRule: 'isFrenchPhoneNumber',
-          inputValue: '+3368431955555555',
+          errorValue: '+3368431955555555',
           inputKey: 'phone',
-          humanReadable: `Rulecheck failed, '+3368431955555555' is not a valid french phone number that match '/^(?:(?:\\+|00)33|0)[1-9]\\d{8}$/gu' regex`
+          humanReadable: `Rules check failed, '+3368431955555555' is not a valid french phone number that match '/^(?:(?:\\+|00)33|0)[1-9]\\d{8}$/gu' regex`
         }
       ]
     ],

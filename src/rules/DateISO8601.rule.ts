@@ -12,7 +12,7 @@ export const isDateISO8601String: BrandC<StringC, DateISO8601Brand> = withMessag
     'isDateISO8601'
   ),
   (input: unknown): string =>
-    `Rulecheck failed, '${String(input)}' is not a valid UTC Date ISO8601 string representation (YYYY-MM-DDT00:00:00.000Z)`
+    `Rules check failed, '${String(input)}' is not a valid UTC Date ISO8601 string representation (YYYY-MM-DDT00:00:00.000Z)`
 );
 
 export const iso8601DateString = (input: string): string =>

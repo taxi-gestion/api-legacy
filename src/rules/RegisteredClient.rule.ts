@@ -8,7 +8,7 @@ export const isRegisteredClient: BrandC<StringC, RegisteredClientBrand> = withMe
     (client: string): client is t.Branded<string, RegisteredClientBrand> => isIncludedInMemory(client),
     'isRegisteredClient'
   ),
-  (input: unknown): string => `Rulecheck failed, '${String(input)}' is not included in the registered users list`
+  (input: unknown): string => `Rules check failed, '${String(input)}' is not included in the registered users list`
 );
 
 export type RegisteredClient = t.TypeOf<typeof isRegisteredClient>;
