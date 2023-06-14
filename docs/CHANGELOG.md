@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/taxi-gestion/api/compare/v1.2.0...v1.3.0) (2023-06-14)
+
+
+### Features
+
+* faker and fare-for-dates ([#16](https://github.com/taxi-gestion/api/issues/16)) ([fe8d01e](https://github.com/taxi-gestion/api/commit/fe8d01e2808185e198260f2f68de0e23a36bc9dd))
+
 # [1.2.0](https://github.com/taxi-gestion/api/compare/v1.1.1...v1.2.0) (2023-06-07)
 
 
