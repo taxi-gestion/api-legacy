@@ -54,7 +54,7 @@ const onInsertFareError = (error: unknown): Errors =>
       // eslint-disable-next-line id-denylist
       value: (error as Error).name,
       stack: (error as Error).stack ?? 'no stack available',
-      code: '503'
+      code: (error as Error).message.includes('ECONNREFUSED') ? '503' : '500'
     } satisfies InfrastructureError
   ] satisfies Errors;
 

@@ -51,7 +51,7 @@ describe('HttpReporter specification tests', (): void => {
     value: undefined
   };
 
-  const infrastructureErrorFromException: InfrastructureError = {
+  const serviceUnavailable: InfrastructureError = {
     isInfrastructureError: true,
     code: '503',
     stack: 'no stack available',
@@ -60,18 +60,28 @@ describe('HttpReporter specification tests', (): void => {
     value: 'Error'
   };
 
-  const simpleError: Either<Errors, unknown> = left<Errors, unknown>([stringError]);
-  const singleError: Either<Errors, unknown> = left<Errors, unknown>([validationError1]);
+  const internalServerError: InfrastructureError = {
+    isInfrastructureError: true,
+    code: '500',
+    stack: 'no stack available',
+    message: `insertFareIn database error - relation "fares" does not exist`,
+    // eslint-disable-next-line id-denylist
+    value: 'Error'
+  };
+
+  const simpleErrors: Either<Errors, unknown> = left<Errors, unknown>([stringError]);
+  const singleErrors: Either<Errors, unknown> = left<Errors, unknown>([validationError1]);
   const multipleErrors: Either<Errors, unknown> = left<Errors, unknown>([validationError1, validationError2]);
-  const infrastructureError: Either<Errors, unknown> = left<Errors, unknown>([infrastructureErrorFromException]);
+  const serviceUnavailableErrors: Either<Errors, unknown> = left<Errors, unknown>([serviceUnavailable]);
+  const infrastructureErrors: Either<Errors, unknown> = left<Errors, unknown>([internalServerError]);
 
   it.each([
     [
-      simpleError,
+      simpleErrors,
       [{ humanReadable: 'Type check failed', inputKey: '', errorValue: 'undefined', failingRule: 'string', code: '400' }]
     ],
     [
-      singleError,
+      singleErrors,
       [
         {
           humanReadable: `Rules check failed, 'Julien' is not included in the registered users list`,
@@ -96,12 +106,22 @@ describe('HttpReporter specification tests', (): void => {
       ]
     ],
     [
-      infrastructureError,
+      serviceUnavailableErrors,
       [
         {
           humanReadable: `A technical dependency of the service is unavailable - selectFaresForDate database error - Error: connect ECONNREFUSED 127.0.0.1:5432`,
           errorValue: 'Error',
           code: '503'
+        }
+      ]
+    ],
+    [
+      infrastructureErrors,
+      [
+        {
+          humanReadable: `Internal Server Error - insertFareIn database error - relation "fares" does not exist`,
+          errorValue: 'Error',
+          code: '500'
         }
       ]
     ]
