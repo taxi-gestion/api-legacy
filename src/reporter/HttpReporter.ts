@@ -45,10 +45,12 @@ const getCodeFromMessage = (error: ValidationError): '400' | '422' =>
 
 const toDevFriendlyError = (error: InfrastructureError | ValidationError): DevFriendlyError => {
   if (isInfrastructureError(error)) {
+    const reason: string =
+      error.code === '503' ? 'A technical dependency of the service is unavailable' : 'Internal Server Error';
     return {
       errorValue: error.value,
-      humanReadable: `A technical dependency of the service is unavailable - ${error.message}`,
-      code: '503'
+      humanReadable: `${reason} - ${error.message}`,
+      code: error.code
     };
   }
 
