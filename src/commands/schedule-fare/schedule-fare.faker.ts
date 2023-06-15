@@ -1,5 +1,5 @@
 import { fakerFR as faker } from '@faker-js/faker';
-import { ScheduledFare } from './schedule-fare.definitions';
+import { ScheduledFare, ScheduledFares } from './schedule-fare.definitions';
 import { FastifyRequest } from 'fastify';
 
 export type FakeFareForDateRequest = FastifyRequest<{
@@ -50,8 +50,8 @@ export const generateScheduledFare = (date: string): ScheduledFare => {
   };
 };
 
-export const generateScheduledFares = (date: string, count: number): ScheduledFare[] => {
-  const fares: ScheduledFare[] = [];
+export const generateScheduledFares = (date: string, count: number): ScheduledFares => {
+  const fares: ScheduledFares = [];
 
   for (let i: number = 0; i < count; i++) {
     fares.push(generateScheduledFare(date));

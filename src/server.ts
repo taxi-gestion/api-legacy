@@ -8,7 +8,7 @@ import fastify from 'fastify';
 import postgres from '@fastify/postgres';
 import { closeGracefullyOnSignalInterrupt, start } from './server.utils';
 import { scheduleFare } from './commands/schedule-fare/schedule-fare';
-import type { FareToScheduleRequest, ScheduledFare } from './commands/schedule-fare/schedule-fare.definitions';
+import type { FareToScheduleRequest, ScheduledFare, ScheduledFares } from './commands/schedule-fare/schedule-fare.definitions';
 import { persistScheduledFare, toScheduledFarePersistence } from './commands/schedule-fare/schedule-fare.persistence';
 import { scheduleFareValidation } from './commands/schedule-fare/schedule-fare.validation';
 import { getDatabaseInfos, PgInfos } from './queries/database-status/database-status.query';
@@ -42,7 +42,7 @@ server.get('/database/status', async (_request: FastifyRequest, reply: FastifyRe
 });
 
 server.post('/database/reset', async (_request: FastifyRequest, reply: FastifyReply): Promise<void> => {
-  await pipe(resetDatabaseStructure(server.pg), taskEitherFold(onTaskWithErrors(reply), onTaskWithQueryResult(reply)))();
+  await pipe(resetDatabaseStructure(server.pg), taskEitherFold(onTaskWithErrors(reply), onTaskWithRawQueryResult(reply)))();
 });
 
 server.post('/faker/schedule-fare/:date', async (req: FakeFareForDateRequest, reply: FastifyReply): Promise<void> => {
@@ -51,7 +51,7 @@ server.post('/faker/schedule-fare/:date', async (req: FakeFareForDateRequest, re
     eitherChain((date: string): Either<Errors, ScheduledFare> => eitherRight(generateScheduledFare(date))),
     toScheduledFarePersistence,
     persistScheduledFare(server.pg),
-    taskEitherFold(onTaskWithErrors(reply), onTaskWithQueryResult(reply))
+    taskEitherFold(onTaskWithErrors(reply), onTaskWithRawQueryResult(reply))
   )();
 });
 
@@ -74,7 +74,7 @@ server.post('/schedule-fare', async (req: FareToScheduleRequest, reply: FastifyR
     scheduleFare,
     toScheduledFarePersistence,
     persistScheduledFare(server.pg),
-    taskEitherFold(onTaskWithErrors(reply), onTaskWithQueryResult(reply))
+    taskEitherFold(onTaskWithErrors(reply), onTaskWithRawQueryResult(reply))
   )();
 });
 
@@ -84,17 +84,23 @@ const onTaskWithErrors =
   async (): Promise<void> =>
     reply.code(500).send(HttpReporter.report(eitherLeft(errors)));
 
-const onTaskWithQueryResult =
+const onTaskWithRawQueryResult =
   (reply: FastifyReply) =>
   (queryResult: QueryResult): Task<void> =>
   async (): Promise<void> =>
     reply.code(200).send(queryResult);
 
+const onTaskWithScheduledFaresResult =
+  (reply: FastifyReply) =>
+  (fares: ScheduledFares): Task<void> =>
+  async (): Promise<void> =>
+    reply.code(200).send(fares);
+
 server.get('/fares-for-date/:date', async (req: FareForDateRequest, reply: FastifyReply): Promise<void> => {
   await pipe(
     isDateISO8601String.decode(req.params.date),
     faresForTheDateQuery(server.pg),
-    taskEitherFold(onTaskWithErrors(reply), onTaskWithQueryResult(reply))
+    taskEitherFold(onTaskWithErrors(reply), onTaskWithScheduledFaresResult(reply))
   )();
 });
 
