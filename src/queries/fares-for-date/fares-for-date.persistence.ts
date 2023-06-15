@@ -2,14 +2,47 @@ import { TaskEither } from 'fp-ts/lib/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/lib/function';
-import { chain as taskEitherChain, fromEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
+import {
+  chain as taskEitherChain,
+  fromEither,
+  tryCatch as taskEitherTryCatch,
+  right as taskEitherRight
+} from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
+import { ScheduledFare, ScheduledFares } from '../../commands/schedule-fare/schedule-fare.definitions';
+import { FarePersistence } from '../../commands/schedule-fare/schedule-fare.persistence';
 
 export const faresForTheDateQuery =
   (database: PostgresDb) =>
-  (date: Either<Errors, string>): TaskEither<Errors, QueryResult> =>
-    pipe(date, fromEither, taskEitherChain(selectFaresForDate(database)));
+  (date: Either<Errors, string>): TaskEither<Errors, ScheduledFares> =>
+    pipe(
+      date,
+      fromEither,
+      taskEitherChain(selectFaresForDate(database)),
+      taskEitherChain(
+        (queryResult: QueryResult): TaskEither<Errors, ScheduledFares> => taskEitherRight(toScheduledFares(queryResult))
+      )
+    );
+
+const toScheduledFares = (queryResult: QueryResult): ScheduledFares =>
+  queryResult.rows.map(
+    (row: FarePersistence): ScheduledFare => ({
+      client: row.client,
+      creator: row.creator,
+      date: row.date,
+      departure: row.departure,
+      destination: row.destination,
+      distance: row.distance,
+      planning: row.planning,
+      duration: row.duration,
+      kind: row.kind,
+      nature: row.nature,
+      phone: row.phone,
+      status: 'scheduled',
+      time: row.time
+    })
+  );
 
 const selectFaresForDate =
   (database: PostgresDb) =>

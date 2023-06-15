@@ -84,6 +84,7 @@ export const scheduledFareCodec = ioType({
 export type FareToScheduleTransfer = TypeOf<typeof fareToScheduleTransferCodec>;
 export type FareToSchedule = TypeOf<typeof fareToScheduleCodec>;
 export type ScheduledFare = TypeOf<typeof scheduledFareCodec>;
+export type ScheduledFares = ScheduledFare[];
 
 export type FareToScheduleRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
