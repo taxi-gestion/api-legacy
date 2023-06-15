@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/taxi-gestion/api/compare/v1.3.0...v1.4.0) (2023-06-15)
+
+
+### Features
+
+* fares-for-date-return transfer model array instead of query result ([#17](https://github.com/taxi-gestion/api/issues/17)) ([415b6c1](https://github.com/taxi-gestion/api/commit/415b6c1cbc4a30abbdb14b0c4d9bcf629dd20568))
+
 # [1.3.0](https://github.com/taxi-gestion/api/compare/v1.2.0...v1.3.0) (2023-06-14)
 
 
