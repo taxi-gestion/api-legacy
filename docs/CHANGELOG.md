@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/taxi-gestion/api/compare/v1.4.0...v1.5.0) (2023-06-29)
+
+
+### Features
+
+* remove limitation on client name ([#18](https://github.com/taxi-gestion/api/issues/18)) ([da88d34](https://github.com/taxi-gestion/api/commit/da88d34443578cb63bc677c32e38665296bdab43))
+
 # [1.4.0](https://github.com/taxi-gestion/api/compare/v1.3.0...v1.4.0) (2023-06-15)
 
 
