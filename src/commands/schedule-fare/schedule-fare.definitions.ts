@@ -11,7 +11,6 @@ import {
 } from 'io-ts';
 import type { FastifyRequest } from 'fastify';
 import { isTimeISO8601String } from '../../rules/TimeISO8601.rule';
-import { isRegisteredClient } from '../../rules/RegisteredClient.rule';
 import { isFrenchPhoneNumber } from '../../rules/FrenchPhoneNumber.rule';
 import { isDateISO8601String } from '../../rules/DateISO8601.rule';
 
@@ -53,7 +52,6 @@ export const fareToScheduleCodec = ioType({
 export const fareToScheduleRulesCodec = ioIntersection([
   fareToScheduleCodec,
   ioType({
-    client: isRegisteredClient,
     date: isDateISO8601String,
     //departure: isValidAddress => Pas de sens on vérifie juste que les coordonnées gps sont valides et on y associe le label.
     //destination: isValidAddress,
