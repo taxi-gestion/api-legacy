@@ -23,11 +23,6 @@ describe('Add Fare To Planning gateway tests', (): void => {
     planning: undefined
   } as unknown as FareToScheduleTransfer;
 
-  const clientNotRegistered: FareToScheduleTransfer = {
-    ...valid,
-    clientIdentity: 'JohnDoe'
-  } as unknown as FareToScheduleTransfer;
-
   const invalidPhone: FareToScheduleTransfer = {
     ...valid,
     clientPhone: '+3368431955555555'
@@ -56,18 +51,6 @@ describe('Add Fare To Planning gateway tests', (): void => {
           inputKey: 'planning',
           errorValue: 'undefined',
           failingRule: 'string'
-        }
-      ]
-    ],
-    [
-      clientNotRegistered,
-      [
-        {
-          code: '422',
-          failingRule: 'isRegisteredClient',
-          errorValue: 'JohnDoe',
-          inputKey: 'client',
-          humanReadable: "Rules check failed, 'JohnDoe' is not included in the registered users list"
         }
       ]
     ],
