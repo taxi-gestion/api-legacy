@@ -11,7 +11,7 @@ import {
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
 import { ScheduledFare, ScheduledFares } from '../../commands/schedule-fare/schedule-fare.definitions';
-import { FarePersistence } from '../../commands/schedule-fare/schedule-fare.persistence';
+import { ScheduledFarePersistence } from '../../commands/schedule-fare/schedule-fare.persistence';
 
 export const faresForTheDateQuery =
   (database: PostgresDb) =>
@@ -27,7 +27,7 @@ export const faresForTheDateQuery =
 
 const toScheduledFares = (queryResult: QueryResult): ScheduledFares =>
   queryResult.rows.map(
-    (row: FarePersistence): ScheduledFare => ({
+    (row: ScheduledFarePersistence): ScheduledFare => ({
       client: row.client,
       creator: row.creator,
       date: row.date,
