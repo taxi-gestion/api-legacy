@@ -1,8 +1,9 @@
+/* eslint-disable max-lines */
 import { QueryResult } from 'pg';
 import { chain as taskEitherChain, fold as taskEitherFold, map as taskEitherMap } from 'fp-ts/TaskEither';
 import { Task } from 'fp-ts/Task';
 import { pipe } from 'fp-ts/lib/function';
-import { left as eitherLeft } from 'fp-ts/Either';
+import { left as eitherLeft, right as eitherRight } from 'fp-ts/Either';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fastify from 'fastify';
 import postgres from '@fastify/postgres';
@@ -32,6 +33,11 @@ import {
 import { Entity } from './definitions/entity.definition';
 import { ReturnToAffect, Scheduled } from './definitions/fares.definitions';
 import { TaskEither } from 'fp-ts/lib/TaskEither';
+import {ClientToAddRequest} from "./commands/add-client/add-client.definitions";
+import {addClientValidation} from "./commands/add-client/add-client.validation";
+import {persistClient, toClientPersistence} from "./commands/add-client/add-client.persistence";
+import {ClientsByIdentityRequest, ClientsForFare} from "./queries/clients-by-identity/clients-by-identity.definitions";
+import {clientsByIdentityQuery} from "./queries/clients-by-identity/clients-by-identity.persistence";
 
 const server: FastifyInstance = fastify();
 
@@ -128,6 +134,29 @@ server.get(
     )();
   }
 );
+
+server.post('/add-client', async (req: ClientToAddRequest, reply: FastifyReply): Promise<void> => {
+  await pipe(
+    req.body,
+    addClientValidation,
+    toClientPersistence,
+    persistClient(server.pg),
+    taskEitherFold(onTaskWithErrors(reply), onTaskWithRawQueryResult(reply))
+  )();
+});
+
+const onTaskWithClientsForFareResult =
+  (reply: FastifyReply) =>
+  (fares: ClientsForFare): Task<void> =>
+  async (): Promise<void> =>
+    reply.code(200).send(fares);
+server.get('/clients-by-identity/:identity', async (req: ClientsByIdentityRequest, reply: FastifyReply): Promise<void> => {
+  await pipe(
+    eitherRight(req.params.identity),
+    clientsByIdentityQuery(server.pg),
+    taskEitherFold(onTaskWithErrors(reply), onTaskWithClientsForFareResult(reply))
+  )();
+});
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 start({ server, nodeProcess: process });

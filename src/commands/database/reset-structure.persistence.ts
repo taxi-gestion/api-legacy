@@ -61,4 +61,12 @@ DROP TABLE IF EXISTS fares;
         phone TEXT NOT NULL,
         time TEXT
     );
+    DROP TABLE IF EXISTS clients;
+    CREATE TABLE clients (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        identity TEXT NOT NULL,
+        departure TEXT NOT NULL,
+        destination TEXT NOT NULL,
+        phone TEXT NOT NULL
+    );
     `;
