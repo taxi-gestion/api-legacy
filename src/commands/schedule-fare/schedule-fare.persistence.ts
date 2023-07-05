@@ -1,50 +1,87 @@
+/* eslint-disable max-lines */
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import { pipe } from 'fp-ts/lib/function';
 import { Either, map as eitherMap } from 'fp-ts/Either';
 import type { PostgresDb } from '@fastify/postgres';
-import type { ScheduledFare } from './schedule-fare.definitions';
+import type { FareReturnToSchedule, ScheduledFare } from './schedule-fare.definitions';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
 
-export type FarePersistence = ScheduledFare;
+export type ScheduledFarePersistence = ScheduledFare;
+export type ToScheduleFarePersistence = FareReturnToSchedule;
 
-export const persistScheduledFare =
+export type FaresToPersist = [ScheduledFarePersistence, ToScheduleFarePersistence?];
+
+export const toFaresPersistence = (
+  fare: Either<Errors, [ScheduledFare, FareReturnToSchedule?]>
+): Either<Errors, FaresToPersist> =>
+  pipe(
+    fare,
+    eitherMap(
+      ([scheduledFare, fareReturnToSchedule]: [ScheduledFare, FareReturnToSchedule?]): FaresToPersist =>
+        fareReturnToSchedule == null
+          ? [toScheduledFarePersistence(scheduledFare)]
+          : [toScheduledFarePersistence(scheduledFare), toToScheduleFarePersistence(fareReturnToSchedule)]
+    )
+  );
+
+const toScheduledFarePersistence = (scheduledFare: ScheduledFare): ScheduledFarePersistence => ({
+  client: scheduledFare.client,
+  creator: scheduledFare.creator,
+  date: scheduledFare.date,
+  departure: scheduledFare.departure,
+  destination: scheduledFare.destination,
+  distance: scheduledFare.distance,
+  planning: scheduledFare.planning,
+  duration: scheduledFare.duration,
+  kind: scheduledFare.kind,
+  nature: scheduledFare.nature,
+  phone: scheduledFare.phone,
+  status: scheduledFare.status,
+  time: scheduledFare.time
+});
+
+const toToScheduleFarePersistence = (fareReturnToSchedule: FareReturnToSchedule): ToScheduleFarePersistence => ({
+  client: fareReturnToSchedule.client,
+  creator: fareReturnToSchedule.creator,
+  date: fareReturnToSchedule.date,
+  departure: fareReturnToSchedule.departure,
+  destination: fareReturnToSchedule.destination,
+  distance: fareReturnToSchedule.distance,
+  planning: fareReturnToSchedule.planning,
+  duration: fareReturnToSchedule.duration,
+  kind: fareReturnToSchedule.kind,
+  nature: fareReturnToSchedule.nature,
+  phone: fareReturnToSchedule.phone,
+  status: fareReturnToSchedule.status,
+  time: fareReturnToSchedule.time
+});
+
+export const persistFares =
   (database: PostgresDb) =>
-  (farePersistence: Either<Errors, FarePersistence>): TaskEither<Errors, QueryResult> =>
-    pipe(farePersistence, fromEither, taskEitherChain(insertFareIn(database)));
+  (farePersistence: Either<Errors, FaresToPersist>): TaskEither<Errors, QueryResult[]> =>
+    pipe(farePersistence, fromEither, taskEitherChain(insertFaresIn(database)));
 
-export const toScheduledFarePersistence = (fare: Either<Errors, ScheduledFare>): Either<Errors, FarePersistence> =>
-  eitherMap(
-    (fareReady: ScheduledFare): FarePersistence => ({
-      client: fareReady.client,
-      creator: fareReady.creator,
-      date: fareReady.date,
-      departure: fareReady.departure,
-      destination: fareReady.destination,
-      distance: fareReady.distance,
-      planning: fareReady.planning,
-      duration: fareReady.duration,
-      kind: fareReady.kind,
-      nature: fareReady.nature,
-      phone: fareReady.phone,
-      status: fareReady.status,
-      time: fareReady.time
-    })
-  )(fare);
-
-const insertFareIn =
+const insertFaresIn =
   (database: PostgresDb) =>
-  (fare: FarePersistence): TaskEither<Errors, QueryResult> =>
-    taskEitherTryCatch(insertIntoFares(database)(fare), onInsertFareError);
+  (fares: FaresToPersist): TaskEither<Errors, QueryResult[]> =>
+    taskEitherTryCatch(insertFares(database, fares), onInsertFareError);
 
-const insertIntoFares = (database: PostgresDb) => (fare: FarePersistence) => async (): Promise<QueryResult> => {
-  const client: PoolClient = await database.connect();
-  try {
-    return await insertFareQuery(client, fare);
-  } finally {
-    client.release();
-  }
-};
+const insertFares =
+  (database: PostgresDb, fares: [ScheduledFarePersistence, ToScheduleFarePersistence?]) => async (): Promise<QueryResult[]> =>
+    database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
+      const [fare, fareToSchedule]: [ScheduledFarePersistence, ToScheduleFarePersistence?] = fares;
+      const promises: Promise<QueryResult>[] = [
+        insertScheduledFareQuery(client, fare),
+        ...insertFareToScheduleQueryOrEmpty(fareToSchedule, client)
+      ];
+      return Promise.all(promises);
+    });
+
+const insertFareToScheduleQueryOrEmpty = (
+  fareToSchedule: ToScheduleFarePersistence | undefined,
+  client: PoolClient
+): [] | [Promise<QueryResult>] => (fareToSchedule == null ? [] : [insertFareToScheduleQuery(client, fareToSchedule)]);
 
 const onInsertFareError = (error: unknown): Errors =>
   [
@@ -58,7 +95,7 @@ const onInsertFareError = (error: unknown): Errors =>
     } satisfies InfrastructureError
   ] satisfies Errors;
 
-const insertFareQuery = async (client: PoolClient, farePg: FarePersistence): Promise<QueryResult> =>
+const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledFarePersistence): Promise<QueryResult> =>
   client.query(insertFareQueryString, [
     farePg.client,
     farePg.creator,
@@ -94,3 +131,40 @@ const insertFareQueryString: string = `
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
       )
     `;
+
+const insertFareToScheduleQuery = async (client: PoolClient, farePg: ToScheduleFarePersistence): Promise<QueryResult> =>
+  client.query(insertFareToScheduleQueryString, [
+    farePg.client,
+    farePg.creator,
+    farePg.date,
+    farePg.departure,
+    farePg.destination,
+    farePg.distance,
+    farePg.planning,
+    farePg.duration,
+    farePg.kind,
+    farePg.nature,
+    farePg.phone,
+    farePg.status,
+    farePg.time
+  ]);
+
+const insertFareToScheduleQueryString: string = `
+      INSERT INTO fares_to_schedule (
+          client,
+          creator,
+          date,
+          departure,
+          destination,
+          distance,
+          planning,
+          duration,
+          kind,
+          nature,
+          phone,
+          status,
+          time
+      ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+      )
+      `;

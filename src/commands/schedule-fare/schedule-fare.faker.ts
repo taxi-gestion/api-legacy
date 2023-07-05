@@ -42,7 +42,7 @@ export const generateScheduledFare = (date: string): ScheduledFare => {
     distance: faker.number.int({ min: 1000, max: 25000 }),
     planning: faker.helpers.arrayElement(planningChoices),
     duration: faker.number.int({ min: 5, max: 25 }),
-    kind: faker.helpers.arrayElement(['one-way', 'outward', 'go-back']),
+    kind: faker.helpers.arrayElement(['one-way', 'outward', 'return']),
     nature: faker.helpers.arrayElement(['medical', 'standard']),
     phone: faker.phone.number(),
     status: 'scheduled',

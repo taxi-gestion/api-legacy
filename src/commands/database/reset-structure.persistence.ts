@@ -45,4 +45,21 @@ const dropAndRecreateTablesQueryString: string = `DROP TABLE IF EXISTS fares;
         phone TEXT NOT NULL,
         status TEXT NOT NULL,
         time TEXT NOT NULL
-    );`;
+    );
+    DROP TABLE IF EXISTS fares_to_schedule;
+     CREATE TABLE fares_to_schedule (
+        client TEXT NOT NULL,
+        creator TEXT NOT NULL,
+        date TEXT NOT NULL,
+        departure TEXT NOT NULL,
+        destination TEXT NOT NULL,
+        distance NUMERIC NOT NULL,
+        planning TEXT,
+        duration NUMERIC,
+        kind TEXT NOT NULL,
+        nature TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        status TEXT NOT NULL,
+        time TEXT
+    );
+    `;
