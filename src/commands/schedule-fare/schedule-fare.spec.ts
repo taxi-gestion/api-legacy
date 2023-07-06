@@ -1,9 +1,9 @@
 import { Errors } from 'io-ts';
 import { Either, fold as foldEither, right as rightEither } from 'fp-ts/Either';
 import { scheduleFares } from './schedule-fares';
-import { FareReturnToSchedule, FareToSchedule, ScheduledFare } from './schedule-fare.definitions';
 import { iso8601DateString } from '../../rules/DateISO8601.rule';
 import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
+import { FareReturnToSchedule, FareToSchedule, ScheduledFare } from '../../definitions/fares.definitions';
 
 describe('Add Fare To Planning use case tests', (): void => {
   const fareToScheduleOneWay: FareToSchedule = {
@@ -76,10 +76,7 @@ describe('Add Fare To Planning use case tests', (): void => {
       phone: '+33684319514',
       status: 'to-schedule',
       time: undefined,
-      destination: '17 Avenue des Canuts, 69120',
-      duration: 20,
-      distance: 1000,
-      creator: 'romain.cambonie@gmail.com'
+      destination: '17 Avenue des Canuts, 69120'
     }
   ];
 

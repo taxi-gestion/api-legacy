@@ -1,9 +1,10 @@
 import { Errors } from 'io-ts';
 import { Either, fold as eitherFold } from 'fp-ts/Either';
-import { FareToScheduleTransfer, FareToSchedule } from './schedule-fare.definitions';
 import { scheduleFareValidation } from './schedule-fare.validation';
 import { iso8601DateString } from '../../rules/DateISO8601.rule';
 import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
+import { FareToScheduleTransfer } from './schedule-fare.definitions';
+import { FareToSchedule } from '../../definitions/fares.definitions';
 
 describe('Add Fare To Planning gateway tests', (): void => {
   const valid: FareToScheduleTransfer = {
