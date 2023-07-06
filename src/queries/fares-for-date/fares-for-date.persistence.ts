@@ -10,24 +10,35 @@ import {
 } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { ScheduledFare, ScheduledFares } from '../../commands/schedule-fare/schedule-fare.definitions';
-import { ScheduledFarePersistence } from '../../commands/schedule-fare/schedule-fare.persistence';
+import { Entity } from '../../definitions/entity.definition';
+import { ScheduledFare } from '../../definitions/fares.definitions';
+
+type ScheduledFarePersistence = Entity<ScheduledFare>;
 
 export const faresForTheDateQuery =
   (database: PostgresDb) =>
-  (date: Either<Errors, string>): TaskEither<Errors, ScheduledFares> =>
+  (date: Either<Errors, string>): TaskEither<Errors, Entity<ScheduledFare>[]> =>
     pipe(
       date,
       fromEither,
       taskEitherChain(selectFaresForDate(database)),
       taskEitherChain(
-        (queryResult: QueryResult): TaskEither<Errors, ScheduledFares> => taskEitherRight(toScheduledFares(queryResult))
+        (queryResult: QueryResult): TaskEither<Errors, Entity<ScheduledFare>[]> =>
+          taskEitherRight(toScheduledFares(queryResult))
       )
     );
 
-const toScheduledFares = (queryResult: QueryResult): ScheduledFares =>
+/* TODO Validate with scheduledFareEntityCodec
+ *  export const scheduledFareEntityCodec: Type<Entity<ScheduledFare>> = ioUnion([
+ *  scheduledFareCodec,
+ *   ioType({ id: ioString })
+ * ])
+ */
+
+const toScheduledFares = (queryResult: QueryResult): Entity<ScheduledFare>[] =>
   queryResult.rows.map(
-    (row: ScheduledFarePersistence): ScheduledFare => ({
+    (row: ScheduledFarePersistence): Entity<ScheduledFare> => ({
+      id: row.id,
       client: row.client,
       creator: row.creator,
       date: row.date,

@@ -1,26 +1,36 @@
 import { withMessage } from 'io-ts-types';
 import excess from 'io-ts-excess';
-import type { StringC, TypeOf } from 'io-ts';
+import type { StringC, Type } from 'io-ts';
 import {
   intersection as ioIntersection,
-  union as ioUnion,
   keyof as ioKeyof,
   literal as ioLiteral,
   number as ioNumber,
   string as ioString,
   type as ioType,
-  undefined as ioUndefined
+  undefined as ioUndefined,
+  union as ioUnion
 } from 'io-ts';
-import type { FastifyRequest } from 'fastify';
 import { isTimeISO8601String } from '../../rules/TimeISO8601.rule';
 import { isFrenchPhoneNumber } from '../../rules/FrenchPhoneNumber.rule';
 import { isDateISO8601String } from '../../rules/DateISO8601.rule';
+import { FareReturnToSchedule, FareToSchedule, ScheduledFare } from '../../definitions/fares.definitions';
 
 const typeCheckFailedMessage = (): string => `Type check failed`;
 const ioStringWithTypeCheckFailedMessage: StringC = withMessage(ioString, typeCheckFailedMessage);
 
-// eslint-disable-next-line @typescript-eslint/typedef
-export const fareToScheduleTransferCodec = excess(
+export type FareToScheduleTransfer = {
+  clientIdentity: string;
+  clientPhone: string;
+  date: string;
+  driveFrom: string;
+  driveKind: 'one-way' | 'outward' | 'return';
+  driveNature: 'medical' | 'standard';
+  planning: string;
+  driveTo: string;
+  startTime: string;
+};
+export const fareToScheduleTransferCodec: Type<FareToScheduleTransfer> = excess(
   ioType({
     clientIdentity: ioStringWithTypeCheckFailedMessage,
     clientPhone: ioStringWithTypeCheckFailedMessage,
@@ -35,8 +45,7 @@ export const fareToScheduleTransferCodec = excess(
   })
 );
 
-// eslint-disable-next-line @typescript-eslint/typedef
-export const fareToScheduleCodec = ioType({
+export const fareToScheduleCodec: Type<FareToSchedule> = ioType({
   client: ioString,
   date: ioString,
   departure: ioString,
@@ -63,16 +72,12 @@ export const fareToScheduleRulesCodec = ioIntersection([
   })
 ]);
 
-// eslint-disable-next-line @typescript-eslint/typedef
-export const farReturnToScheduleCodec = ioType({
+export const farReturnToScheduleCodec: Type<FareReturnToSchedule> = ioType({
   client: ioString,
-  creator: ioString,
   date: ioString,
   departure: ioString,
   destination: ioString,
-  distance: ioNumber,
   planning: ioUnion([ioString, ioUndefined]),
-  duration: ioNumber,
   // eslint-disable-next-line @typescript-eslint/naming-convention
   kind: ioLiteral('return'),
   nature: ioKeyof({ medical: null, standard: null }),
@@ -81,7 +86,7 @@ export const farReturnToScheduleCodec = ioType({
   time: ioUnion([ioString, ioUndefined])
 });
 // eslint-disable-next-line @typescript-eslint/typedef
-export const scheduledFareCodec = ioType({
+export const scheduledFareCodec: Type<ScheduledFare> = ioType({
   client: ioString,
   creator: ioString,
   date: ioString,
@@ -97,15 +102,3 @@ export const scheduledFareCodec = ioType({
   status: ioLiteral('scheduled'),
   time: ioString
 });
-
-export type FareToScheduleTransfer = TypeOf<typeof fareToScheduleTransferCodec>;
-export type FareToSchedule = TypeOf<typeof fareToScheduleCodec>;
-export type ScheduledFare = TypeOf<typeof scheduledFareCodec>;
-export type FareReturnToSchedule = TypeOf<typeof farReturnToScheduleCodec>;
-export type ScheduledFares = ScheduledFare[];
-export type FareReturnsToSchedule = FareReturnToSchedule[];
-
-export type FareToScheduleRequest = FastifyRequest<{
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  Body: FareToScheduleTransfer;
-}>;

@@ -1,5 +1,5 @@
 import { QueryResult } from 'pg';
-import { fold as taskEitherFold } from 'fp-ts/TaskEither';
+import { chain as taskEitherChain, fold as taskEitherFold, map as taskEitherMap } from 'fp-ts/TaskEither';
 import { Task } from 'fp-ts/Task';
 import { pipe } from 'fp-ts/lib/function';
 import { left as eitherLeft } from 'fp-ts/Either';
@@ -8,21 +8,29 @@ import fastify from 'fastify';
 import postgres from '@fastify/postgres';
 import { closeGracefullyOnSignalInterrupt, start } from './server.utils';
 import { scheduleFares } from './commands/schedule-fare/schedule-fares';
-import type {
-  FareReturnsToSchedule,
-  FareToScheduleRequest,
-  ScheduledFares
-} from './commands/schedule-fare/schedule-fare.definitions';
-import { persistFares, toFaresPersistence } from './commands/schedule-fare/schedule-fare.persistence';
+import { persistFares, ScheduledFarePersistence, toFaresPersistence } from './commands/schedule-fare/schedule-fare.persistence';
 import { scheduleFareValidation } from './commands/schedule-fare/schedule-fare.validation';
 import { getDatabaseInfos, PgInfos } from './queries/database-status/database-status.query';
-import { FareForDateRequest } from './queries/fares-for-date/fares-for-date.provider';
 import HttpReporter, { Errors } from './reporter/HttpReporter';
 import { isDateISO8601String } from './rules/DateISO8601.rule';
 import { faresForTheDateQuery } from './queries/fares-for-date/fares-for-date.persistence';
 import { resetDatabaseStructure } from './commands/database/reset-structure.persistence';
 import { faresToScheduleForTheDateQuery } from './queries/fares-to-schedule-for-date/fares-to-schedule-for-date.persistence';
-import { FareToScheduleForDateRequest } from './queries/fares-to-schedule-for-date/fares-to-schedule-for-date.provider';
+import { $affectReturnValidation } from './commands/schedule-return/affect-return.validation';
+import { affectReturn } from './commands/schedule-return/affect-return';
+import {
+  persistFareAndDeleteToSchedule,
+  toScheduledReturnPersistence
+} from './commands/schedule-return/affect-return.persistence';
+import {
+  FareForDateRequest,
+  FareToScheduleForDateRequest,
+  FareToScheduleRequest,
+  ReturnToAffectRequest
+} from './routes/requests';
+import { Entity } from './definitions/entity.definition';
+import { FareReturnToSchedule, ScheduledFare } from './definitions/fares.definitions';
+import { TaskEither } from 'fp-ts/lib/TaskEither';
 
 const server: FastifyInstance = fastify();
 
@@ -46,28 +54,6 @@ server.get('/database/reset', async (_request: FastifyRequest, reply: FastifyRep
   await pipe(resetDatabaseStructure(server.pg), taskEitherFold(onTaskWithErrors(reply), onTaskWithRawQueryResult(reply)))();
 });
 
-/*server.post('/faker/schedule-fare/:date', async (req: FakeFareForDateRequest, reply: FastifyReply): Promise<void> => {
-  await pipe(
-    isDateISO8601String.decode(req.params.date),
-    eitherChain((date: string): Either<Errors, ScheduledFare> => eitherRight(generateScheduledFare(date))),
-    toFaresPersistence,
-    persistFares(server.pg),
-    taskEitherFold(onTaskWithErrors(reply), onTaskWithRawQueryResult(reply))
-  )();
-});*/
-
-/*server.post('/faker/schedule-fares/:date/:count', async (req: FakeFaresForDateRequest, reply: FastifyReply): Promise<void> => {
-  for (let i: number = 0; i < (req.params.count ?? 10); i++) {
-    // eslint-disable-next-line no-await-in-loop
-    await server.inject({
-      method: 'POST',
-      url: `/faker/schedule-fare/${req.params.date}`
-    });
-  }
-
-  await reply.send({ message: `Successfully faked fares.` });
-});*/
-
 server.post('/schedule-fare', async (req: FareToScheduleRequest, reply: FastifyReply): Promise<void> => {
   await pipe(
     req.body,
@@ -75,6 +61,20 @@ server.post('/schedule-fare', async (req: FareToScheduleRequest, reply: FastifyR
     scheduleFares,
     toFaresPersistence,
     persistFares(server.pg),
+    taskEitherFold(onTaskWithErrors(reply), onTaskWithRawQueriesResult(reply))
+  )();
+});
+
+server.post('/schedule-return', async (req: ReturnToAffectRequest, reply: FastifyReply): Promise<void> => {
+  await pipe(
+    req.body,
+    $affectReturnValidation(server.pg),
+    affectReturn,
+    taskEitherMap(toScheduledReturnPersistence),
+    taskEitherChain(
+      (fareToPersist: ScheduledFarePersistence): TaskEither<Errors, QueryResult[]> =>
+        persistFareAndDeleteToSchedule(server.pg)(fareToPersist, req.body.fareId)
+    ),
     taskEitherFold(onTaskWithErrors(reply), onTaskWithRawQueriesResult(reply))
   )();
 });
@@ -99,7 +99,7 @@ const onTaskWithRawQueriesResult =
 
 const onTaskWithScheduledFaresResult =
   (reply: FastifyReply) =>
-  (fares: ScheduledFares): Task<void> =>
+  (fares: Entity<ScheduledFare>[]): Task<void> =>
   async (): Promise<void> =>
     reply.code(200).send(fares);
 
@@ -113,7 +113,7 @@ server.get('/fares-for-date/:date', async (req: FareForDateRequest, reply: Fasti
 
 const onTaskWithFaresToScheduleResult =
   (reply: FastifyReply) =>
-  (fares: FareReturnsToSchedule): Task<void> =>
+  (fares: Entity<FareReturnToSchedule>[]): Task<void> =>
   async (): Promise<void> =>
     reply.code(200).send(fares);
 server.get(

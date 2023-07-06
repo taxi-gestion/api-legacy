@@ -1,7 +1,7 @@
 import { Errors } from 'io-ts';
 import { pipe } from 'fp-ts/lib/function';
 import { map as eitherMap, Either } from 'fp-ts/Either';
-import { FareToSchedule, FareReturnToSchedule, ScheduledFare } from './schedule-fare.definitions';
+import { FareReturnToSchedule, FareToSchedule, ScheduledFare } from '../../definitions/fares.definitions';
 
 export const scheduleFares = (
   fareToschedule: Either<Errors, FareToSchedule>
@@ -31,11 +31,8 @@ const createFareReturnToScheduleOrEmpty = (fareToSchedule: FareToSchedule): Fare
     ...fareToSchedule,
     departure: fareToSchedule.destination,
     destination: fareToSchedule.departure,
-    creator: 'romain.cambonie@gmail.com',
     status: 'to-schedule',
     time: undefined,
-    kind: 'return',
-    distance: 1000,
-    duration: 20
+    kind: 'return'
   };
 };

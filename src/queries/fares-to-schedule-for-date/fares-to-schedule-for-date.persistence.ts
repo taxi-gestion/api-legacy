@@ -5,37 +5,38 @@ import { pipe } from 'fp-ts/lib/function';
 import {
   chain as taskEitherChain,
   fromEither,
-  tryCatch as taskEitherTryCatch,
-  right as taskEitherRight
+  right as taskEitherRight,
+  tryCatch as taskEitherTryCatch
 } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { FareReturnToSchedule, FareReturnsToSchedule } from '../../commands/schedule-fare/schedule-fare.definitions';
-import { ToScheduleFarePersistence } from '../../commands/schedule-fare/schedule-fare.persistence';
+import { FareReturnToSchedule } from '../../definitions/fares.definitions';
+import { Entity } from '../../definitions/entity.definition';
+
+type FareToSchedulePersistence = Entity<FareReturnToSchedule>;
 
 export const faresToScheduleForTheDateQuery =
   (database: PostgresDb) =>
-  (date: Either<Errors, string>): TaskEither<Errors, FareReturnsToSchedule> =>
+  (date: Either<Errors, string>): TaskEither<Errors, Entity<FareReturnToSchedule>[]> =>
     pipe(
       date,
       fromEither,
       taskEitherChain(selectFaresToScheduleForDate(database)),
       taskEitherChain(
-        (queryResult: QueryResult): TaskEither<Errors, FareReturnsToSchedule> => taskEitherRight(toToScheduleFares(queryResult))
+        (queryResult: QueryResult): TaskEither<Errors, Entity<FareReturnToSchedule>[]> =>
+          taskEitherRight(toToScheduleFares(queryResult))
       )
     );
 
-const toToScheduleFares = (queryResult: QueryResult): FareReturnsToSchedule =>
+const toToScheduleFares = (queryResult: QueryResult): Entity<FareReturnToSchedule>[] =>
   queryResult.rows.map(
-    (row: ToScheduleFarePersistence): FareReturnToSchedule => ({
+    (row: FareToSchedulePersistence): Entity<FareReturnToSchedule> => ({
+      id: row.id,
       client: row.client,
-      creator: row.creator,
       date: row.date,
       departure: row.departure,
       destination: row.destination,
-      distance: row.distance,
       planning: row.planning,
-      duration: row.duration,
       kind: row.kind,
       nature: row.nature,
       phone: row.phone,

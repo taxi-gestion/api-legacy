@@ -4,8 +4,8 @@ import type { PoolClient, QueryResult } from 'pg';
 import { pipe } from 'fp-ts/lib/function';
 import { Either, map as eitherMap } from 'fp-ts/Either';
 import type { PostgresDb } from '@fastify/postgres';
-import type { FareReturnToSchedule, ScheduledFare } from './schedule-fare.definitions';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
+import { FareReturnToSchedule, ScheduledFare } from '../../definitions/fares.definitions';
 
 export type ScheduledFarePersistence = ScheduledFare;
 export type ToScheduleFarePersistence = FareReturnToSchedule;
@@ -43,13 +43,10 @@ const toScheduledFarePersistence = (scheduledFare: ScheduledFare): ScheduledFare
 
 const toToScheduleFarePersistence = (fareReturnToSchedule: FareReturnToSchedule): ToScheduleFarePersistence => ({
   client: fareReturnToSchedule.client,
-  creator: fareReturnToSchedule.creator,
   date: fareReturnToSchedule.date,
   departure: fareReturnToSchedule.departure,
   destination: fareReturnToSchedule.destination,
-  distance: fareReturnToSchedule.distance,
   planning: fareReturnToSchedule.planning,
-  duration: fareReturnToSchedule.duration,
   kind: fareReturnToSchedule.kind,
   nature: fareReturnToSchedule.nature,
   phone: fareReturnToSchedule.phone,
@@ -135,13 +132,10 @@ const insertFareQueryString: string = `
 const insertFareToScheduleQuery = async (client: PoolClient, farePg: ToScheduleFarePersistence): Promise<QueryResult> =>
   client.query(insertFareToScheduleQueryString, [
     farePg.client,
-    farePg.creator,
     farePg.date,
     farePg.departure,
     farePg.destination,
-    farePg.distance,
     farePg.planning,
-    farePg.duration,
     farePg.kind,
     farePg.nature,
     farePg.phone,
@@ -152,19 +146,16 @@ const insertFareToScheduleQuery = async (client: PoolClient, farePg: ToScheduleF
 const insertFareToScheduleQueryString: string = `
       INSERT INTO fares_to_schedule (
           client,
-          creator,
           date,
           departure,
           destination,
-          distance,
           planning,
-          duration,
           kind,
           nature,
           phone,
           status,
           time
       ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
       )
       `;

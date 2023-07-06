@@ -2,13 +2,13 @@ import type { Errors, Validation } from 'io-ts';
 import { pipe } from 'fp-ts/function';
 import { chain as eitherChain, Either } from 'fp-ts/Either';
 import {
-  FareToSchedule,
   fareToScheduleCodec,
   fareToScheduleRulesCodec,
   FareToScheduleTransfer,
   fareToScheduleTransferCodec
 } from './schedule-fare.definitions';
 import { externalTypeCheckFor } from '../../rules/validation';
+import { FareToSchedule } from '../../definitions/fares.definitions';
 
 export const scheduleFareValidation = (transfer: unknown): Either<Errors, FareToSchedule> =>
   pipe(
