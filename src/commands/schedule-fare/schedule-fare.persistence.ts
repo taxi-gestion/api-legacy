@@ -7,10 +7,10 @@ import type { PostgresDb } from '@fastify/postgres';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
 import { ReturnToAffect, Scheduled } from '../../definitions/fares.definitions';
 
-export type ScheduledFarePersistence = Scheduled;
-export type ToScheduleFarePersistence = ReturnToAffect;
+export type ScheduledPersistence = Scheduled;
+type ReturnToAffectPersistence = ReturnToAffect;
 
-export type FaresToPersist = [ScheduledFarePersistence, ToScheduleFarePersistence?];
+export type FaresToPersist = [ScheduledPersistence, ReturnToAffectPersistence?];
 
 export const toFaresPersistence = (fare: Either<Errors, [Scheduled, ReturnToAffect?]>): Either<Errors, FaresToPersist> =>
   pipe(
@@ -23,7 +23,7 @@ export const toFaresPersistence = (fare: Either<Errors, [Scheduled, ReturnToAffe
     )
   );
 
-const toScheduledFarePersistence = (scheduledFare: Scheduled): ScheduledFarePersistence => ({
+const toScheduledFarePersistence = (scheduledFare: Scheduled): ScheduledPersistence => ({
   client: scheduledFare.client,
   creator: scheduledFare.creator,
   date: scheduledFare.date,
@@ -39,7 +39,7 @@ const toScheduledFarePersistence = (scheduledFare: Scheduled): ScheduledFarePers
   time: scheduledFare.time
 });
 
-const toToScheduleFarePersistence = (fareReturnToSchedule: ReturnToAffect): ToScheduleFarePersistence => ({
+const toToScheduleFarePersistence = (fareReturnToSchedule: ReturnToAffect): ReturnToAffectPersistence => ({
   client: fareReturnToSchedule.client,
   date: fareReturnToSchedule.date,
   departure: fareReturnToSchedule.departure,
@@ -60,29 +60,29 @@ export const persistFares =
 const insertFaresIn =
   (database: PostgresDb) =>
   (fares: FaresToPersist): TaskEither<Errors, QueryResult[]> =>
-    taskEitherTryCatch(insertFares(database, fares), onInsertFareError);
+    taskEitherTryCatch(insertFares(database, fares), onInsertFaresError);
 
 const insertFares =
-  (database: PostgresDb, fares: [ScheduledFarePersistence, ToScheduleFarePersistence?]) => async (): Promise<QueryResult[]> =>
+  (database: PostgresDb, fares: [ScheduledPersistence, ReturnToAffectPersistence?]) => async (): Promise<QueryResult[]> =>
     database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
-      const [fare, fareToSchedule]: [ScheduledFarePersistence, ToScheduleFarePersistence?] = fares;
+      const [fare, fareToSchedule]: [ScheduledPersistence, ReturnToAffectPersistence?] = fares;
       const promises: Promise<QueryResult>[] = [
         insertScheduledFareQuery(client, fare),
-        ...insertFareToScheduleQueryOrEmpty(fareToSchedule, client)
+        ...insertReturnToAffectQueryOrEmpty(fareToSchedule, client)
       ];
       return Promise.all(promises);
     });
 
-const insertFareToScheduleQueryOrEmpty = (
-  fareToSchedule: ToScheduleFarePersistence | undefined,
+const insertReturnToAffectQueryOrEmpty = (
+  fareToSchedule: ReturnToAffectPersistence | undefined,
   client: PoolClient
-): [] | [Promise<QueryResult>] => (fareToSchedule == null ? [] : [insertFareToScheduleQuery(client, fareToSchedule)]);
+): [] | [Promise<QueryResult>] => (fareToSchedule == null ? [] : [insertReturnToAffectQuery(client, fareToSchedule)]);
 
-const onInsertFareError = (error: unknown): Errors =>
+const onInsertFaresError = (error: unknown): Errors =>
   [
     {
       isInfrastructureError: true,
-      message: `insertFareIn database error - ${(error as Error).message}`,
+      message: `insertFaresIn database error - ${(error as Error).message}`,
       // eslint-disable-next-line id-denylist
       value: (error as Error).name,
       stack: (error as Error).stack ?? 'no stack available',
@@ -90,7 +90,7 @@ const onInsertFareError = (error: unknown): Errors =>
     } satisfies InfrastructureError
   ] satisfies Errors;
 
-const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledFarePersistence): Promise<QueryResult> =>
+const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledPersistence): Promise<QueryResult> =>
   client.query(insertFareQueryString, [
     farePg.client,
     farePg.creator,
@@ -127,8 +127,8 @@ const insertFareQueryString: string = `
       )
     `;
 
-const insertFareToScheduleQuery = async (client: PoolClient, farePg: ToScheduleFarePersistence): Promise<QueryResult> =>
-  client.query(insertFareToScheduleQueryString, [
+const insertReturnToAffectQuery = async (client: PoolClient, farePg: ReturnToAffectPersistence): Promise<QueryResult> =>
+  client.query(insertReturnToAffectQueryString, [
     farePg.client,
     farePg.date,
     farePg.departure,
@@ -137,11 +137,10 @@ const insertFareToScheduleQuery = async (client: PoolClient, farePg: ToScheduleF
     farePg.kind,
     farePg.nature,
     farePg.phone,
-    farePg.status,
     farePg.time
   ]);
 
-const insertFareToScheduleQueryString: string = `
+const insertReturnToAffectQueryString: string = `
       INSERT INTO returns_to_affect (
           client,
           date,
@@ -151,9 +150,8 @@ const insertFareToScheduleQueryString: string = `
           kind,
           nature,
           phone,
-          status,
           time
       ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+          $1, $2, $3, $4, $5, $6, $7, $8, $9
       )
       `;
