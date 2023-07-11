@@ -5,27 +5,25 @@ import { pipe } from 'fp-ts/lib/function';
 import { Either, map as eitherMap } from 'fp-ts/Either';
 import type { PostgresDb } from '@fastify/postgres';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { FareReturnToSchedule, ScheduledFare } from '../../definitions/fares.definitions';
+import { ReturnToAffect, Scheduled } from '../../definitions/fares.definitions';
 
-export type ScheduledFarePersistence = ScheduledFare;
-export type ToScheduleFarePersistence = FareReturnToSchedule;
+export type ScheduledFarePersistence = Scheduled;
+export type ToScheduleFarePersistence = ReturnToAffect;
 
 export type FaresToPersist = [ScheduledFarePersistence, ToScheduleFarePersistence?];
 
-export const toFaresPersistence = (
-  fare: Either<Errors, [ScheduledFare, FareReturnToSchedule?]>
-): Either<Errors, FaresToPersist> =>
+export const toFaresPersistence = (fare: Either<Errors, [Scheduled, ReturnToAffect?]>): Either<Errors, FaresToPersist> =>
   pipe(
     fare,
     eitherMap(
-      ([scheduledFare, fareReturnToSchedule]: [ScheduledFare, FareReturnToSchedule?]): FaresToPersist =>
+      ([scheduledFare, fareReturnToSchedule]: [Scheduled, ReturnToAffect?]): FaresToPersist =>
         fareReturnToSchedule == null
           ? [toScheduledFarePersistence(scheduledFare)]
           : [toScheduledFarePersistence(scheduledFare), toToScheduleFarePersistence(fareReturnToSchedule)]
     )
   );
 
-const toScheduledFarePersistence = (scheduledFare: ScheduledFare): ScheduledFarePersistence => ({
+const toScheduledFarePersistence = (scheduledFare: Scheduled): ScheduledFarePersistence => ({
   client: scheduledFare.client,
   creator: scheduledFare.creator,
   date: scheduledFare.date,
@@ -41,7 +39,7 @@ const toScheduledFarePersistence = (scheduledFare: ScheduledFare): ScheduledFare
   time: scheduledFare.time
 });
 
-const toToScheduleFarePersistence = (fareReturnToSchedule: FareReturnToSchedule): ToScheduleFarePersistence => ({
+const toToScheduleFarePersistence = (fareReturnToSchedule: ReturnToAffect): ToScheduleFarePersistence => ({
   client: fareReturnToSchedule.client,
   date: fareReturnToSchedule.date,
   departure: fareReturnToSchedule.departure,

@@ -3,10 +3,10 @@ import { Either, fold as foldEither, right as rightEither } from 'fp-ts/Either';
 import { scheduleFares } from './schedule-fares';
 import { iso8601DateString } from '../../rules/DateISO8601.rule';
 import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
-import { FareReturnToSchedule, FareToSchedule, ScheduledFare } from '../../definitions/fares.definitions';
+import { ReturnToAffect, ToSchedule, Scheduled } from '../../definitions/fares.definitions';
 
 describe('Add Fare To Planning use case tests', (): void => {
-  const fareToScheduleOneWay: FareToSchedule = {
+  const fareToScheduleOneWay: ToSchedule = {
     planning: 'driver@taxi-gestion.com',
     client: 'Bob',
     date: iso8601DateString('2019-05-05'),
@@ -19,7 +19,7 @@ describe('Add Fare To Planning use case tests', (): void => {
     destination: '20 Avenue des Canuts, 69120'
   };
 
-  const fareToScheduleTwoWay: FareToSchedule = {
+  const fareToScheduleTwoWay: ToSchedule = {
     planning: 'driver@taxi-gestion.com',
     client: 'Bob',
     date: iso8601DateString('2019-05-05'),
@@ -32,7 +32,7 @@ describe('Add Fare To Planning use case tests', (): void => {
     destination: '20 Avenue des Canuts, 69120'
   };
 
-  const expectedOneWay: [ScheduledFare] = [
+  const expectedOneWay: [Scheduled] = [
     {
       planning: 'driver@taxi-gestion.com',
       client: 'Bob',
@@ -50,7 +50,7 @@ describe('Add Fare To Planning use case tests', (): void => {
     }
   ];
 
-  const expectedTwoWay: [ScheduledFare, FareReturnToSchedule] = [
+  const expectedTwoWay: [Scheduled, ReturnToAffect] = [
     {
       planning: 'driver@taxi-gestion.com',
       client: 'Bob',
@@ -74,7 +74,7 @@ describe('Add Fare To Planning use case tests', (): void => {
       kind: 'return',
       nature: 'medical',
       phone: '+33684319514',
-      status: 'to-schedule',
+      status: 'return-to-affect',
       time: undefined,
       destination: '17 Avenue des Canuts, 69120'
     }
@@ -85,16 +85,13 @@ describe('Add Fare To Planning use case tests', (): void => {
     [rightEither(fareToScheduleTwoWay), expectedTwoWay]
   ])(
     'should return %s when the fare to-schedule is %s',
-    (
-      payload: Either<Errors, FareToSchedule>,
-      expectedValue: DevFriendlyError[] | [ScheduledFare, FareReturnToSchedule?]
-    ): void => {
-      const either: Either<Errors, [ScheduledFare, FareReturnToSchedule?]> = scheduleFares(payload);
+    (payload: Either<Errors, ToSchedule>, expectedValue: DevFriendlyError[] | [Scheduled, ReturnToAffect?]): void => {
+      const either: Either<Errors, [Scheduled, ReturnToAffect?]> = scheduleFares(payload);
       foldEither(
         (): void => {
           expect(HttpReporter.report(either)).toStrictEqual(expectedValue);
         },
-        (value: [ScheduledFare, FareReturnToSchedule?]): void => expect(value).toStrictEqual(expectedValue)
+        (value: [Scheduled, ReturnToAffect?]): void => expect(value).toStrictEqual(expectedValue)
       )(either);
     }
   );

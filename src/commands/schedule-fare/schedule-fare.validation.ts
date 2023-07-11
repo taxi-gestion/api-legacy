@@ -8,16 +8,16 @@ import {
   fareToScheduleTransferCodec
 } from './schedule-fare.definitions';
 import { externalTypeCheckFor } from '../../rules/validation';
-import { FareToSchedule } from '../../definitions/fares.definitions';
+import { ToSchedule } from '../../definitions/fares.definitions';
 
-export const scheduleFareValidation = (transfer: unknown): Either<Errors, FareToSchedule> =>
+export const scheduleFareValidation = (transfer: unknown): Either<Errors, ToSchedule> =>
   pipe(
     transfer,
     externalTypeCheckFor<FareToScheduleTransfer>(fareToScheduleTransferCodec),
     eitherChain(internalTypeCheckForFareToSchedule),
     eitherChain(rulesCheckForFareToSchedule)
   );
-const internalTypeCheckForFareToSchedule = (fareTransfer: FareToScheduleTransfer): Validation<FareToSchedule> =>
+const internalTypeCheckForFareToSchedule = (fareTransfer: FareToScheduleTransfer): Validation<ToSchedule> =>
   fareToScheduleCodec.decode({
     client: fareTransfer.clientIdentity,
     date: fareTransfer.date,
@@ -31,5 +31,5 @@ const internalTypeCheckForFareToSchedule = (fareTransfer: FareToScheduleTransfer
     destination: fareTransfer.driveTo
   });
 
-const rulesCheckForFareToSchedule = (fareDraft: FareToSchedule): Validation<FareToSchedule> =>
+const rulesCheckForFareToSchedule = (fareDraft: ToSchedule): Validation<ToSchedule> =>
   fareToScheduleRulesCodec.decode(fareDraft);

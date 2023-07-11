@@ -4,7 +4,7 @@ import { scheduleFareValidation } from './schedule-fare.validation';
 import { iso8601DateString } from '../../rules/DateISO8601.rule';
 import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
 import { FareToScheduleTransfer } from './schedule-fare.definitions';
-import { FareToSchedule } from '../../definitions/fares.definitions';
+import { ToSchedule } from '../../definitions/fares.definitions';
 
 describe('Add Fare To Planning gateway tests', (): void => {
   const valid: FareToScheduleTransfer = {
@@ -29,7 +29,7 @@ describe('Add Fare To Planning gateway tests', (): void => {
     clientPhone: '+3368431955555555'
   };
 
-  const validFareDraft: FareToSchedule = {
+  const validFareDraft: ToSchedule = {
     client: 'romain',
     date: iso8601DateString('2023-06-06'),
     planning: 'unassigned',
@@ -70,13 +70,13 @@ describe('Add Fare To Planning gateway tests', (): void => {
     [valid, validFareDraft]
   ])(
     'should return %s when the transfer request payload is %s',
-    (payload: unknown, expectedValue: DevFriendlyError[] | FareToSchedule): void => {
-      const either: Either<Errors, FareToSchedule> = scheduleFareValidation(payload);
+    (payload: unknown, expectedValue: DevFriendlyError[] | ToSchedule): void => {
+      const either: Either<Errors, ToSchedule> = scheduleFareValidation(payload);
       eitherFold(
         (): void => {
           expect(HttpReporter.report(either)).toStrictEqual(expectedValue);
         },
-        (value: FareToSchedule): void => expect(value).toStrictEqual(expectedValue)
+        (value: ToSchedule): void => expect(value).toStrictEqual(expectedValue)
       )(either);
     }
   );

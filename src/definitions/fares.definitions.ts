@@ -8,20 +8,20 @@ export type Fare = {
   nature: 'medical' | 'standard';
 };
 
-export type FareToSchedule = Fare & {
+export type ToSchedule = Fare & {
   planning: string;
   status: 'to-schedule';
   time: string;
 };
 
-export type FareReturnToSchedule = Fare & {
+export type ReturnToAffect = Fare & {
   kind: 'return';
   planning: string | undefined;
-  status: 'to-schedule';
+  status: 'return-to-affect';
   time: string | undefined;
 };
 
-export type ScheduledFare = Fare & {
+export type Scheduled = Fare & {
   planning: string;
   status: 'scheduled';
   time: string;

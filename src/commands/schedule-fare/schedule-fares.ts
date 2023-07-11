@@ -1,18 +1,16 @@
 import { Errors } from 'io-ts';
 import { pipe } from 'fp-ts/lib/function';
 import { map as eitherMap, Either } from 'fp-ts/Either';
-import { FareReturnToSchedule, FareToSchedule, ScheduledFare } from '../../definitions/fares.definitions';
+import { ReturnToAffect, ToSchedule, Scheduled } from '../../definitions/fares.definitions';
 
-export const scheduleFares = (
-  fareToschedule: Either<Errors, FareToSchedule>
-): Either<Errors, [ScheduledFare, FareReturnToSchedule?]> =>
+export const scheduleFares = (fareToschedule: Either<Errors, ToSchedule>): Either<Errors, [Scheduled, ReturnToAffect?]> =>
   pipe(
     fareToschedule,
-    eitherMap((fareToSchedule: FareToSchedule): [ScheduledFare, FareReturnToSchedule?] => {
+    eitherMap((fareToSchedule: ToSchedule): [Scheduled, ReturnToAffect?] => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const fareReturnToSchedule: FareReturnToSchedule | null = createFareReturnToScheduleOrEmpty(fareToSchedule);
+      const fareReturnToSchedule: ReturnToAffect | null = createFareReturnToScheduleOrEmpty(fareToSchedule);
 
-      const scheduledFare: ScheduledFare = {
+      const scheduledFare: Scheduled = {
         ...fareToSchedule,
         status: 'scheduled',
         duration: 20,
@@ -24,14 +22,14 @@ export const scheduleFares = (
     })
   );
 
-const createFareReturnToScheduleOrEmpty = (fareToSchedule: FareToSchedule): FareReturnToSchedule | null => {
+const createFareReturnToScheduleOrEmpty = (fareToSchedule: ToSchedule): ReturnToAffect | null => {
   if (fareToSchedule.kind === 'one-way') return null;
 
   return {
     ...fareToSchedule,
     departure: fareToSchedule.destination,
     destination: fareToSchedule.departure,
-    status: 'to-schedule',
+    status: 'return-to-affect',
     time: undefined,
     kind: 'return'
   };

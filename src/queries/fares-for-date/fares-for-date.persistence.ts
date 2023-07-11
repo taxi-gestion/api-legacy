@@ -11,20 +11,19 @@ import {
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
 import { Entity } from '../../definitions/entity.definition';
-import { ScheduledFare } from '../../definitions/fares.definitions';
+import { Scheduled } from '../../definitions/fares.definitions';
 
-type ScheduledFarePersistence = Entity<ScheduledFare>;
+type ScheduledFarePersistence = Entity<Scheduled>;
 
 export const faresForTheDateQuery =
   (database: PostgresDb) =>
-  (date: Either<Errors, string>): TaskEither<Errors, Entity<ScheduledFare>[]> =>
+  (date: Either<Errors, string>): TaskEither<Errors, Entity<Scheduled>[]> =>
     pipe(
       date,
       fromEither,
       taskEitherChain(selectFaresForDate(database)),
       taskEitherChain(
-        (queryResult: QueryResult): TaskEither<Errors, Entity<ScheduledFare>[]> =>
-          taskEitherRight(toScheduledFares(queryResult))
+        (queryResult: QueryResult): TaskEither<Errors, Entity<Scheduled>[]> => taskEitherRight(toScheduledFares(queryResult))
       )
     );
 
@@ -35,9 +34,9 @@ export const faresForTheDateQuery =
  * ])
  */
 
-const toScheduledFares = (queryResult: QueryResult): Entity<ScheduledFare>[] =>
+const toScheduledFares = (queryResult: QueryResult): Entity<Scheduled>[] =>
   queryResult.rows.map(
-    (row: ScheduledFarePersistence): Entity<ScheduledFare> => ({
+    (row: ScheduledFarePersistence): Entity<Scheduled> => ({
       id: row.id,
       client: row.client,
       creator: row.creator,

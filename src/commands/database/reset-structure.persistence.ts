@@ -30,7 +30,9 @@ const onDropAndRecreateTablesError = (error: unknown): Errors =>
 const dropAndRecreateTablesQueries = async (client: PoolClient): Promise<QueryResult> =>
   client.query(dropAndRecreateTablesQueryString);
 
-const dropAndRecreateTablesQueryString: string = `DROP TABLE IF EXISTS fares;
+const dropAndRecreateTablesQueryString: string = `
+DROP TABLE IF EXISTS fares_to_schedule;
+DROP TABLE IF EXISTS fares;
      CREATE TABLE fares (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         client TEXT NOT NULL,
@@ -47,8 +49,8 @@ const dropAndRecreateTablesQueryString: string = `DROP TABLE IF EXISTS fares;
         status TEXT NOT NULL,
         time TEXT NOT NULL
     );
-    DROP TABLE IF EXISTS fares_to_schedule;
-     CREATE TABLE fares_to_schedule (
+    DROP TABLE IF EXISTS returns_to_affect;
+     CREATE TABLE returns_to_affect (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         client TEXT NOT NULL,
         date TEXT NOT NULL,
@@ -58,7 +60,6 @@ const dropAndRecreateTablesQueryString: string = `DROP TABLE IF EXISTS fares;
         kind TEXT NOT NULL,
         nature TEXT NOT NULL,
         phone TEXT NOT NULL,
-        status TEXT NOT NULL,
         time TEXT
     );
     `;
