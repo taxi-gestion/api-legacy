@@ -142,7 +142,7 @@ const insertFareToScheduleQuery = async (client: PoolClient, farePg: ToScheduleF
   ]);
 
 const insertFareToScheduleQueryString: string = `
-      INSERT INTO fares_to_schedule (
+      INSERT INTO returns_to_affect (
           client,
           date,
           departure,
