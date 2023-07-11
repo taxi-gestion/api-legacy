@@ -31,6 +31,7 @@ const $returnToAffectToFareToSchedule =
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return {
         ...originalReturnFareValues.rows[0],
+        status: 'to-schedule',
         time: returnToAffectTransfer.startTime,
         departure: returnToAffectTransfer.driveFrom,
         destination: returnToAffectTransfer.driveTo,
