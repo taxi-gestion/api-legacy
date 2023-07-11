@@ -2,11 +2,11 @@ import { TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { ScheduledFare } from '../../definitions/fares.definitions';
+import { Scheduled } from '../../definitions/fares.definitions';
 
-export type ScheduledFarePersistence = ScheduledFare;
+export type ScheduledReturnPersistence = Scheduled;
 
-export const toScheduledReturnPersistence = (scheduledFare: ScheduledFare): ScheduledFarePersistence => ({
+export const toScheduledReturnPersistence = (scheduledFare: Scheduled): ScheduledReturnPersistence => ({
   client: scheduledFare.client,
   creator: scheduledFare.creator,
   date: scheduledFare.date,
@@ -22,27 +22,26 @@ export const toScheduledReturnPersistence = (scheduledFare: ScheduledFare): Sche
   time: scheduledFare.time
 });
 
-export const persistFareAndDeleteToSchedule =
+export const persistFareAndDeleteReturnToAffect =
   (database: PostgresDb) =>
-  (fare: ScheduledFarePersistence, fareToScheduleToDeleteUUID: string): TaskEither<Errors, QueryResult[]> =>
-    taskEitherTryCatch(applyQueries(database, fare, fareToScheduleToDeleteUUID), onInsertFareError);
+  (fare: ScheduledReturnPersistence, returnToDeleteId: string): TaskEither<Errors, QueryResult[]> =>
+    taskEitherTryCatch(applyQueries(database, fare, returnToDeleteId), onApplyQueriesError);
 
 const applyQueries =
-  (database: PostgresDb, fare: ScheduledFarePersistence, fareToScheduleToDeleteUUID: string) =>
-  async (): Promise<QueryResult[]> =>
+  (database: PostgresDb, fare: ScheduledReturnPersistence, returnToDeleteId: string) => async (): Promise<QueryResult[]> =>
     database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
       const promises: Promise<QueryResult>[] = [
         insertScheduledFareQuery(client, fare),
-        removeFareToScheduleQuery(client, fareToScheduleToDeleteUUID)
+        removeReturnToAffectQuery(client, returnToDeleteId)
       ];
       return Promise.all(promises);
     });
 
-const onInsertFareError = (error: unknown): Errors =>
+const onApplyQueriesError = (error: unknown): Errors =>
   [
     {
       isInfrastructureError: true,
-      message: `insertFareIn database error - ${(error as Error).message}`,
+      message: `database error - ${(error as Error).message}`,
       // eslint-disable-next-line id-denylist
       value: (error as Error).name,
       stack: (error as Error).stack ?? 'no stack available',
@@ -50,7 +49,7 @@ const onInsertFareError = (error: unknown): Errors =>
     } satisfies InfrastructureError
   ] satisfies Errors;
 
-const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledFarePersistence): Promise<QueryResult> =>
+const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledReturnPersistence): Promise<QueryResult> =>
   client.query(insertFareQueryString, [
     farePg.client,
     farePg.creator,
@@ -87,8 +86,8 @@ const insertFareQueryString: string = `
       )
     `;
 
-const removeFareToScheduleQuery = async (client: PoolClient, id: string): Promise<QueryResult> =>
-  client.query(removeFareToScheduleQueryString, [id]);
+const removeReturnToAffectQuery = async (client: PoolClient, id: string): Promise<QueryResult> =>
+  client.query(removeReturnToAffectQueryString, [id]);
 
-const removeFareToScheduleQueryString: string = `DELETE FROM fares_to_schedule WHERE id = $1;
+const removeReturnToAffectQueryString: string = `DELETE FROM returns_to_affect WHERE id = $1;
       `;

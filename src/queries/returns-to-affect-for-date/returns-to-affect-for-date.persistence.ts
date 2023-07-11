@@ -10,27 +10,27 @@ import {
 } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { FareReturnToSchedule } from '../../definitions/fares.definitions';
+import { ReturnToAffect } from '../../definitions/fares.definitions';
 import { Entity } from '../../definitions/entity.definition';
 
-type FareToSchedulePersistence = Entity<FareReturnToSchedule>;
+type ReturnToAffectPersistence = Entity<ReturnToAffect>;
 
-export const faresToScheduleForTheDateQuery =
+export const returnsToAffectForTheDateQuery =
   (database: PostgresDb) =>
-  (date: Either<Errors, string>): TaskEither<Errors, Entity<FareReturnToSchedule>[]> =>
+  (date: Either<Errors, string>): TaskEither<Errors, Entity<ReturnToAffect>[]> =>
     pipe(
       date,
       fromEither,
-      taskEitherChain(selectFaresToScheduleForDate(database)),
+      taskEitherChain(selectReturnsToAffectForDate(database)),
       taskEitherChain(
-        (queryResult: QueryResult): TaskEither<Errors, Entity<FareReturnToSchedule>[]> =>
+        (queryResult: QueryResult): TaskEither<Errors, Entity<ReturnToAffect>[]> =>
           taskEitherRight(toToScheduleFares(queryResult))
       )
     );
 
-const toToScheduleFares = (queryResult: QueryResult): Entity<FareReturnToSchedule>[] =>
+const toToScheduleFares = (queryResult: QueryResult): Entity<ReturnToAffect>[] =>
   queryResult.rows.map(
-    (row: FareToSchedulePersistence): Entity<FareReturnToSchedule> => ({
+    (row: ReturnToAffectPersistence): Entity<ReturnToAffect> => ({
       id: row.id,
       client: row.client,
       date: row.date,
@@ -40,21 +40,21 @@ const toToScheduleFares = (queryResult: QueryResult): Entity<FareReturnToSchedul
       kind: row.kind,
       nature: row.nature,
       phone: row.phone,
-      status: 'to-schedule',
+      status: 'return-to-affect',
       time: row.time
     })
   );
 
-const selectFaresToScheduleForDate =
+const selectReturnsToAffectForDate =
   (database: PostgresDb) =>
   (date: string): TaskEither<Errors, QueryResult> =>
-    taskEitherTryCatch(selectFromFaresToSchedule(database)(date), onSelectFaresToScheduleError);
+    taskEitherTryCatch(selectFromReturnsToAffect(database)(date), onSelectReturnsToAffectError);
 
-const onSelectFaresToScheduleError = (error: unknown): Errors =>
+const onSelectReturnsToAffectError = (error: unknown): Errors =>
   [
     {
       isInfrastructureError: true,
-      message: `selectFaresToScheduleForDate database error - ${(error as Error).message}`,
+      message: `selectReturnsToAffectForDate database error - ${(error as Error).message}`,
       // eslint-disable-next-line id-denylist
       value: (error as Error).name,
       stack: (error as Error).stack ?? 'no stack available',
@@ -62,18 +62,18 @@ const onSelectFaresToScheduleError = (error: unknown): Errors =>
     } satisfies InfrastructureError
   ] satisfies Errors;
 
-const selectFromFaresToSchedule = (database: PostgresDb) => (date: string) => async (): Promise<QueryResult> => {
+const selectFromReturnsToAffect = (database: PostgresDb) => (date: string) => async (): Promise<QueryResult> => {
   const client: PoolClient = await database.connect();
   try {
-    return await selectFaresToScheduleWhereDateQuery(client, date);
+    return await selectReturnsToAffectWhereDateQuery(client, date);
   } finally {
     client.release();
   }
 };
 
-const selectFaresToScheduleWhereDateQuery = async (client: PoolClient, date: string): Promise<QueryResult> =>
-  client.query(selectFaresWhereDateQueryString, [date]);
+const selectReturnsToAffectWhereDateQuery = async (client: PoolClient, date: string): Promise<QueryResult> =>
+  client.query(selectReturnsToAffectWhereDateQueryString, [date]);
 
-const selectFaresWhereDateQueryString: string = `
-      SELECT * FROM fares_to_schedule WHERE date = $1
+const selectReturnsToAffectWhereDateQueryString: string = `
+      SELECT * FROM returns_to_affect WHERE date = $1
       `;

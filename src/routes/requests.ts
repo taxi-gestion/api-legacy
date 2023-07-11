@@ -1,6 +1,6 @@
 import { FastifyRequest } from 'fastify';
 import { FareToScheduleTransfer } from '../commands/schedule-fare/schedule-fare.definitions';
-import { ReturnToAffectTransfer } from '../commands/schedule-return/affect-return.definitions';
+import { ReturnToAffectTransfer } from '../commands/affect-return/affect-return.definitions';
 
 export type FareToScheduleRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -19,7 +19,7 @@ export type FareForDateRequest = FastifyRequest<{
   };
 }>;
 
-export type FareToScheduleForDateRequest = FastifyRequest<{
+export type ReturnsToAffectForDateRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Params: {
     date: string;

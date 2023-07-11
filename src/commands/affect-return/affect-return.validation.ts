@@ -3,34 +3,34 @@ import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { ReturnToAffectTransfer, returnToAffectTransferCodec } from './affect-return.definitions';
-import { FareToSchedule } from '../../definitions/fares.definitions';
+import { ToSchedule } from '../../definitions/fares.definitions';
 import { fareToScheduleCodec, fareToScheduleRulesCodec } from '../schedule-fare/schedule-fare.definitions';
 import { externalTypeCheckFor } from '../../rules/validation';
 import { QueryResult } from 'pg';
 
 export const $affectReturnValidation =
   (db: PostgresDb) =>
-  (transfer: unknown): TaskEither<Errors, FareToSchedule> =>
+  (transfer: unknown): TaskEither<Errors, ToSchedule> =>
     pipe(
       transfer,
       externalTypeCheckFor<ReturnToAffectTransfer>(returnToAffectTransferCodec),
       fromEither,
-      taskEitherChain($mergeContext(db)),
+      taskEitherChain($returnToAffectToFareToSchedule(db)),
       taskEitherChain(internalTypeCheckForFareToSchedule),
       taskEitherChain(rulesCheckForFareToSchedule)
     );
 
-const $mergeContext =
+const $returnToAffectToFareToSchedule =
   (db: PostgresDb) =>
   (returnToAffectTransfer: ReturnToAffectTransfer): TaskEither<Errors, unknown> =>
     taskEitherTryCatch(async (): Promise<unknown> => {
-      const res: QueryResult = await db.query('SELECT * FROM fares_to_schedule WHERE id = $1 LIMIT 1', [
+      const originalReturnFareValues: QueryResult = await db.query('SELECT * FROM returns_to_affect WHERE id = $1 LIMIT 1', [
         returnToAffectTransfer.fareId
       ]);
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return {
-        ...res.rows[0],
+        ...originalReturnFareValues.rows[0],
         time: returnToAffectTransfer.startTime,
         departure: returnToAffectTransfer.driveFrom,
         destination: returnToAffectTransfer.driveTo,
@@ -38,10 +38,10 @@ const $mergeContext =
       };
     }, onInfrastructureError);
 
-const internalTypeCheckForFareToSchedule = (fromDB: unknown): TaskEither<Errors, FareToSchedule> =>
+const internalTypeCheckForFareToSchedule = (fromDB: unknown): TaskEither<Errors, ToSchedule> =>
   fromEither(fareToScheduleCodec.decode(fromDB));
 
-const rulesCheckForFareToSchedule = (fareDraft: FareToSchedule): TaskEither<Errors, FareToSchedule> =>
+const rulesCheckForFareToSchedule = (fareDraft: ToSchedule): TaskEither<Errors, ToSchedule> =>
   fromEither(fareToScheduleRulesCodec.decode(fareDraft));
 
 const onInfrastructureError = (error: unknown): Errors =>

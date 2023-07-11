@@ -1,13 +1,13 @@
 import { map as taskEitherMap, TaskEither } from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/function';
 import { Errors } from '../../reporter/HttpReporter';
-import { FareToSchedule, ScheduledFare } from '../../definitions/fares.definitions';
+import { ToSchedule, Scheduled } from '../../definitions/fares.definitions';
 
-export const affectReturn = (returnToSchedule: TaskEither<Errors, FareToSchedule>): TaskEither<Errors, ScheduledFare> =>
+export const affectReturn = (returnToSchedule: TaskEither<Errors, ToSchedule>): TaskEither<Errors, Scheduled> =>
   pipe(
     returnToSchedule,
-    taskEitherMap((fareToSchedule: FareToSchedule): ScheduledFare => {
-      const scheduledFare: ScheduledFare = {
+    taskEitherMap((fareToSchedule: ToSchedule): Scheduled => {
+      const scheduledFare: Scheduled = {
         ...fareToSchedule,
         status: 'scheduled',
         duration: 20,
