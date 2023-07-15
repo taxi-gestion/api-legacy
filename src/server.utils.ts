@@ -1,10 +1,26 @@
 import type { FastifyInstance } from 'fastify';
+import { FastifyReply } from 'fastify';
+import { Task } from 'fp-ts/Task';
+import HttpReporter, { Errors } from './reporter/HttpReporter';
+import { left as eitherLeft } from 'fp-ts/Either';
 
 type ServerAndProcess = {
   // eslint-disable-next-line no-undef
   nodeProcess: NodeJS.Process;
   server: FastifyInstance;
 };
+
+export const onSuccessfulTaskWith =
+  (reply: FastifyReply) =>
+  <T>(recurrence: T): Task<void> =>
+  async (): Promise<void> =>
+    reply.code(200).send(recurrence);
+
+export const onErroredTask =
+  (reply: FastifyReply) =>
+  (errors: Errors): Task<void> =>
+  async (): Promise<void> =>
+    reply.code(500).send(HttpReporter.report(eitherLeft(errors)));
 
 export const closeGracefullyOnSignalInterrupt = ({ nodeProcess, server }: ServerAndProcess): void => {
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
