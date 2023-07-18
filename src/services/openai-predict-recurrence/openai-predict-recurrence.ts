@@ -2,7 +2,6 @@ import { PredictedRecurrence, PredictRecurrence } from '../../definitions/recurr
 import { chain as taskEitherChain, TaskEither } from 'fp-ts/TaskEither';
 import { Errors } from '../../reporter/HttpReporter';
 import { pipe } from 'fp-ts/function';
-
 import { $openAICompletion } from '../openai-completion/openai-completion.api';
 import { predictedRecurrenceValidation } from './predicted-recurrence.validation';
 import { OpenAICompletionPayload } from '../openai-completion/openai-completion.codec';
