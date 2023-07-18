@@ -6,7 +6,7 @@ import {
   fareToScheduleRulesCodec,
   FareToScheduleTransfer,
   fareToScheduleTransferCodec
-} from './schedule-fare.definitions';
+} from './schedule-fare.codec';
 import { externalTypeCheckFor } from '../../rules/validation';
 import { ToSchedule } from '../../definitions/fares.definitions';
 

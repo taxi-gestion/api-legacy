@@ -71,7 +71,7 @@ module.exports = {
   'accessor-pairs': 'off',
 
   'block-scoped-var': 'error',
-  camelcase: 'error',
+  camelcase: 'off',
   'capitalized-comments': 'off',
   'class-methods-use-this': ['off', { enforceForClassFields: true }],
   complexity: ['error', 8],

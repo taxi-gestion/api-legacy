@@ -85,7 +85,7 @@ export const farReturnToScheduleCodec: Type<ReturnToAffect> = ioType({
   status: ioLiteral('return-to-affect'),
   time: ioUnion([ioString, ioUndefined])
 });
-// eslint-disable-next-line @typescript-eslint/typedef
+
 export const scheduledFareCodec: Type<Scheduled> = ioType({
   client: ioString,
   creator: ioString,
