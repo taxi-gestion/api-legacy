@@ -18,7 +18,7 @@ export type ReturnsToAffectForDateRequest = FastifyRequest<{
 /* eslint-disable @typescript-eslint/require-await */
 export const returnsToAffectForDateQuery = async (
   server: FastifyInstance,
-  dependencies: { database: PostgresDb }
+  _dependencies: { database: PostgresDb }
 ): Promise<void> => {
   server.route({
     method: 'GET',
@@ -26,7 +26,7 @@ export const returnsToAffectForDateQuery = async (
     handler: async (req: ReturnsToAffectForDateRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         isDateISO8601String.decode(req.params.date),
-        returnsToAffectForTheDateQuery(dependencies.database),
+        returnsToAffectForTheDateQuery(server.pg /*dependencies.database*/),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<Entity<ReturnToAffect>[]>)
       )();
     }

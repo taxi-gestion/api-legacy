@@ -20,19 +20,19 @@ export type ReturnToAffectRequest = FastifyRequest<{
 }>;
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export const affectReturnCommand = async (server: FastifyInstance, dependencies: { database: PostgresDb }): Promise<void> => {
+export const affectReturnCommand = async (server: FastifyInstance, _dependencies: { database: PostgresDb }): Promise<void> => {
   server.route({
     method: 'POST',
     url: '/affect-return',
     handler: async (req: ReturnToAffectRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         req.body,
-        $affectReturnValidation(dependencies.database),
+        $affectReturnValidation(server.pg /*dependencies.database*/),
         affectReturn,
         taskEitherMap(toScheduledReturnPersistence),
         taskEitherChain(
           (fareToPersist: ScheduledReturnPersistence): TaskEither<Errors, QueryResult[]> =>
-            persistFareAndDeleteReturnToAffect(dependencies.database)(fareToPersist, req.body.fareId)
+            persistFareAndDeleteReturnToAffect(server.pg /*dependencies.database*/)(fareToPersist, req.body.fareId)
         ),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<QueryResult[]>)
       )();
