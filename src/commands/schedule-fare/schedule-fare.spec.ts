@@ -16,7 +16,9 @@ describe('Add Fare To Planning use case tests', (): void => {
     phone: '+33684319514',
     status: 'to-schedule',
     time: '10:00',
-    destination: '20 Avenue des Canuts, 69120'
+    destination: '20 Avenue des Canuts, 69120',
+    duration: 1613,
+    distance: 17314
   };
 
   const fareToScheduleTwoWay: ToSchedule = {
@@ -29,7 +31,9 @@ describe('Add Fare To Planning use case tests', (): void => {
     phone: '+33684319514',
     status: 'to-schedule',
     time: '10:00',
-    destination: '20 Avenue des Canuts, 69120'
+    destination: '20 Avenue des Canuts, 69120',
+    duration: 1613,
+    distance: 17314
   };
 
   const expectedOneWay: [Scheduled] = [
@@ -44,8 +48,8 @@ describe('Add Fare To Planning use case tests', (): void => {
       status: 'scheduled',
       time: '10:00',
       destination: '20 Avenue des Canuts, 69120',
-      duration: 20,
-      distance: 1000,
+      duration: 1613,
+      distance: 17314,
       creator: 'romain.cambonie@gmail.com'
     }
   ];
@@ -62,8 +66,8 @@ describe('Add Fare To Planning use case tests', (): void => {
       status: 'scheduled',
       time: '10:00',
       destination: '20 Avenue des Canuts, 69120',
-      duration: 20,
-      distance: 1000,
+      duration: 1613,
+      distance: 17314,
       creator: 'romain.cambonie@gmail.com'
     },
     {

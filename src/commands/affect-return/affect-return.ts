@@ -10,8 +10,6 @@ export const affectReturn = (returnToSchedule: TaskEither<Errors, ToSchedule>): 
       const scheduledFare: Scheduled = {
         ...fareToSchedule,
         status: 'scheduled',
-        duration: 20,
-        distance: 1000,
         creator: 'romain.cambonie@gmail.com'
       };
 

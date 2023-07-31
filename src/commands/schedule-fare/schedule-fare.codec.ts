@@ -29,6 +29,8 @@ export type FareToScheduleTransfer = {
   planning: string;
   driveTo: string;
   startTime: string;
+  duration: number;
+  distance: number;
 };
 export const fareToScheduleTransferCodec: Type<FareToScheduleTransfer> = excess(
   ioType({
@@ -41,7 +43,9 @@ export const fareToScheduleTransferCodec: Type<FareToScheduleTransfer> = excess(
     driveNature: ioKeyof({ medical: null, standard: null }),
     planning: ioStringWithTypeCheckFailedMessage,
     driveTo: ioStringWithTypeCheckFailedMessage,
-    startTime: ioStringWithTypeCheckFailedMessage
+    startTime: ioStringWithTypeCheckFailedMessage,
+    duration: ioNumber,
+    distance: ioNumber
   })
 );
 
@@ -56,7 +60,9 @@ export const fareToScheduleCodec: Type<ToSchedule> = ioType({
   nature: ioKeyof({ medical: null, standard: null }),
   phone: ioString,
   status: ioLiteral('to-schedule'),
-  time: ioString
+  time: ioString,
+  duration: ioNumber,
+  distance: ioNumber
 });
 
 // eslint-disable-next-line @typescript-eslint/typedef

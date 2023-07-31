@@ -13,8 +13,6 @@ export const scheduleFares = (fareToschedule: Either<Errors, ToSchedule>): Eithe
       const scheduledFare: Scheduled = {
         ...fareToSchedule,
         status: 'scheduled',
-        duration: 20,
-        distance: 1000,
         creator: 'romain.cambonie@gmail.com'
       };
 
@@ -26,7 +24,11 @@ const createFareReturnToScheduleOrEmpty = (fareToSchedule: ToSchedule): ReturnTo
   if (fareToSchedule.kind === 'one-way') return null;
 
   return {
-    ...fareToSchedule,
+    client: fareToSchedule.client,
+    date: fareToSchedule.date,
+    nature: fareToSchedule.nature,
+    phone: fareToSchedule.phone,
+    planning: fareToSchedule.planning,
     departure: fareToSchedule.destination,
     destination: fareToSchedule.departure,
     status: 'return-to-affect',

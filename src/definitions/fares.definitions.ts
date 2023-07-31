@@ -12,6 +12,8 @@ export type ToSchedule = Fare & {
   planning: string;
   status: 'to-schedule';
   time: string;
+  duration: number;
+  distance: number;
 };
 
 export type ReturnToAffect = Fare & {
@@ -25,7 +27,7 @@ export type Scheduled = Fare & {
   planning: string;
   status: 'scheduled';
   time: string;
-  distance: number;
-  duration: number;
   creator: string;
+  duration: number;
+  distance: number;
 };
