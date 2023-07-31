@@ -15,7 +15,7 @@ type FareToScheduleRequest = FastifyRequest<{
 }>;
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export const scheduleFareCommand = async (server: FastifyInstance, dependencies: { database: PostgresDb }): Promise<void> => {
+export const scheduleFareCommand = async (server: FastifyInstance, _dependencies: { database: PostgresDb }): Promise<void> => {
   server.route({
     method: 'POST',
     url: '/schedule-fare',
@@ -25,7 +25,7 @@ export const scheduleFareCommand = async (server: FastifyInstance, dependencies:
         scheduleFareValidation,
         scheduleFares,
         toFaresPersistence,
-        persistFares(dependencies.database),
+        persistFares(server.pg /*dependencies.database*/),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<QueryResult[]>)
       )();
     }
