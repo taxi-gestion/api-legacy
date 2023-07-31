@@ -35,6 +35,8 @@ const $returnToAffectToFareToSchedule =
         time: returnToAffectTransfer.startTime,
         departure: returnToAffectTransfer.driveFrom,
         destination: returnToAffectTransfer.driveTo,
+        duration: returnToAffectTransfer.duration,
+        distance: returnToAffectTransfer.distance,
         planning: returnToAffectTransfer.planning
       };
     }, onInfrastructureError);

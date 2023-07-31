@@ -28,7 +28,9 @@ const internalTypeCheckForFareToSchedule = (fareTransfer: FareToScheduleTransfer
     phone: fareTransfer.clientPhone,
     status: 'to-schedule',
     time: fareTransfer.startTime,
-    destination: fareTransfer.driveTo
+    destination: fareTransfer.driveTo,
+    duration: fareTransfer.duration,
+    distance: fareTransfer.distance
   });
 
 const rulesCheckForFareToSchedule = (fareDraft: ToSchedule): Validation<ToSchedule> =>
