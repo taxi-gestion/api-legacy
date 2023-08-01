@@ -1,7 +1,7 @@
 import { map as taskEitherMap, TaskEither } from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/function';
 import { Errors } from '../../reporter/HttpReporter';
-import { ToSchedule, Scheduled } from '../../definitions/fares.definitions';
+import { ToSchedule, Scheduled } from '../../definitions';
 
 export const affectReturn = (returnToSchedule: TaskEither<Errors, ToSchedule>): TaskEither<Errors, Scheduled> =>
   pipe(

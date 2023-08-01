@@ -2,11 +2,10 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { isDateISO8601String } from '../../rules/DateISO8601.rule';
 import { returnsToAffectForTheDateQuery } from './returns-to-affect-for-date.persistence';
-import { ReturnToAffect } from '../../definitions/fares.definitions';
-import { Entity } from '../../definitions/entity.definition';
 import { PostgresDb } from '@fastify/postgres';
+import { Entity, ReturnToAffect } from '../../definitions';
+import { isDateISO8601String } from '../../codecs';
 
 export type ReturnsToAffectForDateRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention

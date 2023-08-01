@@ -1,8 +1,10 @@
+import { Place } from './place.definition';
+
 export type Fare = {
   client: string;
   date: string;
-  departure: string;
-  destination: string;
+  departure: Place;
+  destination: Place;
   phone: string;
   kind: 'one-way' | 'outward' | 'return';
   nature: 'medical' | 'standard';

@@ -1,6 +1,6 @@
 import { TaskEither } from 'fp-ts/TaskEither';
 import { Errors } from '../../reporter/HttpReporter';
-import { PredictedRecurrence, PredictRecurrence, PredictRecurrenceAdapter } from '../../definitions/recurrence.definition';
+import { PredictedRecurrence, PredictRecurrence, PredictRecurrenceAdapter } from '../../definitions';
 
 export const predictRecurrence =
   (serviceCall: PredictRecurrenceAdapter) =>

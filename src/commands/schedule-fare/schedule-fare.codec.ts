@@ -9,51 +9,76 @@ import {
   string as ioString,
   type as ioType,
   undefined as ioUndefined,
-  union as ioUnion
+  union as ioUnion,
+  null as ioNull
 } from 'io-ts';
-import { isTimeISO8601String } from '../../rules/TimeISO8601.rule';
-import { isFrenchPhoneNumber } from '../../rules/FrenchPhoneNumber.rule';
-import { isDateISO8601String } from '../../rules/DateISO8601.rule';
-import { ReturnToAffect, ToSchedule, Scheduled } from '../../definitions/fares.definitions';
+import { ReturnToAffect, Scheduled, ToSchedule } from '../../definitions';
+import { isDateISO8601String, isFrenchPhoneNumber, isTimeISO8601String, placeCodec, placeRulesCodec } from '../../codecs';
 
 const typeCheckFailedMessage = (): string => `Type check failed`;
 const ioStringWithTypeCheckFailedMessage: StringC = withMessage(ioString, typeCheckFailedMessage);
+
+type PlaceTransfer = {
+  context: string;
+  label: string;
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+};
 
 export type FareToScheduleTransfer = {
   clientIdentity: string;
   clientPhone: string;
   date: string;
-  driveFrom: string;
+  driveFrom: PlaceTransfer;
   driveKind: 'one-way' | 'outward' | 'return';
   driveNature: 'medical' | 'standard';
   planning: string;
-  driveTo: string;
+  driveTo: PlaceTransfer;
   startTime: string;
   duration: number;
   distance: number;
+  recurrence: null | undefined;
 };
+
 export const fareToScheduleTransferCodec: Type<FareToScheduleTransfer> = excess(
   ioType({
     clientIdentity: ioStringWithTypeCheckFailedMessage,
     clientPhone: ioStringWithTypeCheckFailedMessage,
     date: ioStringWithTypeCheckFailedMessage,
-    driveFrom: ioStringWithTypeCheckFailedMessage,
+    driveFrom: ioType({
+      context: ioString,
+      label: ioString,
+      location: ioType({
+        latitude: ioNumber,
+        longitude: ioNumber
+      })
+    }),
     // eslint-disable-next-line @typescript-eslint/naming-convention,quote-props
     driveKind: ioKeyof({ 'one-way': null, outward: null, return: null }),
     driveNature: ioKeyof({ medical: null, standard: null }),
     planning: ioStringWithTypeCheckFailedMessage,
-    driveTo: ioStringWithTypeCheckFailedMessage,
+    driveTo: ioType({
+      context: ioString,
+      label: ioString,
+      location: ioType({
+        latitude: ioNumber,
+        longitude: ioNumber
+      })
+    }),
     startTime: ioStringWithTypeCheckFailedMessage,
     duration: ioNumber,
-    distance: ioNumber
+    distance: ioNumber,
+    recurrence: ioUnion([ioUndefined, ioNull])
   })
 );
 
 export const fareToScheduleCodec: Type<ToSchedule> = ioType({
   client: ioString,
   date: ioString,
-  departure: ioString,
-  destination: ioString,
+  departure: placeCodec,
+  destination: placeCodec,
   planning: ioString,
   // eslint-disable-next-line @typescript-eslint/naming-convention,quote-props
   kind: ioKeyof({ 'one-way': null, outward: null, return: null }),
@@ -70,8 +95,8 @@ export const fareToScheduleRulesCodec = ioIntersection([
   fareToScheduleCodec,
   ioType({
     date: isDateISO8601String,
-    //departure: isValidAddress => Pas de sens on vérifie juste que les coordonnées gps sont valides et on y associe le label.
-    //destination: isValidAddress,
+    departure: placeRulesCodec,
+    destination: placeRulesCodec,
     //planning: t.intersection([isDriverPlanning, isUnassignedPlanning]),
     phone: isFrenchPhoneNumber,
     time: isTimeISO8601String
@@ -81,8 +106,8 @@ export const fareToScheduleRulesCodec = ioIntersection([
 export const farReturnToScheduleCodec: Type<ReturnToAffect> = ioType({
   client: ioString,
   date: ioString,
-  departure: ioString,
-  destination: ioString,
+  departure: placeCodec,
+  destination: placeCodec,
   planning: ioUnion([ioString, ioUndefined]),
   // eslint-disable-next-line @typescript-eslint/naming-convention
   kind: ioLiteral('return'),
@@ -96,8 +121,8 @@ export const scheduledFareCodec: Type<Scheduled> = ioType({
   client: ioString,
   creator: ioString,
   date: ioString,
-  departure: ioString,
-  destination: ioString,
+  departure: placeCodec,
+  destination: placeCodec,
   distance: ioNumber,
   planning: ioString,
   duration: ioNumber,

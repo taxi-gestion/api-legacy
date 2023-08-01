@@ -3,6 +3,7 @@ import * as t from 'io-ts';
 import { BrandC, StringC } from 'io-ts';
 import cron from 'cron-validate';
 import { registerOptionPreset } from 'cron-validate/lib/option';
+import { TypeOf } from 'io-ts/Decoder';
 
 registerOptionPreset('custom', {
   presetId: 'custom',
@@ -76,4 +77,4 @@ export type CronBrand = {
   readonly isCronString: unique symbol;
 };
 
-export type Cron = t.TypeOf<typeof isCronString>;
+export type Cron = TypeOf<typeof isCronString>;

@@ -5,13 +5,12 @@ import { pipe } from 'fp-ts/lib/function';
 import {
   chain as taskEitherChain,
   fromEither,
-  tryCatch as taskEitherTryCatch,
-  right as taskEitherRight
+  right as taskEitherRight,
+  tryCatch as taskEitherTryCatch
 } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { Entity } from '../../definitions/entity.definition';
-import { Scheduled } from '../../definitions/fares.definitions';
+import { Entity, Scheduled } from '../../definitions';
 
 type ScheduledFarePersistence = Entity<Scheduled>;
 

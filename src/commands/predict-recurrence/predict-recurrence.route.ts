@@ -4,7 +4,7 @@ import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEith
 import { PredictRecurrenceTransfer } from './predict-recurrence.codec';
 import { predictRecurrenceValidation } from './predict-recurrence.validation';
 import { predictRecurrence } from './predict-recurrence';
-import { PredictedRecurrence, PredictRecurrenceAdapter } from '../../definitions/recurrence.definition';
+import { PredictedRecurrence, PredictRecurrenceAdapter } from '../../definitions';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 
 export type PredictRecurrenceRequest = FastifyRequest<{
