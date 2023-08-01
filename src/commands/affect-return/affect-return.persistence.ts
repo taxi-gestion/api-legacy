@@ -2,7 +2,7 @@ import { TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { Scheduled } from '../../definitions/fares.definitions';
+import { Scheduled } from '../../definitions';
 
 export type ScheduledReturnPersistence = Scheduled;
 

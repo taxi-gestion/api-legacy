@@ -7,8 +7,8 @@ import {
   FareToScheduleTransfer,
   fareToScheduleTransferCodec
 } from './schedule-fare.codec';
-import { externalTypeCheckFor } from '../../rules/validation';
-import { ToSchedule } from '../../definitions/fares.definitions';
+import { ToSchedule } from '../../definitions';
+import { externalTypeCheckFor } from '../../codecs';
 
 export const scheduleFareValidation = (transfer: unknown): Either<Errors, ToSchedule> =>
   pipe(

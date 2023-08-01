@@ -2,7 +2,7 @@ import { Validation } from 'io-ts';
 import { pipe } from 'fp-ts/lib/function';
 import { fold } from 'fp-ts/Either';
 import HttpReporter, { DevFriendlyError } from '../reporter/HttpReporter';
-import { Cron, isCronString } from './Cron.rule';
+import { Cron, isCronString } from './cron.rule';
 
 describe('cron specification tests', (): void => {
   it.each([

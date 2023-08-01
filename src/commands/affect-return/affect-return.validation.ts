@@ -3,10 +3,10 @@ import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { ReturnToAffectTransfer, returnToAffectTransferCodec } from './affect-return.codec';
-import { ToSchedule } from '../../definitions/fares.definitions';
+import { ToSchedule } from '../../definitions';
 import { fareToScheduleCodec, fareToScheduleRulesCodec } from '../schedule-fare/schedule-fare.codec';
-import { externalTypeCheckFor } from '../../rules/validation';
 import { QueryResult } from 'pg';
+import { externalTypeCheckFor } from '../../codecs';
 
 export const $affectReturnValidation =
   (db: PostgresDb) =>

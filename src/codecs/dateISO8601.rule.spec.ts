@@ -1,8 +1,8 @@
 import { Validation } from 'io-ts';
 import { pipe } from 'fp-ts/lib/function';
 import { fold } from 'fp-ts/Either';
-import { DateISO8601, isDateISO8601String } from './DateISO8601.rule';
 import HttpReporter, { DevFriendlyError } from '../reporter/HttpReporter';
+import { DateISO8601, isDateISO8601String } from './dateISO8601.rule';
 
 describe('isDateISO8601 specification tests', (): void => {
   it.each([

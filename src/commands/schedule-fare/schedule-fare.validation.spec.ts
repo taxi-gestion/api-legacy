@@ -1,24 +1,39 @@
 import { Errors } from 'io-ts';
 import { Either, fold as eitherFold } from 'fp-ts/Either';
 import { scheduleFareValidation } from './schedule-fare.validation';
-import { iso8601DateString } from '../../rules/DateISO8601.rule';
 import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
 import { FareToScheduleTransfer } from './schedule-fare.codec';
-import { ToSchedule } from '../../definitions/fares.definitions';
+import { ToSchedule } from '../../definitions';
+import { iso8601DateString } from '../../codecs';
 
 describe('Add Fare To Planning gateway tests', (): void => {
   const valid: FareToScheduleTransfer = {
     clientIdentity: 'romain',
     clientPhone: '0684319514',
     date: '2023-06-06T00:00:00.000Z',
-    driveFrom: 'Location A',
+    driveFrom: {
+      context: 'Location A',
+      label: 'Location A',
+      location: {
+        latitude: 0,
+        longitude: 0
+      }
+    },
     driveKind: 'one-way',
     driveNature: 'medical',
     planning: 'unassigned',
-    driveTo: 'Location B',
+    driveTo: {
+      context: 'Location B',
+      label: 'Location B',
+      location: {
+        latitude: 0,
+        longitude: 0
+      }
+    },
     startTime: 'T10:00',
     duration: 1613,
-    distance: 17314
+    distance: 17314,
+    recurrence: undefined
   };
 
   const missingPlanning: FareToScheduleTransfer = {
@@ -35,13 +50,27 @@ describe('Add Fare To Planning gateway tests', (): void => {
     client: 'romain',
     date: iso8601DateString('2023-06-06'),
     planning: 'unassigned',
-    departure: 'Location A',
+    departure: {
+      context: 'Location A',
+      label: 'Location A',
+      location: {
+        latitude: 0,
+        longitude: 0
+      }
+    },
     kind: 'one-way',
     nature: 'medical',
     phone: '0684319514',
     status: 'to-schedule',
     time: 'T10:00',
-    destination: 'Location B',
+    destination: {
+      context: 'Location B',
+      label: 'Location B',
+      location: {
+        latitude: 0,
+        longitude: 0
+      }
+    },
     duration: 1613,
     distance: 17314
   };

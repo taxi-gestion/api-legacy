@@ -8,19 +8,42 @@ const ioStringWithTypeCheckFailedMessage: StringC = withMessage(ioString, typeCh
 
 export type ReturnToAffectTransfer = {
   fareId: string;
-  driveFrom: string;
+  driveFrom: PlaceTransfer;
   planning: string;
-  driveTo: string;
+  driveTo: PlaceTransfer;
   startTime: string;
   duration: number;
   distance: number;
 };
 
+type PlaceTransfer = {
+  context: string;
+  label: string;
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+};
+
 export const returnToAffectTransferCodec: Type<ReturnToAffectTransfer> = excess(
   ioType({
     fareId: ioStringWithTypeCheckFailedMessage,
-    driveFrom: ioStringWithTypeCheckFailedMessage,
-    driveTo: ioStringWithTypeCheckFailedMessage,
+    driveFrom: ioType({
+      context: ioString,
+      label: ioString,
+      location: ioType({
+        latitude: ioNumber,
+        longitude: ioNumber
+      })
+    }),
+    driveTo: ioType({
+      context: ioString,
+      label: ioString,
+      location: ioType({
+        latitude: ioNumber,
+        longitude: ioNumber
+      })
+    }),
     planning: ioStringWithTypeCheckFailedMessage,
     startTime: ioStringWithTypeCheckFailedMessage,
     duration: ioNumber,

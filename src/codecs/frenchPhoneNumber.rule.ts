@@ -14,8 +14,6 @@ export const isFrenchPhoneNumber: BrandC<StringC, FrenchPhoneNumberBrand> = with
     )}' is not a valid french phone number that match '/^(?:(?:\\+|00)33|0)[1-9]\\d{8}$/gu' regex`
 );
 
-export type FrenchPhoneNumber = t.TypeOf<typeof isFrenchPhoneNumber>;
-
 const formatPhone = (phone?: string): string => phone?.replace('(0)', '').replace(/[^+\d]/gu, '') ?? '';
 
 const isFrenchPhone = (phone?: string): boolean => /^(?:(?:\+|00)33|0)[1-9]\d{8}$/gu.test(formatPhone(phone));
