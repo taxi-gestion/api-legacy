@@ -13,7 +13,7 @@ export type PredictRecurrenceRequest = FastifyRequest<{
 }>;
 
 /* eslint-disable @typescript-eslint/require-await */
-export const predictRecurrenceCommand = async (
+export const predictRecurrenceQuery = async (
   server: FastifyInstance,
   dependencies: { adapter: PredictRecurrenceAdapter }
 ): Promise<void> => {

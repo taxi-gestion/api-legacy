@@ -1,9 +1,9 @@
 import { chain as taskEitherChain, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
-import { Errors } from '../../reporter/HttpReporter';
+import { Errors } from '../../../reporter/HttpReporter';
 import { pipe } from 'fp-ts/function';
-import { OpenAICompletionPayload, OpenAICompletionResponseTransfer } from './openai-completion.codec';
+import { OpenAICompletionPayload, OpenAICompletionResponseTransfer } from './completion.codec';
 import { completionValidation } from './completion.validation';
-import { onDependencyError } from '../../reporter/onDependencyError.error';
+import { onDependencyError } from '../../../reporter/onDependencyError.error';
 import axios from 'axios';
 
 export const $openAICompletion =
