@@ -4,7 +4,7 @@ import { fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { PostgresDb } from '@fastify/postgres';
 import { faresForTheDateQuery } from './fares-for-date.persistence';
-import { isDateISO8601String } from '../../codecs';
+import { isDateString } from '../../codecs';
 import { Entity, Scheduled } from '../../definitions';
 
 export type FareForDateRequest = FastifyRequest<{
@@ -21,7 +21,7 @@ export const faresForDateQuery = async (server: FastifyInstance, _dependencies: 
     url: '/fares-for-date/:date',
     handler: async (req: FareForDateRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
-        isDateISO8601String.decode(req.params.date),
+        isDateString.decode(req.params.date),
         faresForTheDateQuery(server.pg /*dependencies.database*/),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<Entity<Scheduled>[]>)
       )();

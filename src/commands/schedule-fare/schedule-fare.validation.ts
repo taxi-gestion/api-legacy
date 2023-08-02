@@ -20,14 +20,13 @@ export const scheduleFareValidation = (transfer: unknown): Either<Errors, ToSche
 const internalTypeCheckForFareToSchedule = (fareTransfer: FareToScheduleTransfer): Validation<ToSchedule> =>
   fareToScheduleCodec.decode({
     client: fareTransfer.clientIdentity,
-    date: fareTransfer.date,
+    datetime: fareTransfer.datetime,
     planning: fareTransfer.planning,
     departure: fareTransfer.driveFrom,
     kind: fareTransfer.driveKind,
     nature: fareTransfer.driveNature,
     phone: fareTransfer.clientPhone,
     status: 'to-schedule',
-    time: fareTransfer.startTime,
     destination: fareTransfer.driveTo,
     duration: fareTransfer.duration,
     distance: fareTransfer.distance

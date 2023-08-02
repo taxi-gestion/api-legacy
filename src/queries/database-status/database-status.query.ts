@@ -6,17 +6,19 @@ export type PgInfos = {
   numberOfConnexions: number;
   numberOfActiveConnexions: number;
   listOfAllPublicTables: string;
+  timezone: string;
 };
 
 export const getDatabaseInfos = (db: PostgresDb) => async (): Promise<Error | PgInfos> => {
   const client: PoolClient = await db.connect();
   try {
-    const [size, numberOfConnexions, numberOfActiveConnexions, listOfAllPublicTables]: Awaited<QueryResult>[] =
+    const [size, numberOfConnexions, numberOfActiveConnexions, listOfAllPublicTables, timezone]: Awaited<QueryResult>[] =
       await Promise.all([
         client.query(getDatabaseSize),
         client.query(getDatabaseNumberOfConnections),
         client.query(getDatabaseNumberOfActiveConnections),
-        client.query(listAllTableNames)
+        client.query(listAllTableNames),
+        client.query(getTimezone)
       ]);
 
     /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -24,7 +26,8 @@ export const getDatabaseInfos = (db: PostgresDb) => async (): Promise<Error | Pg
       databaseSize: size?.rows[0] ?? NaN,
       numberOfConnexions: numberOfConnexions?.rows[0] ?? NaN,
       numberOfActiveConnexions: numberOfActiveConnexions?.rows[0] ?? NaN,
-      listOfAllPublicTables: JSON.stringify(listOfAllPublicTables?.rows ?? '')
+      listOfAllPublicTables: JSON.stringify(listOfAllPublicTables?.rows ?? ''),
+      timezone: timezone?.rows[0] ?? 'timezone not found'
     };
     /* eslint-enable @typescript-eslint/no-unsafe-assignment */
   } catch (error: unknown) {
@@ -51,3 +54,5 @@ export const listAllTableNames: string = `
     FROM information_schema.tables
     WHERE table_schema = 'public';
     `;
+
+export const getTimezone: string = `SELECT current_setting('TimeZone');`;

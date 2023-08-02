@@ -1,8 +1,6 @@
-import { DateFromISOString, withMessage } from 'io-ts-types';
+import { withMessage } from 'io-ts-types';
 import * as t from 'io-ts';
-import { BrandC, Errors, StringC } from 'io-ts';
-import { pipe } from 'fp-ts/function';
-import { getOrElseW } from 'fp-ts/Either';
+import { BrandC, StringC } from 'io-ts';
 import { isEqual, isValid, parseISO } from 'date-fns';
 import { TypeOf } from 'io-ts/Decoder';
 
@@ -15,15 +13,6 @@ export const isDateISO8601String: BrandC<StringC, DateISO8601Brand> = withMessag
   (input: unknown): string =>
     `Rules check failed, '${String(input)}' is not a valid UTC Date ISO8601 string representation (YYYY-MM-DDT00:00:00.000Z)`
 );
-
-export const iso8601DateString = (input: string): string =>
-  pipe(
-    DateFromISOString.decode(input),
-    getOrElseW((_: Errors): never => {
-      throw new Error('Invalid Date ISO8601 date string representation (YYYY-mm-dd)');
-    }),
-    (date: Date): string => date.toISOString()
-  );
 
 const matchDateISO8601 = (date: string): boolean => /^\d{4}-\d{2}-\d{2}T00:00:00\.000Z$/gu.test(date);
 

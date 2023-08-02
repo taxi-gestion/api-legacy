@@ -32,7 +32,7 @@ const $returnToAffectToFareToSchedule =
       return {
         ...originalReturnFareValues.rows[0],
         status: 'to-schedule',
-        time: returnToAffectTransfer.startTime,
+        datetime: returnToAffectTransfer.datetime,
         departure: returnToAffectTransfer.driveFrom,
         destination: returnToAffectTransfer.driveTo,
         duration: returnToAffectTransfer.duration,

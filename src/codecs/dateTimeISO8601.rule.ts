@@ -29,7 +29,7 @@ export const iso8601DateTimeString = (input: string): string =>
   );
 
 const matchDateTimeISO8601 = (dateTime: string): boolean =>
-  /^\d{4}-\d{2}-\d{2}T[0-2][0-3]:[0-5]\d:[0-5]\d\.000Z$/gu.test(dateTime);
+  /^\d{4}-\d{2}-\d{2}T(?:0[0-9]|1[0-9]|2[0-4]):[0-5]\d:[0-5]\d\.000Z$/gu.test(dateTime);
 
 const matchMidnightDateTimeISO8601 = (dateTime: string): boolean => /^\d{4}-\d{2}-\d{2}T24:00:00\.000Z$/gu.test(dateTime);
 

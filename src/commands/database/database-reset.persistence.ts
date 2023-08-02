@@ -36,7 +36,7 @@ DROP TABLE IF EXISTS fares;
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         client TEXT NOT NULL,
         creator TEXT NOT NULL,
-        date TEXT NOT NULL,
+        datetime TEXT NOT NULL,
         departure JSON NOT NULL,
         destination JSON NOT NULL,
         distance NUMERIC NOT NULL,
@@ -45,20 +45,18 @@ DROP TABLE IF EXISTS fares;
         kind TEXT NOT NULL,
         nature TEXT NOT NULL,
         phone TEXT NOT NULL,
-        status TEXT NOT NULL,
-        time TEXT NOT NULL
+        status TEXT NOT NULL
     );
     DROP TABLE IF EXISTS returns_to_affect;
      CREATE TABLE returns_to_affect (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         client TEXT NOT NULL,
-        date TEXT NOT NULL,
+        datetime TEXT NOT NULL,
         departure JSON NOT NULL,
         destination JSON NOT NULL,
         planning TEXT,
         kind TEXT NOT NULL,
         nature TEXT NOT NULL,
-        phone TEXT NOT NULL,
-        time TEXT
+        phone TEXT NOT NULL
     );
     `;

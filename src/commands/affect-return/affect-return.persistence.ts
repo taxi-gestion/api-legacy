@@ -9,7 +9,7 @@ export type ScheduledReturnPersistence = Scheduled;
 export const toScheduledReturnPersistence = (scheduledFare: Scheduled): ScheduledReturnPersistence => ({
   client: scheduledFare.client,
   creator: scheduledFare.creator,
-  date: scheduledFare.date,
+  datetime: scheduledFare.datetime,
   departure: scheduledFare.departure,
   destination: scheduledFare.destination,
   distance: scheduledFare.distance,
@@ -18,8 +18,7 @@ export const toScheduledReturnPersistence = (scheduledFare: Scheduled): Schedule
   kind: scheduledFare.kind,
   nature: scheduledFare.nature,
   phone: scheduledFare.phone,
-  status: scheduledFare.status,
-  time: scheduledFare.time
+  status: scheduledFare.status
 });
 
 export const persistFareAndDeleteReturnToAffect =
@@ -53,7 +52,7 @@ const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledRet
   client.query(insertFareQueryString, [
     farePg.client,
     farePg.creator,
-    farePg.date,
+    farePg.datetime,
     farePg.departure,
     farePg.destination,
     farePg.distance,
@@ -62,15 +61,14 @@ const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledRet
     farePg.kind,
     farePg.nature,
     farePg.phone,
-    farePg.status,
-    farePg.time
+    farePg.status
   ]);
 
 const insertFareQueryString: string = `
       INSERT INTO fares (
           client,
           creator,
-          date,
+          datetime,
           departure,
           destination,
           distance,
@@ -79,10 +77,9 @@ const insertFareQueryString: string = `
           kind,
           nature,
           phone,
-          status,
-          time
+          status
       ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
       )
     `;
 

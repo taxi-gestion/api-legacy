@@ -5,7 +5,7 @@ import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { returnsToAffectForTheDateQuery } from './returns-to-affect-for-date.persistence';
 import { PostgresDb } from '@fastify/postgres';
 import { Entity, ReturnToAffect } from '../../definitions';
-import { isDateISO8601String } from '../../codecs';
+import { isDateString } from '../../codecs';
 
 export type ReturnsToAffectForDateRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -24,7 +24,7 @@ export const returnsToAffectForDateQuery = async (
     url: '/returns-to-affect-for-date/:date',
     handler: async (req: ReturnsToAffectForDateRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
-        isDateISO8601String.decode(req.params.date),
+        isDateString.decode(req.params.date),
         returnsToAffectForTheDateQuery(server.pg /*dependencies.database*/),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<Entity<ReturnToAffect>[]>)
       )();

@@ -4,13 +4,12 @@ import { scheduleFareValidation } from './schedule-fare.validation';
 import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
 import { FareToScheduleTransfer } from './schedule-fare.codec';
 import { ToSchedule } from '../../definitions';
-import { iso8601DateString } from '../../codecs';
 
 describe('Add Fare To Planning gateway tests', (): void => {
   const valid: FareToScheduleTransfer = {
     clientIdentity: 'romain',
     clientPhone: '0684319514',
-    date: '2023-06-06T00:00:00.000Z',
+    datetime: '2023-06-06T00:00:00.000Z',
     driveFrom: {
       context: 'Location A',
       label: 'Location A',
@@ -30,7 +29,6 @@ describe('Add Fare To Planning gateway tests', (): void => {
         longitude: 0
       }
     },
-    startTime: 'T10:00',
     duration: 1613,
     distance: 17314,
     recurrence: undefined
@@ -48,7 +46,7 @@ describe('Add Fare To Planning gateway tests', (): void => {
 
   const validFareDraft: ToSchedule = {
     client: 'romain',
-    date: iso8601DateString('2023-06-06'),
+    datetime: '2023-06-06T00:00:00.000Z',
     planning: 'unassigned',
     departure: {
       context: 'Location A',
@@ -62,7 +60,6 @@ describe('Add Fare To Planning gateway tests', (): void => {
     nature: 'medical',
     phone: '0684319514',
     status: 'to-schedule',
-    time: 'T10:00',
     destination: {
       context: 'Location B',
       label: 'Location B',
