@@ -1,10 +1,10 @@
-import { PredictedRecurrence, PredictRecurrence } from '../../definitions/recurrence.definition';
+import { PredictedRecurrence, PredictRecurrence } from '../../../definitions';
 import { chain as taskEitherChain, TaskEither } from 'fp-ts/TaskEither';
-import { Errors } from '../../reporter/HttpReporter';
+import { Errors } from '../../../reporter/HttpReporter';
 import { pipe } from 'fp-ts/function';
-import { $openAICompletion } from '../openai-completion/openai-completion.api';
+import { $openAICompletion } from '../completion/completion.api';
 import { predictedRecurrenceValidation } from './predicted-recurrence.validation';
-import { OpenAICompletionPayload } from '../openai-completion/openai-completion.codec';
+import { OpenAICompletionPayload } from '../completion/completion.codec';
 
 export const $openAIPredictRecurrence =
   (openAIApiKey: string) =>

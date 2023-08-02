@@ -2,10 +2,10 @@ import { pipe } from 'fp-ts/function';
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 import { fromEither } from 'fp-ts/TaskEither';
 import { chain as eitherChain, Either } from 'fp-ts/Either';
-import { Errors } from '../../reporter/HttpReporter';
-import { OpenAICompletionResponseTransfer } from '../openai-completion/openai-completion.codec';
-import { PredictedRecurrence } from '../../definitions/recurrence.definition';
+import { OpenAICompletionResponseTransfer } from '../completion/completion.codec';
 import { predictedRecurrenceCodec, predictedRecurrenceRulesCodec } from './predicted-recurrence.codec';
+import { PredictedRecurrence } from '../../../definitions';
+import { Errors } from '../../../reporter/HttpReporter';
 
 export const predictedRecurrenceValidation = (
   transfer: OpenAICompletionResponseTransfer

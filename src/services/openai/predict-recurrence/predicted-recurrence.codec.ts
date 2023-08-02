@@ -8,8 +8,8 @@ import {
   type as ioType,
   TypeC
 } from 'io-ts';
-import { PredictedRecurrence } from '../../definitions';
-import { CronBrand, isCronString } from '../../codecs';
+import { PredictedRecurrence } from '../../../definitions';
+import { CronBrand, isCronString } from '../../../codecs';
 
 export const predictedRecurrenceCodec: Type<PredictedRecurrence> = ioType({
   query: ioString,
