@@ -6,7 +6,7 @@ import {
   GoogleMapsDistanceMatrixElement,
   GoogleMapsDistanceMatrixResponse,
   googleMapsDistanceMatrixTransferCodec
-} from './estimate-journey.codec';
+} from './distance-matrix.codec';
 import { JourneyEstimate } from '../../../definitions';
 import { Errors } from '../../../reporter/HttpReporter';
 import { externalTypeCheckFor, journeyEstimateCodec, journeyEstimateRulesCodec } from '../../../codecs';

@@ -8,7 +8,7 @@ import {
   placesRulesCodec,
   placesCodec,
   PlaceResultTransfer
-} from './search-place.codec';
+} from './places.codec';
 import { Place } from '../../../definitions';
 import { Errors } from '../../../reporter/HttpReporter';
 import { externalTypeCheckFor } from '../../../codecs';
