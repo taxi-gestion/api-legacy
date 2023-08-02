@@ -11,6 +11,7 @@ import {
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
 import { Entity, Scheduled } from '../../definitions';
+import { addDays, subHours } from 'date-fns';
 
 type ScheduledFarePersistence = Entity<Scheduled>;
 
@@ -26,20 +27,13 @@ export const faresForTheDateQuery =
       )
     );
 
-/* TODO Validate with scheduledFareEntityCodec
- *  export const scheduledFareEntityCodec: Type<Entity<ScheduledFare>> = ioUnion([
- *  scheduledFareCodec,
- *   ioType({ id: ioString })
- * ])
- */
-
 const toScheduledFares = (queryResult: QueryResult): Entity<Scheduled>[] =>
   queryResult.rows.map(
     (row: ScheduledFarePersistence): Entity<Scheduled> => ({
       id: row.id,
       client: row.client,
       creator: row.creator,
-      date: row.date,
+      datetime: row.datetime,
       departure: row.departure,
       destination: row.destination,
       distance: row.distance,
@@ -48,8 +42,7 @@ const toScheduledFares = (queryResult: QueryResult): Entity<Scheduled>[] =>
       kind: row.kind,
       nature: row.nature,
       phone: row.phone,
-      status: 'scheduled',
-      time: row.time
+      status: 'scheduled'
     })
   );
 
@@ -79,9 +72,17 @@ const selectFromFares = (database: PostgresDb) => (date: string) => async (): Pr
   }
 };
 
-const selectFaresWhereDateQuery = async (client: PoolClient, date: string): Promise<QueryResult> =>
-  client.query(selectFaresWhereDateQueryString, [date]);
+const adjustFrenchDateToUTC = (date: Date): string => {
+  const adjustedDate: Date = subHours(date, 2);
+  return adjustedDate.toISOString();
+};
+
+const selectFaresWhereDateQuery = async (client: PoolClient, date: string): Promise<QueryResult> => {
+  const startOfDayUTC: string = adjustFrenchDateToUTC(new Date(date));
+  const endOfDayUTC: string = adjustFrenchDateToUTC(addDays(new Date(date), 1));
+  return client.query(selectFaresWhereDateQueryString, [startOfDayUTC, endOfDayUTC]);
+};
 
 const selectFaresWhereDateQueryString: string = `
-      SELECT * FROM fares WHERE date = $1
-      `;
+      SELECT * FROM fares WHERE datetime >= $1 AND datetime < $2
+    `;

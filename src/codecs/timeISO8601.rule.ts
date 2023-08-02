@@ -14,7 +14,7 @@ export const isTimeISO8601String: BrandC<StringC, TimeISO8601Brand> = withMessag
 
 export type TimeISO8601 = t.TypeOf<typeof isTimeISO8601String>;
 
-const matchTimeISO8601 = (time: string): boolean => /^T\d{2}:\d{2}$/gu.test(time);
+const matchTimeISO8601 = (time: string): boolean => /^T(?:0[0-9]|1[0-9]|2[0-4]):\d{2}$/gu.test(time);
 
 type TimeISO8601Brand = {
   readonly isTimeISO8601: unique symbol;

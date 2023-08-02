@@ -11,7 +11,7 @@ export type ReturnToAffectTransfer = {
   driveFrom: PlaceTransfer;
   planning: string;
   driveTo: PlaceTransfer;
-  startTime: string;
+  datetime: string;
   duration: number;
   distance: number;
 };
@@ -45,7 +45,7 @@ export const returnToAffectTransferCodec: Type<ReturnToAffectTransfer> = excess(
       })
     }),
     planning: ioStringWithTypeCheckFailedMessage,
-    startTime: ioStringWithTypeCheckFailedMessage,
+    datetime: ioStringWithTypeCheckFailedMessage,
     duration: ioNumber,
     distance: ioNumber
   })

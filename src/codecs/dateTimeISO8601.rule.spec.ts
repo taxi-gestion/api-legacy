@@ -143,7 +143,8 @@ describe('isDateTimeISO8601 specification tests', (): void => {
             "Rules check failed, '2038-01-20T24:00:01.000Z' is not an accepted UTC DateTime ISO8601 string representation (YYYY-MM-DDTHH:mm:ss.000Z)"
         }
       ]
-    ]
+    ],
+    ['2023-08-01T06:00:00.000Z', '2023-08-01T06:00:00.000Z']
   ])("when the dateTime is '%s' return '%o'", (payload: unknown, expectedResult: DevFriendlyError[] | string): void => {
     expect(
       pipe(isDateTimeISO8601String.decode(payload), (validation: Validation<DateTimeISO8601>): DevFriendlyError[] | string =>

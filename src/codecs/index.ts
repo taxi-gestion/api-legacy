@@ -9,3 +9,4 @@ export * from './place.codec';
 export * from './positive.rule';
 export * from './timeISO8601.rule';
 export * from './validation';
+export * from './date.rule';

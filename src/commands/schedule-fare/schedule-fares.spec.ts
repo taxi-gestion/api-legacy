@@ -3,7 +3,6 @@ import { Either, fold as foldEither, right as rightEither } from 'fp-ts/Either';
 import { scheduleFares } from './schedule-fares';
 import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
 import { ReturnToAffect, ToSchedule, Scheduled, Place } from '../../definitions';
-import { iso8601DateString } from '../../codecs';
 
 const placeCanuts: Place = {
   context: '17 Avenue des Canuts, 69120',
@@ -27,13 +26,12 @@ describe('Add Fare To Planning use case tests', (): void => {
   const fareToScheduleOneWay: ToSchedule = {
     planning: 'driver@taxi-gestion.com',
     client: 'Bob',
-    date: iso8601DateString('2019-05-05'),
+    datetime: '2019-05-05T08:00:00.000Z',
     departure: placeCanuts,
     kind: 'one-way',
     nature: 'medical',
     phone: '+33684319514',
     status: 'to-schedule',
-    time: '10:00',
     destination: placeAqueducs,
     duration: 1613,
     distance: 17314
@@ -42,13 +40,12 @@ describe('Add Fare To Planning use case tests', (): void => {
   const fareToScheduleTwoWay: ToSchedule = {
     planning: 'driver@taxi-gestion.com',
     client: 'Bob',
-    date: iso8601DateString('2019-05-05'),
+    datetime: '2019-05-05T08:00:00.000Z',
     departure: placeCanuts,
     kind: 'outward',
     nature: 'medical',
     phone: '+33684319514',
     status: 'to-schedule',
-    time: '10:00',
     destination: placeAqueducs,
     duration: 1613,
     distance: 17314
@@ -58,13 +55,12 @@ describe('Add Fare To Planning use case tests', (): void => {
     {
       planning: 'driver@taxi-gestion.com',
       client: 'Bob',
-      date: iso8601DateString('2019-05-05'),
+      datetime: '2019-05-05T08:00:00.000Z',
       departure: placeCanuts,
       kind: 'one-way',
       nature: 'medical',
       phone: '+33684319514',
       status: 'scheduled',
-      time: '10:00',
       destination: placeAqueducs,
       duration: 1613,
       distance: 17314,
@@ -76,13 +72,12 @@ describe('Add Fare To Planning use case tests', (): void => {
     {
       planning: 'driver@taxi-gestion.com',
       client: 'Bob',
-      date: iso8601DateString('2019-05-05'),
+      datetime: '2019-05-05T08:00:00.000Z',
       departure: placeCanuts,
       kind: 'outward',
       nature: 'medical',
       phone: '+33684319514',
       status: 'scheduled',
-      time: '10:00',
       destination: placeAqueducs,
       duration: 1613,
       distance: 17314,
@@ -91,13 +86,12 @@ describe('Add Fare To Planning use case tests', (): void => {
     {
       planning: 'driver@taxi-gestion.com',
       client: 'Bob',
-      date: iso8601DateString('2019-05-05'),
+      datetime: '2019-05-05T00:00:00.000Z',
       departure: placeAqueducs,
       kind: 'return',
       nature: 'medical',
       phone: '+33684319514',
       status: 'return-to-affect',
-      time: undefined,
       destination: placeCanuts
     }
   ];

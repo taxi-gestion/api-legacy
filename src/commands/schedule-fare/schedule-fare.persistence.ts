@@ -26,7 +26,7 @@ export const toFaresPersistence = (fare: Either<Errors, [Scheduled, ReturnToAffe
 const toScheduledFarePersistence = (scheduledFare: Scheduled): ScheduledPersistence => ({
   client: scheduledFare.client,
   creator: scheduledFare.creator,
-  date: scheduledFare.date,
+  datetime: scheduledFare.datetime,
   departure: scheduledFare.departure,
   destination: scheduledFare.destination,
   distance: scheduledFare.distance,
@@ -35,21 +35,19 @@ const toScheduledFarePersistence = (scheduledFare: Scheduled): ScheduledPersiste
   kind: scheduledFare.kind,
   nature: scheduledFare.nature,
   phone: scheduledFare.phone,
-  status: scheduledFare.status,
-  time: scheduledFare.time
+  status: scheduledFare.status
 });
 
 const toToScheduleFarePersistence = (fareReturnToSchedule: ReturnToAffect): ReturnToAffectPersistence => ({
   client: fareReturnToSchedule.client,
-  date: fareReturnToSchedule.date,
+  datetime: fareReturnToSchedule.datetime,
   departure: fareReturnToSchedule.departure,
   destination: fareReturnToSchedule.destination,
   planning: fareReturnToSchedule.planning,
   kind: fareReturnToSchedule.kind,
   nature: fareReturnToSchedule.nature,
   phone: fareReturnToSchedule.phone,
-  status: fareReturnToSchedule.status,
-  time: fareReturnToSchedule.time
+  status: fareReturnToSchedule.status
 });
 
 export const persistFares =
@@ -94,7 +92,7 @@ const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledPer
   client.query(insertFareQueryString, [
     farePg.client,
     farePg.creator,
-    farePg.date,
+    farePg.datetime,
     JSON.stringify(farePg.departure),
     JSON.stringify(farePg.destination),
     farePg.distance,
@@ -103,15 +101,14 @@ const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledPer
     farePg.kind,
     farePg.nature,
     farePg.phone,
-    farePg.status,
-    farePg.time
+    farePg.status
   ]);
 
 const insertFareQueryString: string = `
       INSERT INTO fares (
           client,
           creator,
-          date,
+          datetime,
           departure,
           destination,
           distance,
@@ -120,38 +117,35 @@ const insertFareQueryString: string = `
           kind,
           nature,
           phone,
-          status,
-          time
+          status
       ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
       )
     `;
 
 const insertReturnToAffectQuery = async (client: PoolClient, farePg: ReturnToAffectPersistence): Promise<QueryResult> =>
   client.query(insertReturnToAffectQueryString, [
     farePg.client,
-    farePg.date,
+    farePg.datetime,
     JSON.stringify(farePg.departure),
     JSON.stringify(farePg.destination),
     farePg.planning,
     farePg.kind,
     farePg.nature,
-    farePg.phone,
-    farePg.time
+    farePg.phone
   ]);
 
 const insertReturnToAffectQueryString: string = `
       INSERT INTO returns_to_affect (
           client,
-          date,
+          datetime,
           departure,
           destination,
           planning,
           kind,
           nature,
-          phone,
-          time
+          phone
       ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9
+          $1, $2, $3, $4, $5, $6, $7, $8
       )
       `;

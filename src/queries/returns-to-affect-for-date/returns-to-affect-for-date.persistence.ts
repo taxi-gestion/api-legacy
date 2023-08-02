@@ -10,8 +10,8 @@ import {
 } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { ReturnToAffect } from '../../definitions/fares.definitions';
-import { Entity } from '../../definitions/entity.definition';
+import { Entity, ReturnToAffect } from '../../definitions';
+import { addDays, subHours } from 'date-fns';
 
 type ReturnToAffectPersistence = Entity<ReturnToAffect>;
 
@@ -24,24 +24,23 @@ export const returnsToAffectForTheDateQuery =
       taskEitherChain(selectReturnsToAffectForDate(database)),
       taskEitherChain(
         (queryResult: QueryResult): TaskEither<Errors, Entity<ReturnToAffect>[]> =>
-          taskEitherRight(toToScheduleFares(queryResult))
+          taskEitherRight(toReturnsToAffect(queryResult))
       )
     );
 
-const toToScheduleFares = (queryResult: QueryResult): Entity<ReturnToAffect>[] =>
+const toReturnsToAffect = (queryResult: QueryResult): Entity<ReturnToAffect>[] =>
   queryResult.rows.map(
     (row: ReturnToAffectPersistence): Entity<ReturnToAffect> => ({
       id: row.id,
       client: row.client,
-      date: row.date,
+      datetime: row.datetime,
       departure: row.departure,
       destination: row.destination,
       planning: row.planning,
       kind: row.kind,
       nature: row.nature,
       phone: row.phone,
-      status: 'return-to-affect',
-      time: row.time
+      status: 'return-to-affect'
     })
   );
 
@@ -71,9 +70,17 @@ const selectFromReturnsToAffect = (database: PostgresDb) => (date: string) => as
   }
 };
 
-const selectReturnsToAffectWhereDateQuery = async (client: PoolClient, date: string): Promise<QueryResult> =>
-  client.query(selectReturnsToAffectWhereDateQueryString, [date]);
+const adjustFrenchDateToUTC = (date: Date): string => {
+  const adjustedDate: Date = subHours(date, 2);
+  return adjustedDate.toISOString();
+};
+
+const selectReturnsToAffectWhereDateQuery = async (client: PoolClient, date: string): Promise<QueryResult> => {
+  const startOfDayUTC: string = adjustFrenchDateToUTC(new Date(date));
+  const endOfDayUTC: string = adjustFrenchDateToUTC(addDays(new Date(date), 1));
+  return client.query(selectReturnsToAffectWhereDateQueryString, [startOfDayUTC, endOfDayUTC]);
+};
 
 const selectReturnsToAffectWhereDateQueryString: string = `
-      SELECT * FROM returns_to_affect WHERE date = $1
-      `;
+      SELECT * FROM fares WHERE datetime >= $1 AND datetime < $2
+    `;
