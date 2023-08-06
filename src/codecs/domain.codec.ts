@@ -7,7 +7,15 @@ import {
   string as ioString,
   type as ioType
 } from 'io-ts';
-import { Drive, DurationDistance, Entity, FareToSchedule, Passenger, ReturnToSchedule } from '../definitions';
+import {
+  CompletedReturnToSchedule,
+  Drive,
+  DurationDistance,
+  Entity,
+  FareToSchedule,
+  Passenger,
+  ReturnToSchedule
+} from '../definitions';
 import { isDateTimeISO8601String, isFrenchPhoneNumber, isPositive, placeCodec, placeRulesCodec } from './common';
 
 const driveCodec: Type<Drive> = ioType({
@@ -68,6 +76,16 @@ export const fareToScheduleRulesCodec = ioIntersection([
 export const returnToScheduleCodec: Type<Entity & ReturnToSchedule> = ioIntersection([
   driveCodec,
   durationDistanceCodec,
+  ioType({
+    id: ioString,
+    kind: ioLiteral('two-way'),
+    status: ioLiteral('return-to-schedule')
+  })
+]);
+
+export const completedReturnToScheduleCodec: Type<CompletedReturnToSchedule & Entity> = ioIntersection([
+  driveCodec,
+  durationDistanceCodec,
   passengerCodec,
   ioType({
     id: ioString,
@@ -78,8 +96,8 @@ export const returnToScheduleCodec: Type<Entity & ReturnToSchedule> = ioIntersec
 ]);
 
 // eslint-disable-next-line @typescript-eslint/typedef
-export const returnToScheduleRulesCodec = ioIntersection([
-  returnToScheduleCodec,
+export const completedReturnToScheduleRulesCodec = ioIntersection([
+  completedReturnToScheduleCodec,
   driveRulesCodec,
   passengerRulesCodec,
   durationDistanceRulesCodec

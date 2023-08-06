@@ -2,13 +2,18 @@ import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { Entity, ReturnToSchedule } from '../../definitions';
+import { CompletedReturnToSchedule, Entity, ReturnToSchedule } from '../../definitions';
 import { QueryResult } from 'pg';
-import { externalTypeCheckFor, returnToScheduleCodec, returnToScheduleRulesCodec } from '../../codecs';
+import {
+  completedReturnToScheduleCodec,
+  completedReturnToScheduleRulesCodec,
+  externalTypeCheckFor,
+  returnToScheduleCodec
+} from '../../codecs';
 
 export const $scheduleReturnValidation =
   (db: PostgresDb) =>
-  (transfer: unknown): TaskEither<Errors, Entity & ReturnToSchedule> =>
+  (transfer: unknown): TaskEither<Errors, CompletedReturnToSchedule & Entity> =>
     pipe(
       transfer,
       externalTypeCheckFor<Entity & ReturnToSchedule>(returnToScheduleCodec),
@@ -40,11 +45,13 @@ const $returnToScheduleToFareToSchedule =
       };
     }, onInfrastructureError);
 
-const internalTypeCheckForReturnToSchedule = (fromDB: unknown): TaskEither<Errors, Entity & ReturnToSchedule> =>
-  fromEither(returnToScheduleCodec.decode(fromDB));
+const internalTypeCheckForReturnToSchedule = (fromDB: unknown): TaskEither<Errors, CompletedReturnToSchedule & Entity> =>
+  fromEither(completedReturnToScheduleCodec.decode(fromDB));
 
-const rulesCheckForReturnToSchedule = (fareDraft: Entity & ReturnToSchedule): TaskEither<Errors, Entity & ReturnToSchedule> =>
-  fromEither(returnToScheduleRulesCodec.decode(fareDraft));
+const rulesCheckForReturnToSchedule = (
+  returnToSchedule: CompletedReturnToSchedule & Entity
+): TaskEither<Errors, CompletedReturnToSchedule & Entity> =>
+  fromEither(completedReturnToScheduleRulesCodec.decode(returnToSchedule));
 
 const onInfrastructureError = (error: unknown): Errors =>
   [

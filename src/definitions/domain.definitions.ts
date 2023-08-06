@@ -19,33 +19,37 @@ export type Passenger = {
   phone: string;
 };
 
+export type Nature = {
+  nature: 'medical' | 'standard';
+};
+
 export type FareToSchedule = Drive &
   DurationDistance &
+  Nature &
   Passenger & {
     kind: 'one-way' | 'two-way';
-    nature: 'medical' | 'standard';
     status: 'to-schedule';
   };
 
 export type ReturnToSchedule = Drive &
-  DurationDistance &
-  Passenger & {
-    nature: 'medical' | 'standard';
+  DurationDistance & {
     kind: 'two-way';
     status: 'return-to-schedule';
   };
 
+export type CompletedReturnToSchedule = Nature & Passenger & ReturnToSchedule;
+
 export type Pending = Drive &
+  Nature &
   Passenger & {
-    nature: 'medical' | 'standard';
     kind: 'two-way';
     status: 'pending-return';
   };
 
 export type Scheduled = Drive &
   DurationDistance &
+  Nature &
   Passenger & {
     kind: 'one-way' | 'two-way';
-    nature: 'medical' | 'standard';
     status: 'scheduled';
   };
