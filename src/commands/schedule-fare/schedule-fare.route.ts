@@ -5,13 +5,13 @@ import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { PostgresDb } from '@fastify/postgres';
 import { QueryResult } from 'pg';
 import { scheduleFareValidation } from './schedule-fare.validation';
-import { scheduleFares } from './schedule-fares';
+import { scheduleFare } from './schedule-fare';
 import { persistFares, toFaresPersistence } from './schedule-fare.persistence';
-import { FareToScheduleTransfer } from './schedule-fare.codec';
+import { FareToSchedule } from '../../definitions';
 
 type FareToScheduleRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  Body: FareToScheduleTransfer;
+  Body: FareToSchedule;
 }>;
 
 // eslint-disable-next-line @typescript-eslint/require-await
@@ -23,9 +23,9 @@ export const scheduleFareCommand = async (server: FastifyInstance, _dependencies
       await pipe(
         req.body,
         scheduleFareValidation,
-        scheduleFares,
+        scheduleFare,
         toFaresPersistence,
-        persistFares(server.pg /*dependencies.database*/),
+        persistFares(server.pg),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<QueryResult[]>)
       )();
     }

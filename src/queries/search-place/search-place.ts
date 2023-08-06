@@ -1,6 +1,8 @@
 import { TaskEither } from 'fp-ts/TaskEither';
 import { Errors } from '../../reporter/HttpReporter';
-import { Place, SearchPlaceAdapter } from '../../definitions';
+import { Place } from '../../definitions';
+
+export type SearchPlaceAdapter = (predict: string) => TaskEither<Errors, Place[]>;
 
 export const searchPlace =
   (serviceCall: SearchPlaceAdapter) =>

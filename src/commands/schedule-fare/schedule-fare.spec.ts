@@ -1,8 +1,8 @@
 import { Errors } from 'io-ts';
 import { Either, fold as foldEither, right as rightEither } from 'fp-ts/Either';
-import { scheduleFares } from './schedule-fares';
+import { scheduleFare } from './schedule-fare';
 import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
-import { ReturnToAffect, ToSchedule, Scheduled, Place } from '../../definitions';
+import { Pending, FareToSchedule, Scheduled, Place } from '../../definitions';
 
 const placeCanuts: Place = {
   context: '17 Avenue des Canuts, 69120',
@@ -22,10 +22,10 @@ const placeAqueducs: Place = {
   }
 };
 
-describe('Add Fare To Planning use case tests', (): void => {
-  const fareToScheduleOneWay: ToSchedule = {
-    planning: 'driver@taxi-gestion.com',
-    client: 'Bob',
+describe('Add Fare To driver use case tests', (): void => {
+  const fareToScheduleOneWay: FareToSchedule = {
+    driver: 'driver@taxi-gestion.com',
+    passenger: 'Bob',
     datetime: '2019-05-05T08:00:00.000Z',
     departure: placeCanuts,
     kind: 'one-way',
@@ -37,12 +37,12 @@ describe('Add Fare To Planning use case tests', (): void => {
     distance: 17314
   };
 
-  const fareToScheduleTwoWay: ToSchedule = {
-    planning: 'driver@taxi-gestion.com',
-    client: 'Bob',
+  const fareToScheduleTwoWay: FareToSchedule = {
+    driver: 'driver@taxi-gestion.com',
+    passenger: 'Bob',
     datetime: '2019-05-05T08:00:00.000Z',
     departure: placeCanuts,
-    kind: 'outward',
+    kind: 'two-way',
     nature: 'medical',
     phone: '+33684319514',
     status: 'to-schedule',
@@ -53,8 +53,8 @@ describe('Add Fare To Planning use case tests', (): void => {
 
   const expectedOneWay: [Scheduled] = [
     {
-      planning: 'driver@taxi-gestion.com',
-      client: 'Bob',
+      driver: 'driver@taxi-gestion.com',
+      passenger: 'Bob',
       datetime: '2019-05-05T08:00:00.000Z',
       departure: placeCanuts,
       kind: 'one-way',
@@ -63,35 +63,33 @@ describe('Add Fare To Planning use case tests', (): void => {
       status: 'scheduled',
       destination: placeAqueducs,
       duration: 1613,
-      distance: 17314,
-      creator: 'romain.cambonie@gmail.com'
+      distance: 17314
     }
   ];
 
-  const expectedTwoWay: [Scheduled, ReturnToAffect] = [
+  const expectedTwoWay: [Scheduled, Pending] = [
     {
-      planning: 'driver@taxi-gestion.com',
-      client: 'Bob',
+      driver: 'driver@taxi-gestion.com',
+      passenger: 'Bob',
       datetime: '2019-05-05T08:00:00.000Z',
       departure: placeCanuts,
-      kind: 'outward',
+      kind: 'two-way',
       nature: 'medical',
       phone: '+33684319514',
       status: 'scheduled',
       destination: placeAqueducs,
       duration: 1613,
-      distance: 17314,
-      creator: 'romain.cambonie@gmail.com'
+      distance: 17314
     },
     {
-      planning: 'driver@taxi-gestion.com',
-      client: 'Bob',
+      driver: 'driver@taxi-gestion.com',
+      passenger: 'Bob',
       datetime: '2019-05-05T00:00:00.000Z',
       departure: placeAqueducs,
-      kind: 'return',
+      kind: 'two-way',
       nature: 'medical',
       phone: '+33684319514',
-      status: 'return-to-affect',
+      status: 'pending-return',
       destination: placeCanuts
     }
   ];
@@ -101,13 +99,13 @@ describe('Add Fare To Planning use case tests', (): void => {
     [rightEither(fareToScheduleTwoWay), expectedTwoWay]
   ])(
     'should return %s when the fare to-schedule is %s',
-    (payload: Either<Errors, ToSchedule>, expectedValue: DevFriendlyError[] | [Scheduled, ReturnToAffect?]): void => {
-      const either: Either<Errors, [Scheduled, ReturnToAffect?]> = scheduleFares(payload);
+    (payload: Either<Errors, FareToSchedule>, expectedValue: DevFriendlyError[] | [Scheduled, Pending?]): void => {
+      const either: Either<Errors, [Scheduled, Pending?]> = scheduleFare(payload);
       foldEither(
         (): void => {
           expect(HttpReporter.report(either)).toStrictEqual(expectedValue);
         },
-        (value: [Scheduled, ReturnToAffect?]): void => expect(value).toStrictEqual(expectedValue)
+        (value: [Scheduled, Pending?]): void => expect(value).toStrictEqual(expectedValue)
       )(either);
     }
   );

@@ -13,38 +13,35 @@ import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
 import { Entity, Scheduled } from '../../definitions';
 import { addDays, subHours } from 'date-fns';
 
-type ScheduledFarePersistence = Entity<Scheduled>;
+type ScheduledFarePersistence = Entity & Scheduled;
 
-export const faresForTheDateQuery =
+export const scheduledFaresForTheDatePersistenceQuery =
   (database: PostgresDb) =>
-  (date: Either<Errors, string>): TaskEither<Errors, Entity<Scheduled>[]> =>
+  (date: Either<Errors, string>): TaskEither<Errors, (Entity & Scheduled)[]> =>
     pipe(
       date,
       fromEither,
       taskEitherChain(selectFaresForDate(database)),
       taskEitherChain(
-        (queryResult: QueryResult): TaskEither<Errors, Entity<Scheduled>[]> => taskEitherRight(toScheduledFares(queryResult))
+        (queryResult: QueryResult): TaskEither<Errors, (Entity & Scheduled)[]> => taskEitherRight(toScheduledFares(queryResult))
       )
     );
 
-const toScheduledFares = (queryResult: QueryResult): Entity<Scheduled>[] =>
-  queryResult.rows.map(
-    (row: ScheduledFarePersistence): Entity<Scheduled> => ({
-      id: row.id,
-      client: row.client,
-      creator: row.creator,
-      datetime: row.datetime,
-      departure: row.departure,
-      destination: row.destination,
-      distance: row.distance,
-      planning: row.planning,
-      duration: row.duration,
-      kind: row.kind,
-      nature: row.nature,
-      phone: row.phone,
-      status: 'scheduled'
-    })
-  );
+const toScheduledFares = (queryResult: QueryResult): (Entity & Scheduled)[] =>
+  queryResult.rows.map((row: ScheduledFarePersistence): Entity & Scheduled => ({
+    id: row.id,
+    passenger: row.passenger,
+    datetime: row.datetime,
+    departure: row.departure,
+    destination: row.destination,
+    distance: row.distance,
+    driver: row.driver,
+    duration: row.duration,
+    kind: row.kind,
+    nature: row.nature,
+    phone: row.phone,
+    status: 'scheduled'
+  }));
 
 const selectFaresForDate =
   (database: PostgresDb) =>

@@ -1,59 +1,50 @@
-/* eslint-disable max-lines */
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import { pipe } from 'fp-ts/lib/function';
 import { Either, map as eitherMap } from 'fp-ts/Either';
 import type { PostgresDb } from '@fastify/postgres';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { ReturnToAffect, Scheduled } from '../../definitions/fares.definitions';
+import { Pending, Scheduled } from '../../definitions';
 
-export type ScheduledPersistence = Scheduled;
-type ReturnToAffectPersistence = ReturnToAffect;
+export type ScheduledPersistence = Omit<Scheduled, 'departure' | 'destination'> & {
+  departure: string;
+  destination: string;
+};
 
-export type FaresToPersist = [ScheduledPersistence, ReturnToAffectPersistence?];
+type PendingPersistence = Omit<Pending, 'departure' | 'destination'> & {
+  departure: string;
+  destination: string;
+};
 
-export const toFaresPersistence = (fare: Either<Errors, [Scheduled, ReturnToAffect?]>): Either<Errors, FaresToPersist> =>
-  pipe(
-    fare,
-    eitherMap(
-      ([scheduledFare, fareReturnToSchedule]: [Scheduled, ReturnToAffect?]): FaresToPersist =>
-        fareReturnToSchedule == null
-          ? [toScheduledFarePersistence(scheduledFare)]
-          : [toScheduledFarePersistence(scheduledFare), toToScheduleFarePersistence(fareReturnToSchedule)]
-    )
-  );
-
-const toScheduledFarePersistence = (scheduledFare: Scheduled): ScheduledPersistence => ({
-  client: scheduledFare.client,
-  creator: scheduledFare.creator,
-  datetime: scheduledFare.datetime,
-  departure: scheduledFare.departure,
-  destination: scheduledFare.destination,
-  distance: scheduledFare.distance,
-  planning: scheduledFare.planning,
-  duration: scheduledFare.duration,
-  kind: scheduledFare.kind,
-  nature: scheduledFare.nature,
-  phone: scheduledFare.phone,
-  status: scheduledFare.status
-});
-
-const toToScheduleFarePersistence = (fareReturnToSchedule: ReturnToAffect): ReturnToAffectPersistence => ({
-  client: fareReturnToSchedule.client,
-  datetime: fareReturnToSchedule.datetime,
-  departure: fareReturnToSchedule.departure,
-  destination: fareReturnToSchedule.destination,
-  planning: fareReturnToSchedule.planning,
-  kind: fareReturnToSchedule.kind,
-  nature: fareReturnToSchedule.nature,
-  phone: fareReturnToSchedule.phone,
-  status: fareReturnToSchedule.status
-});
+export type FaresToPersist = [ScheduledPersistence, PendingPersistence?];
 
 export const persistFares =
   (database: PostgresDb) =>
   (farePersistence: Either<Errors, FaresToPersist>): TaskEither<Errors, QueryResult[]> =>
     pipe(farePersistence, fromEither, taskEitherChain(insertFaresIn(database)));
+
+export const toFaresPersistence = (fare: Either<Errors, [Scheduled, Pending?]>): Either<Errors, FaresToPersist> =>
+  pipe(
+    fare,
+    eitherMap(
+      ([scheduledFare, fareReturnToSchedule]: [Scheduled, Pending?]): FaresToPersist =>
+        fareReturnToSchedule == null
+          ? [toScheduledFarePersistence(scheduledFare)]
+          : [toScheduledFarePersistence(scheduledFare), toPendingPersistence(fareReturnToSchedule)]
+    )
+  );
+
+const toScheduledFarePersistence = (scheduledFare: Scheduled): ScheduledPersistence => ({
+  ...scheduledFare,
+  departure: JSON.stringify(scheduledFare.departure),
+  destination: JSON.stringify(scheduledFare.destination)
+});
+
+const toPendingPersistence = (pending: Pending): PendingPersistence => ({
+  ...pending,
+  departure: JSON.stringify(pending.departure),
+  destination: JSON.stringify(pending.destination)
+});
 
 const insertFaresIn =
   (database: PostgresDb) =>
@@ -61,20 +52,20 @@ const insertFaresIn =
     taskEitherTryCatch(insertFares(database, fares), onInsertFaresError);
 
 const insertFares =
-  (database: PostgresDb, fares: [ScheduledPersistence, ReturnToAffectPersistence?]) => async (): Promise<QueryResult[]> =>
+  (database: PostgresDb, fares: [ScheduledPersistence, PendingPersistence?]) => async (): Promise<QueryResult[]> =>
     database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
-      const [fare, fareToSchedule]: [ScheduledPersistence, ReturnToAffectPersistence?] = fares;
+      const [fare, fareToSchedule]: [ScheduledPersistence, PendingPersistence?] = fares;
       const promises: Promise<QueryResult>[] = [
         insertScheduledFareQuery(client, fare),
-        ...insertReturnToAffectQueryOrEmpty(fareToSchedule, client)
+        ...insertPendingQueryOrEmpty(fareToSchedule, client)
       ];
       return Promise.all(promises);
     });
 
-const insertReturnToAffectQueryOrEmpty = (
-  fareToSchedule: ReturnToAffectPersistence | undefined,
+const insertPendingQueryOrEmpty = (
+  fareToSchedule: PendingPersistence | undefined,
   client: PoolClient
-): [] | [Promise<QueryResult>] => (fareToSchedule == null ? [] : [insertReturnToAffectQuery(client, fareToSchedule)]);
+): [] | [Promise<QueryResult>] => (fareToSchedule == null ? [] : [insertPendingQuery(client, fareToSchedule)]);
 
 const onInsertFaresError = (error: unknown): Errors =>
   [
@@ -90,13 +81,12 @@ const onInsertFaresError = (error: unknown): Errors =>
 
 const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledPersistence): Promise<QueryResult> =>
   client.query(insertFareQueryString, [
-    farePg.client,
-    farePg.creator,
+    farePg.passenger,
     farePg.datetime,
     JSON.stringify(farePg.departure),
     JSON.stringify(farePg.destination),
     farePg.distance,
-    farePg.planning,
+    farePg.driver,
     farePg.duration,
     farePg.kind,
     farePg.nature,
@@ -105,43 +95,42 @@ const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledPer
   ]);
 
 const insertFareQueryString: string = `
-      INSERT INTO fares (
-          client,
-          creator,
+      INSERT INTO scheduled_fares (
+          passenger,
           datetime,
           departure,
           destination,
           distance,
-          planning,
+          driver,
           duration,
           kind,
           nature,
           phone,
           status
       ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
       )
     `;
 
-const insertReturnToAffectQuery = async (client: PoolClient, farePg: ReturnToAffectPersistence): Promise<QueryResult> =>
-  client.query(insertReturnToAffectQueryString, [
-    farePg.client,
+const insertPendingQuery = async (client: PoolClient, farePg: PendingPersistence): Promise<QueryResult> =>
+  client.query(insertPendingQueryString, [
+    farePg.passenger,
     farePg.datetime,
     JSON.stringify(farePg.departure),
     JSON.stringify(farePg.destination),
-    farePg.planning,
+    farePg.driver,
     farePg.kind,
     farePg.nature,
     farePg.phone
   ]);
 
-const insertReturnToAffectQueryString: string = `
-      INSERT INTO returns_to_affect (
+const insertPendingQueryString: string = `
+      INSERT INTO pending_returns (
           client,
           datetime,
           departure,
           destination,
-          planning,
+          driver,
           kind,
           nature,
           phone

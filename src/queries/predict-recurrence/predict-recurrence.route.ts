@@ -1,15 +1,14 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
-import { PredictRecurrenceTransfer } from './predict-recurrence.codec';
 import { predictRecurrenceValidation } from './predict-recurrence.validation';
-import { predictRecurrence } from './predict-recurrence';
-import { PredictedRecurrence, PredictRecurrenceAdapter } from '../../definitions';
+import { predictRecurrence, PredictRecurrenceAdapter } from './predict-recurrence';
+import { PredictedRecurrence, PredictRecurrence } from '../../definitions';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 
 export type PredictRecurrenceRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  Body: PredictRecurrenceTransfer;
+  Body: PredictRecurrence;
 }>;
 
 /* eslint-disable @typescript-eslint/require-await */

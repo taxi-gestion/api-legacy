@@ -1,6 +1,4 @@
-import { Location } from './location.definition';
-import { TaskEither } from 'fp-ts/TaskEither';
-import { Errors } from '../reporter/HttpReporter';
+import { isValidLocation, Location } from './location.definition';
 
 export type Place = {
   context: string;
@@ -8,4 +6,4 @@ export type Place = {
   location: Location;
 };
 
-export type SearchPlaceAdapter = (predict: string) => TaskEither<Errors, Place[]>;
+export const isValidPlace = (placeData: Place): placeData is Place => isValidLocation(placeData.location);

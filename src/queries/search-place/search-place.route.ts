@@ -2,8 +2,8 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { searchPlaceValidation } from './search-place.validation';
-import { searchPlace } from './search-place';
-import { Place, SearchPlaceAdapter } from '../../definitions';
+import { searchPlace, SearchPlaceAdapter } from './search-place';
+import { Place } from '../../definitions';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 
 export type SearchPlaceRequest = FastifyRequest<{
@@ -23,7 +23,7 @@ export const searchPlaceQuery = async (
     url: '/search-place/:query',
     handler: async (req: SearchPlaceRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
-        req.params.query,
+        req.params,
         searchPlaceValidation,
         taskEitherChain(searchPlace(dependencies.adapter)),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<Place[]>)
