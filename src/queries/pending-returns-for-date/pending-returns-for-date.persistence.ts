@@ -10,39 +10,36 @@ import {
 } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { Entity, ReturnToAffect } from '../../definitions';
+import { Entity, Pending } from '../../definitions';
 import { addDays, subHours } from 'date-fns';
 
-type ReturnToAffectPersistence = Entity<ReturnToAffect>;
+type PendingPersistence = Entity & Pending;
 
-export const returnsToAffectForTheDateQuery =
+export const pendingReturnsForTheDateDatabaseQuery =
   (database: PostgresDb) =>
-  (date: Either<Errors, string>): TaskEither<Errors, Entity<ReturnToAffect>[]> =>
+  (date: Either<Errors, string>): TaskEither<Errors, (Entity & Pending)[]> =>
     pipe(
       date,
       fromEither,
       taskEitherChain(selectReturnsToAffectForDate(database)),
       taskEitherChain(
-        (queryResult: QueryResult): TaskEither<Errors, Entity<ReturnToAffect>[]> =>
-          taskEitherRight(toReturnsToAffect(queryResult))
+        (queryResult: QueryResult): TaskEither<Errors, (Entity & Pending)[]> => taskEitherRight(toReturnsToAffect(queryResult))
       )
     );
 
-const toReturnsToAffect = (queryResult: QueryResult): Entity<ReturnToAffect>[] =>
-  queryResult.rows.map(
-    (row: ReturnToAffectPersistence): Entity<ReturnToAffect> => ({
-      id: row.id,
-      client: row.client,
-      datetime: row.datetime,
-      departure: row.departure,
-      destination: row.destination,
-      planning: row.planning,
-      kind: row.kind,
-      nature: row.nature,
-      phone: row.phone,
-      status: 'return-to-affect'
-    })
-  );
+const toReturnsToAffect = (queryResult: QueryResult): (Entity & Pending)[] =>
+  queryResult.rows.map((row: PendingPersistence): Entity & Pending => ({
+    id: row.id,
+    passenger: row.passenger,
+    datetime: row.datetime,
+    departure: row.departure,
+    destination: row.destination,
+    driver: row.driver,
+    kind: row.kind,
+    nature: row.nature,
+    phone: row.phone,
+    status: 'pending-return'
+  }));
 
 const selectReturnsToAffectForDate =
   (database: PostgresDb) =>

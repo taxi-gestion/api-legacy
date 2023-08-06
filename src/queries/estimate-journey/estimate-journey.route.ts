@@ -2,8 +2,8 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { estimateJourneyValidation } from './estimate-journey.validation';
-import { estimateJourney } from './estimate-journey';
-import { EstimateJourneyAdapter, JourneyEstimate } from '../../definitions';
+import { estimateJourney, EstimateJourneyAdapter } from './estimate-journey';
+import { JourneyEstimate } from '../../definitions';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { JourneyTransfer } from './estimate-journey.codec';
 

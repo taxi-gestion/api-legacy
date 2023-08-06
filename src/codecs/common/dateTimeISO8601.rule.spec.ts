@@ -1,7 +1,7 @@
 import { Validation } from 'io-ts';
 import { pipe } from 'fp-ts/lib/function';
 import { fold } from 'fp-ts/Either';
-import HttpReporter, { DevFriendlyError } from '../reporter/HttpReporter';
+import HttpReporter, { DevFriendlyError } from '../../reporter/HttpReporter';
 import { DateTimeISO8601, isDateTimeISO8601String } from './dateTimeISO8601.rule';
 
 describe('isDateTimeISO8601 specification tests', (): void => {
