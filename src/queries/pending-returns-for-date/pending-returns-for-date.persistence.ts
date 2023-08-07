@@ -21,13 +21,13 @@ export const pendingReturnsForTheDateDatabaseQuery =
     pipe(
       date,
       fromEither,
-      taskEitherChain(selectReturnsToAffectForDate(database)),
+      taskEitherChain(selectPendingReturnsForDate(database)),
       taskEitherChain(
-        (queryResult: QueryResult): TaskEither<Errors, (Entity & Pending)[]> => taskEitherRight(toReturnsToAffect(queryResult))
+        (queryResult: QueryResult): TaskEither<Errors, (Entity & Pending)[]> => taskEitherRight(toPendingReturns(queryResult))
       )
     );
 
-const toReturnsToAffect = (queryResult: QueryResult): (Entity & Pending)[] =>
+const toPendingReturns = (queryResult: QueryResult): (Entity & Pending)[] =>
   queryResult.rows.map((row: PendingPersistence): Entity & Pending => ({
     id: row.id,
     passenger: row.passenger,
@@ -41,16 +41,16 @@ const toReturnsToAffect = (queryResult: QueryResult): (Entity & Pending)[] =>
     status: 'pending-return'
   }));
 
-const selectReturnsToAffectForDate =
+const selectPendingReturnsForDate =
   (database: PostgresDb) =>
   (date: string): TaskEither<Errors, QueryResult> =>
-    taskEitherTryCatch(selectFromReturnsToAffect(database)(date), onSelectReturnsToAffectError);
+    taskEitherTryCatch(selectFromPendingReturns(database)(date), onSelectPendingReturnsError);
 
-const onSelectReturnsToAffectError = (error: unknown): Errors =>
+const onSelectPendingReturnsError = (error: unknown): Errors =>
   [
     {
       isInfrastructureError: true,
-      message: `selectReturnsToAffectForDate database error - ${(error as Error).message}`,
+      message: `selectPendingReturnsForDate database error - ${(error as Error).message}`,
       // eslint-disable-next-line id-denylist
       value: (error as Error).name,
       stack: (error as Error).stack ?? 'no stack available',
@@ -58,10 +58,10 @@ const onSelectReturnsToAffectError = (error: unknown): Errors =>
     } satisfies InfrastructureError
   ] satisfies Errors;
 
-const selectFromReturnsToAffect = (database: PostgresDb) => (date: string) => async (): Promise<QueryResult> => {
+const selectFromPendingReturns = (database: PostgresDb) => (date: string) => async (): Promise<QueryResult> => {
   const client: PoolClient = await database.connect();
   try {
-    return await selectReturnsToAffectWhereDateQuery(client, date);
+    return await selectPendingReturnsWhereDateQuery(client, date);
   } finally {
     client.release();
   }
@@ -72,12 +72,12 @@ const adjustFrenchDateToUTC = (date: Date): string => {
   return adjustedDate.toISOString();
 };
 
-const selectReturnsToAffectWhereDateQuery = async (client: PoolClient, date: string): Promise<QueryResult> => {
+const selectPendingReturnsWhereDateQuery = async (client: PoolClient, date: string): Promise<QueryResult> => {
   const startOfDayUTC: string = adjustFrenchDateToUTC(new Date(date));
   const endOfDayUTC: string = adjustFrenchDateToUTC(addDays(new Date(date), 1));
-  return client.query(selectReturnsToAffectWhereDateQueryString, [startOfDayUTC, endOfDayUTC]);
+  return client.query(selectPendingReturnsWhereDateQueryString, [startOfDayUTC, endOfDayUTC]);
 };
 
-const selectReturnsToAffectWhereDateQueryString: string = `
-      SELECT * FROM fares WHERE datetime >= $1 AND datetime < $2
+const selectPendingReturnsWhereDateQueryString: string = `
+      SELECT * FROM pending_returns WHERE datetime >= $1 AND datetime < $2
     `;

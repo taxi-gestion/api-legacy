@@ -7,7 +7,7 @@ import { Entity, Pending } from '../../definitions';
 import { isDateString } from '../../codecs';
 import { pendingReturnsForTheDateDatabaseQuery } from './pending-returns-for-date.persistence';
 
-export type ReturnsToAffectForDateRequest = FastifyRequest<{
+export type PendingReturnsForDateRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Params: {
     date: string;
@@ -22,7 +22,7 @@ export const pendingReturnsForTheDateQuery = async (
   server.route({
     method: 'GET',
     url: '/pending-returns-for-date/:date',
-    handler: async (req: ReturnsToAffectForDateRequest, reply: FastifyReply): Promise<void> => {
+    handler: async (req: PendingReturnsForDateRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         isDateString.decode(req.params.date),
         pendingReturnsForTheDateDatabaseQuery(server.pg),

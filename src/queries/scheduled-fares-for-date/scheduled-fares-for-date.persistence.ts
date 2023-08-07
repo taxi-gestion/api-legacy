@@ -81,5 +81,5 @@ const selectFaresWhereDateQuery = async (client: PoolClient, date: string): Prom
 };
 
 const selectFaresWhereDateQueryString: string = `
-      SELECT * FROM fares WHERE datetime >= $1 AND datetime < $2
+      SELECT * FROM scheduled_fares WHERE datetime >= $1 AND datetime < $2
     `;

@@ -23,7 +23,7 @@ export const searchPlaceQuery = async (
     url: '/search-place/:query',
     handler: async (req: SearchPlaceRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
-        req.params,
+        req.params.query,
         searchPlaceValidation,
         taskEitherChain(searchPlace(dependencies.adapter)),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<Place[]>)

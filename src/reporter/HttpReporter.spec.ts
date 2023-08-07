@@ -64,7 +64,7 @@ describe('HttpReporter specification tests', (): void => {
     isInfrastructureError: true,
     code: '500',
     stack: 'no stack available',
-    message: `insertFareIn database error - relation "fares" does not exist`,
+    message: `insertFareIn database error - relation "scheduled_fares" does not exist`,
     // eslint-disable-next-line id-denylist
     value: 'Error'
   };
@@ -119,7 +119,7 @@ describe('HttpReporter specification tests', (): void => {
       infrastructureErrors,
       [
         {
-          humanReadable: `Internal Server Error - insertFareIn database error - relation "fares" does not exist`,
+          humanReadable: `Internal Server Error - insertFareIn database error - relation "scheduled_fares" does not exist`,
           errorValue: 'Error',
           code: '500'
         }
