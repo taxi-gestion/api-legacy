@@ -48,7 +48,7 @@ const insertScheduledFareQuery = async (client: PoolClient, farePg: Scheduled): 
   ]);
 
 const insertFareQueryString: string = `
-      INSERT INTO fares (
+      INSERT INTO scheduled_fares (
           passenger,
           datetime,
           departure,
