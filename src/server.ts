@@ -14,6 +14,8 @@ import { $googleMapsEstimateJourney } from './services/google/distance-matrix/es
 import { pendingReturnsForTheDateQuery } from './queries/pending-returns-for-date/pending-returns-for-date.route';
 import { scheduleReturnCommand } from './commands/schedule-return/schedule-return.route';
 import { scheduledFaresForTheDateQuery } from './queries/scheduled-fares-for-date/scheduled-fares-for-date.route';
+import { listDriversQuery } from './queries/list-drivers/list-drivers.route';
+import { $awsCognitoListUsersInGroupDriver } from './services/aws/cognito/list-drivers.api';
 
 const server: FastifyInstance = fastify();
 
@@ -43,6 +45,18 @@ server.register(searchPlaceQuery, {
 });
 server.register(estimateJourneyQuery, {
   adapter: $googleMapsEstimateJourney(process.env['API_KEY_GOOGLE_MAPS'] ?? '')
+});
+server.register(listDriversQuery, {
+  adapter: $awsCognitoListUsersInGroupDriver(
+    {
+      accessKeyId: process.env['AWS_ACCESS_KEY_ID'] ?? '',
+      secretAccessKey: process.env['AWS_SECRET_ACCESS_KEY'] ?? ''
+    },
+    {
+      region: process.env['AWS_REGION'] ?? '',
+      userPoolId: process.env['AWS_COGNITO_USER_POOL_ID'] ?? ''
+    }
+  )
 });
 /* eslint-enable @typescript-eslint/no-floating-promises */
 
