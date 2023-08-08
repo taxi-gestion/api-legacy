@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/taxi-gestion/api#readme",
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.386.0",
     "@fastify/postgres": "^5.2.0",
     "axios": "^1.4.0",
     "cron-validate": "^1.4.5",

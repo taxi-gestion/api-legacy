@@ -2,6 +2,11 @@ import { Place } from './place.definition';
 export type Entity = { id: string };
 export type ReturnToDelete = { idToDelete: string };
 
+export type Driver = {
+  identifier: string;
+  username: string;
+};
+
 export type Drive = {
   departure: Place;
   destination: Place;

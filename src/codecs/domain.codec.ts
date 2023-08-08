@@ -10,6 +10,7 @@ import {
 import {
   CompletedReturnToSchedule,
   Drive,
+  Driver,
   DurationDistance,
   Entity,
   FareToSchedule,
@@ -17,6 +18,11 @@ import {
   ReturnToSchedule
 } from '../definitions';
 import { isDateTimeISO8601String, isFrenchPhoneNumber, isPositive, placeCodec, placeRulesCodec } from './common';
+
+export const driverCodec: Type<Driver> = ioType({
+  identifier: ioString,
+  username: ioString
+});
 
 const driveCodec: Type<Drive> = ioType({
   datetime: ioString,
