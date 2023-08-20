@@ -1,6 +1,14 @@
-import { array as ioArray, boolean as ioBoolean, string as ioString, Type, type as ioType } from 'io-ts';
-import { Driver } from '../../../definitions';
-import { driverCodec } from '../../../codecs';
+import {
+  array as ioArray,
+  boolean as ioBoolean,
+  string as ioString,
+  Type,
+  type as ioType,
+  intersection as ioIntersection
+} from 'io-ts';
+import { date as ioDate } from 'io-ts-types';
+import { Driver, Entity } from '../../../definitions';
+import { driverCodec, entityCodec } from '../../../codecs';
 
 /* eslint-disable @typescript-eslint/naming-convention,id-denylist */
 export type AwsCognitoIdentityProviderResponse = {
@@ -10,28 +18,28 @@ export type AwsCognitoIdentityProviderResponse = {
 export type CognitoUser = {
   Attributes: CognitoUserAttribute[];
   Enabled: boolean;
-  UserCreateDate: string;
-  UserLastModifiedDate: string;
+  UserCreateDate: Date;
+  UserLastModifiedDate: Date;
   Username: string;
   UserStatus: string;
 };
 
 export type CognitoUserAttribute = {
-  name: string;
+  Name: string;
   // eslint-disable-next-line id-denylist
-  value: string;
+  Value: string;
 };
 
 export const cognitoUserAttributeCodec: Type<CognitoUserAttribute> = ioType({
-  name: ioString,
-  value: ioString
+  Name: ioString,
+  Value: ioString
 });
 
 const cognitoUserCodec: Type<CognitoUser> = ioType({
   Attributes: ioArray(cognitoUserAttributeCodec),
   Enabled: ioBoolean,
-  UserCreateDate: ioString,
-  UserLastModifiedDate: ioString,
+  UserCreateDate: ioDate,
+  UserLastModifiedDate: ioDate,
   Username: ioString,
   UserStatus: ioString
 });
@@ -41,4 +49,4 @@ export const awsCognitoIdentityProviderTransferCodec: Type<AwsCognitoIdentityPro
 });
 /* eslint-enable @typescript-eslint/naming-convention,id-denylist */
 
-export const driversCodec: Type<Driver[]> = ioArray(driverCodec);
+export const driverEntitiesCodec: Type<(Driver & Entity)[]> = ioArray(ioIntersection([driverCodec, entityCodec]));

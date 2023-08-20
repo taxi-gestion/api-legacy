@@ -19,6 +19,10 @@ import {
 } from '../definitions';
 import { isDateTimeISO8601String, isFrenchPhoneNumber, isPositive, placeCodec, placeRulesCodec } from './common';
 
+export const entityCodec: Type<Entity> = ioType({
+  id: ioString
+});
+
 export const driverCodec: Type<Driver> = ioType({
   identifier: ioString,
   username: ioString

@@ -1,7 +1,7 @@
 import { TaskEither } from 'fp-ts/TaskEither';
 import { Errors } from '../../reporter/HttpReporter';
-import { Driver } from '../../definitions';
+import { Driver, Entity } from '../../definitions';
 
-export type ListDriversAdapter = () => TaskEither<Errors, Driver[]>;
+export type ListDriversAdapter = () => TaskEither<Errors, (Driver & Entity)[]>;
 
-export const listDrivers = (serviceCall: ListDriversAdapter): TaskEither<Errors, Driver[]> => serviceCall();
+export const listDrivers = (serviceCall: ListDriversAdapter): TaskEither<Errors, (Driver & Entity)[]> => serviceCall();
