@@ -2,7 +2,7 @@ import { chain as taskEitherChain, TaskEither, tryCatch as taskEitherTryCatch } 
 import { Errors } from '../../../reporter/HttpReporter';
 import { pipe } from 'fp-ts/function';
 import { onDependencyError } from '../../../reporter/onDependencyError.error';
-import { Driver } from '../../../definitions';
+import { Driver, Entity } from '../../../definitions';
 import { listUsersInGroupDriverValidation } from './list-drivers.validation';
 import { CognitoIdentityProviderClient, ListUsersInGroupCommand } from '@aws-sdk/client-cognito-identity-provider';
 
@@ -17,7 +17,7 @@ type Cognito = {
 };
 
 export const $awsCognitoListUsersInGroupDriver =
-  (awsCredentials: AwsCredentials, cognito: Cognito) => (): TaskEither<Errors, Driver[]> =>
+  (awsCredentials: AwsCredentials, cognito: Cognito) => (): TaskEither<Errors, (Driver & Entity)[]> =>
     pipe(
       $callToAwsCognitoIdentityProviderApi(awsCredentials, cognito)('driver'),
       taskEitherChain(listUsersInGroupDriverValidation)

@@ -7,13 +7,13 @@ import {
   awsCognitoIdentityProviderTransferCodec,
   CognitoUser,
   CognitoUserAttribute,
-  driversCodec
+  driverEntitiesCodec
 } from './cognito.codec';
-import { Driver } from '../../../definitions';
+import { Driver, Entity } from '../../../definitions';
 import { Errors } from '../../../reporter/HttpReporter';
 import { externalTypeCheckFor } from '../../../codecs';
 
-export const listUsersInGroupDriverValidation = (transfer: unknown): TaskEither<Errors, Driver[]> =>
+export const listUsersInGroupDriverValidation = (transfer: unknown): TaskEither<Errors, (Driver & Entity)[]> =>
   pipe(
     transfer,
     externalTypeCheckFor<AwsCognitoIdentityProviderResponse>(awsCognitoIdentityProviderTransferCodec),
@@ -21,18 +21,20 @@ export const listUsersInGroupDriverValidation = (transfer: unknown): TaskEither<
     fromEither
   );
 
-const internalTypeCheckForListUsersInGroupDriver = (response: AwsCognitoIdentityProviderResponse): Either<Errors, Driver[]> =>
-  driversCodec.decode(toDrivers(response.Users));
+const internalTypeCheckForListUsersInGroupDriver = (
+  response: AwsCognitoIdentityProviderResponse
+): Either<Errors, (Driver & Entity)[]> => driverEntitiesCodec.decode(toDrivers(response.Users));
 
-const toDrivers = (cognitoUsers: CognitoUser[]): Driver[] => cognitoUsers.map(toDriver);
+const toDrivers = (cognitoUsers: CognitoUser[]): (Driver & Entity)[] => cognitoUsers.map(toDriver);
 
 const findAttributeValueByName = (attributeName: string, attributes: CognitoUserAttribute[]): string | undefined =>
-  attributes.find((attribute: CognitoUserAttribute): boolean => attribute.name === attributeName)?.value;
+  attributes.find((attribute: CognitoUserAttribute): boolean => attribute.Name === attributeName)?.Value;
 
-const toDriver = (cognitoUser: CognitoUser): Driver => ({
-  identifier:
-    findAttributeValueByName('phone', cognitoUser.Attributes) ??
-    findAttributeValueByName('email', cognitoUser.Attributes) ??
-    '',
-  username: findAttributeValueByName('username', cognitoUser.Attributes) ?? ''
+const toDriver = (cognitoUser: CognitoUser): Driver & Entity => ({
+  identifier: extractMailOrPhone(cognitoUser),
+  username: extractMailOrPhone(cognitoUser),
+  id: cognitoUser.Username
 });
+
+const extractMailOrPhone = (user: CognitoUser): string =>
+  findAttributeValueByName('phone_number', user.Attributes) ?? findAttributeValueByName('email', user.Attributes) ?? '';
