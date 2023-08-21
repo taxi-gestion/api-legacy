@@ -60,4 +60,11 @@ DROP TABLE IF EXISTS scheduled_fares;
         nature TEXT NOT NULL,
         phone TEXT NOT NULL
     );
+    DROP TABLE IF EXISTS passengers;
+     CREATE TABLE passengers (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        firstname TEXT NOT NULL,
+        lastname TEXT NOT NULL,
+        phone TEXT NOT NULL
+    );
     `;

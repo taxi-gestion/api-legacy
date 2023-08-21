@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc --noEmit && esbuild --bundle src/server.ts --outdir=build --platform=node --packages=external --minify --target=ESNext",
     "start": "node build/server.js",
-    "start-local": "PORT=3000 DATABASE_URL=postgres://postgres:password@localhost/database  node build/server.js",
+    "start-local": "PORT=3000 DATABASE_URL=postgres://postgres:password@localhost/database node build/server.js",
     "lint.es": "eslint ./src",
     "lint.commit": "mv tsconfig.json tsconfig.jso && commitlint --from $(git rev-list --max-parents=0 HEAD | head -1) --to HEAD --config .commitlint.config.cjs ; mv tsconfig.jso tsconfig.json",
     "test": "jest --passWithNoTests",

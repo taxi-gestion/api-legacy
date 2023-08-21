@@ -16,6 +16,8 @@ import { scheduleReturnCommand } from './commands/schedule-return/schedule-retur
 import { scheduledFaresForTheDateQuery } from './queries/scheduled-fares-for-date/scheduled-fares-for-date.route';
 import { listDriversQuery } from './queries/list-drivers/list-drivers.route';
 import { $awsCognitoListUsersInGroupDriver } from './services/aws/cognito/list-drivers.api';
+import { listPassengersQuery } from './queries/list-passengers/list-passengers.route';
+import { registerRegularCommand } from './commands/register-regular/register-regular.route';
 
 const server: FastifyInstance = fastify();
 
@@ -37,6 +39,7 @@ server.register(scheduledFaresForTheDateQuery, { database: server.pg });
 server.register(resetDatabaseCommand, { database: server.pg });
 server.register(scheduleFareCommand, { database: server.pg });
 server.register(scheduleReturnCommand, { database: server.pg });
+server.register(registerRegularCommand, { database: server.pg });
 server.register(predictRecurrenceQuery, {
   adapter: $openAIPredictRecurrence(process.env['API_KEY_OPENAI'] ?? '')
 });
@@ -58,6 +61,8 @@ server.register(listDriversQuery, {
     }
   )
 });
+server.register(listPassengersQuery, { database: server.pg });
+
 /* eslint-enable @typescript-eslint/no-floating-promises */
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
