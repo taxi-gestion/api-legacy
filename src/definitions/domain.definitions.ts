@@ -24,6 +24,12 @@ export type Passenger = {
   phone: string;
 };
 
+export type Regular = {
+  firstname: string;
+  lastname: string;
+  phone: string;
+};
+
 export type Nature = {
   nature: 'medical' | 'standard';
 };

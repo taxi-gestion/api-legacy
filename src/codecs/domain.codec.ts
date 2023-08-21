@@ -15,6 +15,7 @@ import {
   Entity,
   FareToSchedule,
   Passenger,
+  Regular,
   ReturnToSchedule
 } from '../definitions';
 import { isDateTimeISO8601String, isFrenchPhoneNumber, isPositive, placeCodec, placeRulesCodec } from './common';
@@ -62,6 +63,20 @@ const passengerCodec: Type<Passenger> = ioType({
 const passengerRulesCodec = ioType({
   phone: isFrenchPhoneNumber
 });
+
+export const regularPassengerCodec: Type<Regular> = ioType({
+  firstname: ioString,
+  lastname: ioString,
+  phone: ioString
+});
+
+// eslint-disable-next-line @typescript-eslint/typedef
+export const regularPassengerRulesCodec = ioIntersection([
+  regularPassengerCodec,
+  ioType({
+    phone: isFrenchPhoneNumber
+  })
+]);
 
 export const fareToScheduleCodec: Type<FareToSchedule> = ioIntersection([
   driveCodec,
