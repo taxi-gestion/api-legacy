@@ -126,7 +126,7 @@ const insertPendingQuery = async (client: PoolClient, farePg: PendingPersistence
 
 const insertPendingQueryString: string = `
       INSERT INTO pending_returns (
-          client,
+          passenger,
           datetime,
           departure,
           destination,
