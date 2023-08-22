@@ -3,6 +3,9 @@ import {
   intersection as ioIntersection,
   keyof as ioKeyof,
   literal as ioLiteral,
+  undefined as ioUndefined,
+  tuple as ioTuple,
+  union as ioUnion,
   number as ioNumber,
   string as ioString,
   type as ioType
@@ -23,6 +26,11 @@ import { isDateTimeISO8601String, isFrenchPhoneNumber, isPositive, placeCodec, p
 export const entityCodec: Type<Entity> = ioType({
   id: ioString
 });
+
+export const entityTupleWithSecondOptionalCodec: Type<[Entity, Entity?]> = ioTuple([
+  entityCodec,
+  ioUnion([entityCodec, ioUndefined])
+]) as unknown as Type<[Entity, Entity?]>;
 
 export const driverCodec: Type<Driver> = ioType({
   identifier: ioString,

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import { pipe } from 'fp-ts/lib/function';
@@ -14,6 +15,7 @@ export type ScheduledPersistence = Omit<Scheduled, 'departure' | 'destination'> 
 type PendingPersistence = Omit<Pending, 'departure' | 'destination'> & {
   departure: string;
   destination: string;
+  outwardFareId: string;
 };
 
 export type FaresToPersist = [ScheduledPersistence, PendingPersistence?];
@@ -43,7 +45,8 @@ const toScheduledFarePersistence = (scheduledFare: Scheduled): ScheduledPersiste
 const toPendingPersistence = (pending: Pending): PendingPersistence => ({
   ...pending,
   departure: JSON.stringify(pending.departure),
-  destination: JSON.stringify(pending.destination)
+  destination: JSON.stringify(pending.destination),
+  outwardFareId: ''
 });
 
 const insertFaresIn =
@@ -55,17 +58,20 @@ const insertFares =
   (database: PostgresDb, fares: [ScheduledPersistence, PendingPersistence?]) => async (): Promise<QueryResult[]> =>
     database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
       const [fare, fareToSchedule]: [ScheduledPersistence, PendingPersistence?] = fares;
-      const promises: Promise<QueryResult>[] = [
-        insertScheduledFareQuery(client, fare),
-        ...insertPendingQueryOrEmpty(fareToSchedule, client)
-      ];
-      return Promise.all(promises);
-    });
 
-const insertPendingQueryOrEmpty = (
-  fareToSchedule: PendingPersistence | undefined,
-  client: PoolClient
-): [] | [Promise<QueryResult>] => (fareToSchedule == null ? [] : [insertPendingQuery(client, fareToSchedule)]);
+      const scheduledFareResult: QueryResult = await insertScheduledFareQuery(client, fare);
+
+      if (fareToSchedule == null) {
+        return [scheduledFareResult];
+      }
+
+      const pendingFareResult: QueryResult = await insertPendingQuery(client, {
+        ...fareToSchedule,
+        outwardFareId: scheduledFareResult.rows[0].id as string
+      });
+
+      return [scheduledFareResult, pendingFareResult];
+    });
 
 const onInsertFaresError = (error: unknown): Errors =>
   [
@@ -109,19 +115,21 @@ const insertFareQueryString: string = `
           status
       ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
-      )
+      ) 
+      RETURNING *
     `;
 
-const insertPendingQuery = async (client: PoolClient, farePg: PendingPersistence): Promise<QueryResult> =>
+const insertPendingQuery = async (client: PoolClient, pendingPg: PendingPersistence): Promise<QueryResult> =>
   client.query(insertPendingQueryString, [
-    farePg.passenger,
-    farePg.datetime,
-    JSON.stringify(farePg.departure),
-    JSON.stringify(farePg.destination),
-    farePg.driver,
-    farePg.kind,
-    farePg.nature,
-    farePg.phone
+    pendingPg.passenger,
+    pendingPg.datetime,
+    JSON.stringify(pendingPg.departure),
+    JSON.stringify(pendingPg.destination),
+    pendingPg.driver,
+    pendingPg.kind,
+    pendingPg.nature,
+    pendingPg.phone,
+    pendingPg.outwardFareId
   ]);
 
 const insertPendingQueryString: string = `
@@ -133,8 +141,10 @@ const insertPendingQueryString: string = `
           driver,
           kind,
           nature,
-          phone
+          phone,
+          outward_fare_id
       ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8
+          $1, $2, $3, $4, $5, $6, $7, $8, $9
       )
+      RETURNING *
       `;
