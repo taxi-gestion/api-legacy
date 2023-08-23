@@ -18,6 +18,7 @@ import { listDriversQuery } from './queries/list-drivers/list-drivers.route';
 import { $awsCognitoListUsersInGroupDriver } from './services/aws/cognito/list-drivers.api';
 import { listPassengersQuery } from './queries/list-passengers/list-passengers.route';
 import { registerRegularCommand } from './commands/register-regular/register-regular.route';
+import { deleteFareCommand } from './commands/delete-fare/delete-fare.route';
 
 const server: FastifyInstance = fastify();
 
@@ -40,6 +41,7 @@ server.register(resetDatabaseCommand, { database: server.pg });
 server.register(scheduleFareCommand, { database: server.pg });
 server.register(scheduleReturnCommand, { database: server.pg });
 server.register(registerRegularCommand, { database: server.pg });
+server.register(deleteFareCommand, { database: server.pg });
 server.register(predictRecurrenceQuery, {
   adapter: $openAIPredictRecurrence(process.env['API_KEY_OPENAI'] ?? '')
 });

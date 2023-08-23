@@ -31,7 +31,6 @@ const dropAndRecreateTablesQueries = async (client: PoolClient): Promise<QueryRe
   client.query(dropAndRecreateTablesQueryString);
 
 const dropAndRecreateTablesQueryString: string = `
-DROP TABLE IF EXISTS fares;
 DROP TABLE IF EXISTS scheduled_fares;
      CREATE TABLE scheduled_fares (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -47,7 +46,6 @@ DROP TABLE IF EXISTS scheduled_fares;
         phone TEXT NOT NULL,
         status TEXT NOT NULL
     );
-    DROP TABLE IF EXISTS returns_to_affect;
     DROP TABLE IF EXISTS pending_returns;
      CREATE TABLE pending_returns (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -58,7 +56,8 @@ DROP TABLE IF EXISTS scheduled_fares;
         driver TEXT,
         kind TEXT NOT NULL,
         nature TEXT NOT NULL,
-        phone TEXT NOT NULL
+        phone TEXT NOT NULL,
+        outward_fare_id UUID NOT NULL
     );
     DROP TABLE IF EXISTS passengers;
      CREATE TABLE passengers (
