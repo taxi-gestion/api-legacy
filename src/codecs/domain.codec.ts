@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import type { Type } from 'io-ts';
 import {
   intersection as ioIntersection,
@@ -8,7 +9,8 @@ import {
   union as ioUnion,
   number as ioNumber,
   string as ioString,
-  type as ioType
+  type as ioType,
+  array as ioArray
 } from 'io-ts';
 import {
   CompletedReturnToSchedule,
@@ -18,8 +20,10 @@ import {
   Entity,
   FareToSchedule,
   Passenger,
+  Pending,
   Regular,
-  ReturnToSchedule
+  ReturnToSchedule,
+  Scheduled
 } from '../definitions';
 import { isDateTimeISO8601String, isFrenchPhoneNumber, isPositive, placeCodec, placeRulesCodec } from './common';
 
@@ -135,3 +139,31 @@ export const completedReturnToScheduleRulesCodec = ioIntersection([
   passengerRulesCodec,
   durationDistanceRulesCodec
 ]);
+
+export const pendingReturnsCodec: Type<(Entity & Pending)[]> = ioArray(
+  ioIntersection([
+    passengerCodec,
+    driveCodec,
+    ioType({
+      id: ioString,
+      kind: ioLiteral('two-way'),
+      status: ioLiteral('pending-return'),
+      nature: ioKeyof({ medical: null, standard: null })
+    })
+  ])
+);
+
+export const scheduledFaresCodec: Type<(Entity & Scheduled)[]> = ioArray(
+  ioIntersection([
+    passengerCodec,
+    driveCodec,
+    durationDistanceCodec,
+    ioType({
+      id: ioString,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      kind: ioKeyof({ 'one-way': null, 'two-way': null }),
+      status: ioLiteral('scheduled'),
+      nature: ioKeyof({ medical: null, standard: null })
+    })
+  ])
+);

@@ -10,30 +10,31 @@ import {
 } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { Entity, Pending } from '../../definitions';
+import { Entity, Pending, Place } from '../../definitions';
 import { addDays, subHours } from 'date-fns';
 
-type PendingPersistence = Entity & Pending;
+type PendingPersistence = Omit<Entity & Pending, 'departure' | 'destination'> & {
+  departure: string;
+  destination: string;
+};
 
 export const pendingReturnsForTheDateDatabaseQuery =
   (database: PostgresDb) =>
-  (date: Either<Errors, string>): TaskEither<Errors, (Entity & Pending)[]> =>
+  (date: Either<Errors, string>): TaskEither<Errors, unknown> =>
     pipe(
       date,
       fromEither,
       taskEitherChain(selectPendingReturnsForDate(database)),
-      taskEitherChain(
-        (queryResult: QueryResult): TaskEither<Errors, (Entity & Pending)[]> => taskEitherRight(toPendingReturns(queryResult))
-      )
+      taskEitherChain((queryResult: QueryResult): TaskEither<Errors, unknown> => taskEitherRight(toPendingReturns(queryResult)))
     );
 
-const toPendingReturns = (queryResult: QueryResult): (Entity & Pending)[] =>
-  queryResult.rows.map((row: PendingPersistence): Entity & Pending => ({
+const toPendingReturns = (queryResult: QueryResult): unknown =>
+  queryResult.rows.map((row: PendingPersistence): unknown => ({
     id: row.id,
     passenger: row.passenger,
     datetime: row.datetime,
-    departure: row.departure,
-    destination: row.destination,
+    departure: JSON.parse(row.departure) as Place,
+    destination: JSON.parse(row.destination) as Place,
     driver: row.driver,
     kind: row.kind,
     nature: row.nature,
