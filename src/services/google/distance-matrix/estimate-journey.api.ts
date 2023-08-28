@@ -30,7 +30,7 @@ const callToGoogleMapsDistanceMatrixApi =
         ?units=metric
         &origins=${journey.origin.location.latitude},${journey.origin.location.longitude}
         &destinations=${journey.destination.location.latitude},${journey.destination.location.longitude}
-        &departure_time=${getUnixTime(parseISO(journey.departureTime))}
+        &departure_time=${nowLiteralOrLaterTimestampInSeconds(journey.departureTime)}
         &mode=driving&traffic_model=best_guess
         &key=${googleMapsApiKey}&language=fr
         `.replace(/\s+/gu, ''),
@@ -42,3 +42,8 @@ const callToGoogleMapsDistanceMatrixApi =
     });
     return response.data;
   };
+
+const nowLiteralOrLaterTimestampInSeconds = (departureTime: string): number | 'now' => {
+  const datetimeTimeStamp: number = getUnixTime(parseISO(departureTime));
+  return Math.round(Date.now() * 0.001) > datetimeTimeStamp ? 'now' : datetimeTimeStamp;
+};
