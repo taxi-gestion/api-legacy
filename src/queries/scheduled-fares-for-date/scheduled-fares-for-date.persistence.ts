@@ -10,33 +10,34 @@ import {
 } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { Entity, Scheduled } from '../../definitions';
+import { Entity, Place, Scheduled } from '../../definitions';
 import { addDays, subHours } from 'date-fns';
 
-type ScheduledFarePersistence = Entity & Scheduled;
+type ScheduledFarePersistence = Omit<Entity & Scheduled, 'departure' | 'destination'> & {
+  departure: string;
+  destination: string;
+};
 
 export const scheduledFaresForTheDatePersistenceQuery =
   (database: PostgresDb) =>
-  (date: Either<Errors, string>): TaskEither<Errors, (Entity & Scheduled)[]> =>
+  (date: Either<Errors, string>): TaskEither<Errors, unknown> =>
     pipe(
       date,
       fromEither,
       taskEitherChain(selectFaresForDate(database)),
-      taskEitherChain(
-        (queryResult: QueryResult): TaskEither<Errors, (Entity & Scheduled)[]> => taskEitherRight(toScheduledFares(queryResult))
-      )
+      taskEitherChain((queryResult: QueryResult): TaskEither<Errors, unknown> => taskEitherRight(toScheduledFares(queryResult)))
     );
 
-const toScheduledFares = (queryResult: QueryResult): (Entity & Scheduled)[] =>
-  queryResult.rows.map((row: ScheduledFarePersistence): Entity & Scheduled => ({
+const toScheduledFares = (queryResult: QueryResult): unknown =>
+  queryResult.rows.map((row: ScheduledFarePersistence): unknown => ({
     id: row.id,
     passenger: row.passenger,
     datetime: row.datetime,
-    departure: row.departure,
-    destination: row.destination,
-    distance: row.distance,
+    departure: JSON.parse(row.departure) as Place,
+    destination: JSON.parse(row.destination) as Place,
+    distance: Number(row.distance),
     driver: row.driver,
-    duration: row.duration,
+    duration: Number(row.duration),
     kind: row.kind,
     nature: row.nature,
     phone: row.phone,

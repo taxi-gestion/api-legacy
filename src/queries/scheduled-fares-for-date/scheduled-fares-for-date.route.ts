@@ -1,11 +1,12 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
-import { fold as taskEitherFold } from 'fp-ts/TaskEither';
+import { fold as taskEitherFold, chain as taskEitherChain } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { PostgresDb } from '@fastify/postgres';
 import { isDateString } from '../../codecs';
 import { Entity, Scheduled } from '../../definitions';
 import { scheduledFaresForTheDatePersistenceQuery } from './scheduled-fares-for-date.persistence';
+import { scheduledFaresValidation } from './scheduled-fares-for-date.validation';
 
 export type FareForDateRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -26,6 +27,7 @@ export const scheduledFaresForTheDateQuery = async (
       await pipe(
         isDateString.decode(req.params.date),
         scheduledFaresForTheDatePersistenceQuery(server.pg),
+        taskEitherChain(scheduledFaresValidation),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<(Entity & Scheduled)[]>)
       )();
     }
