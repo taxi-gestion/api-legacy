@@ -69,5 +69,5 @@ const insertFareQueryString: string = `
 const removeReturnToScheduleQuery = async (client: PoolClient, { idToDelete }: ReturnToDelete): Promise<QueryResult> =>
   client.query(removeReturnToScheduleQueryString, [idToDelete]);
 
-const removeReturnToScheduleQueryString: string = `DELETE FROM returns_to_schedule WHERE id = $1;
+const removeReturnToScheduleQueryString: string = `DELETE FROM pending_returns WHERE id = $1;
       `;
