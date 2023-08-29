@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fastify from 'fastify';
+import formbody from '@fastify/formbody';
 import postgres from '@fastify/postgres';
 import { closeGracefullyOnSignalInterrupt, start } from './server.utils';
 import { databaseStatusQuery } from './queries/database-status/database-status.route';
@@ -23,6 +24,10 @@ import { deleteFareCommand } from './commands/delete-fare/delete-fare.route';
 const server: FastifyInstance = fastify();
 
 closeGracefullyOnSignalInterrupt({ server, nodeProcess: process });
+
+// Used to parse application/x-www-form-urlencoded
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+server.register(formbody);
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 server.register(postgres, {
