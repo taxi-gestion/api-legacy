@@ -27,7 +27,7 @@ const $returnToScheduleToFareToSchedule =
   (db: PostgresDb) =>
   (scheduleReturnTransfer: Entity & ReturnToSchedule): TaskEither<Errors, unknown> =>
     taskEitherTryCatch(async (): Promise<unknown> => {
-      const originalReturnFareValues: QueryResult = await db.query('SELECT * FROM returns_to_schedule WHERE id = $1 LIMIT 1', [
+      const originalReturnFareValues: QueryResult = await db.query('SELECT * FROM pending_returns WHERE id = $1 LIMIT 1', [
         scheduleReturnTransfer.id
       ]);
 
