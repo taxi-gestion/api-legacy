@@ -20,6 +20,7 @@ import { $awsCognitoListUsersInGroupDriver } from './services/aws/cognito/list-d
 import { listPassengersQuery } from './queries/list-passengers/list-passengers.route';
 import { registerRegularCommand } from './commands/register-regular/register-regular.route';
 import { deleteFareCommand } from './commands/delete-fare/delete-fare.route';
+import { editFareCommand } from './commands/edit-fare/edit-fare.route';
 
 const server: FastifyInstance = fastify();
 
@@ -44,6 +45,7 @@ server.register(pendingReturnsForTheDateQuery, { database: server.pg });
 server.register(scheduledFaresForTheDateQuery, { database: server.pg });
 server.register(resetDatabaseCommand, { database: server.pg });
 server.register(scheduleFareCommand, { database: server.pg });
+server.register(editFareCommand, { database: server.pg });
 server.register(scheduleReturnCommand, { database: server.pg });
 server.register(registerRegularCommand, { database: server.pg });
 server.register(deleteFareCommand, { database: server.pg });

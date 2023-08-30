@@ -7,7 +7,7 @@ import type { PostgresDb } from '@fastify/postgres';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
 import { Pending, Scheduled } from '../../definitions';
 
-export type ScheduledPersistence = Omit<Scheduled, 'departure' | 'destination'> & {
+type ScheduledPersistence = Omit<Scheduled, 'departure' | 'destination'> & {
   departure: string;
   destination: string;
 };
@@ -89,8 +89,8 @@ const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledPer
   client.query(insertFareQueryString, [
     farePg.passenger,
     farePg.datetime,
-    JSON.stringify(farePg.departure),
-    JSON.stringify(farePg.destination),
+    farePg.departure,
+    farePg.destination,
     farePg.distance,
     farePg.driver,
     farePg.duration,
@@ -123,8 +123,8 @@ const insertPendingQuery = async (client: PoolClient, pendingPg: PendingPersiste
   client.query(insertPendingQueryString, [
     pendingPg.passenger,
     pendingPg.datetime,
-    JSON.stringify(pendingPg.departure),
-    JSON.stringify(pendingPg.destination),
+    pendingPg.departure,
+    pendingPg.destination,
     pendingPg.driver,
     pendingPg.kind,
     pendingPg.nature,

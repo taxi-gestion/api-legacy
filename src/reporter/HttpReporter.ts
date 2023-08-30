@@ -36,7 +36,7 @@ type HttpReporter = Reporter<DevFriendlyError[]> & {
   report: <T>(errors: Either<Errors, T>) => DevFriendlyError[];
 };
 
-const isInfrastructureError = (error: InfrastructureError | ValidationError): error is InfrastructureError =>
+export const isInfrastructureError = (error: InfrastructureError | ValidationError): error is InfrastructureError =>
   'isInfrastructureError' in error;
 
 // I do not have a better alternative for now without a lot of work with io-ts
