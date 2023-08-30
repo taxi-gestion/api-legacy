@@ -10,7 +10,7 @@ import {
 } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { Entity, Pending, Place } from '../../definitions';
+import { Entity, Pending } from '../../definitions';
 import { addDays, subHours } from 'date-fns';
 
 type PendingPersistence = Omit<Entity & Pending, 'departure' | 'destination'> & {
@@ -33,8 +33,8 @@ const toPendingReturns = (queryResult: QueryResult): unknown =>
     id: row.id,
     passenger: row.passenger,
     datetime: row.datetime,
-    departure: JSON.parse(row.departure) as Place,
-    destination: JSON.parse(row.destination) as Place,
+    departure: row.departure,
+    destination: row.destination,
     driver: row.driver,
     kind: row.kind,
     nature: row.nature,

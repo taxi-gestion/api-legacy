@@ -10,7 +10,7 @@ import {
 } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { Entity, Place, Scheduled } from '../../definitions';
+import { Entity, Scheduled } from '../../definitions';
 import { addDays, subHours } from 'date-fns';
 
 type ScheduledFarePersistence = Omit<Entity & Scheduled, 'departure' | 'destination'> & {
@@ -33,8 +33,8 @@ const toScheduledFares = (queryResult: QueryResult): unknown =>
     id: row.id,
     passenger: row.passenger,
     datetime: row.datetime,
-    departure: JSON.parse(row.departure) as Place,
-    destination: JSON.parse(row.destination) as Place,
+    departure: row.departure,
+    destination: row.destination,
     distance: Number(row.distance),
     driver: row.driver,
     duration: Number(row.duration),
