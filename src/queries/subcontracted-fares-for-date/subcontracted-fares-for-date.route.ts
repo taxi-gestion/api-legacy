@@ -3,9 +3,9 @@ import { pipe } from 'fp-ts/function';
 import { fold as taskEitherFold, chain as taskEitherChain } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { isDateString } from '../../codecs';
-import { Entity, Scheduled } from '../../definitions';
-import { scheduledFaresForTheDatePersistenceQuery } from './scheduled-fares-for-date.persistence';
-import { scheduledFaresValidation } from './scheduled-fares-for-date.validation';
+import { Entity, Subcontracted } from '../../definitions';
+import { subcontractedFaresForTheDatePersistenceQuery } from './subcontracted-fares-for-date.persistence';
+import { subcontractedFaresValidation } from './subcontracted-fares-for-date.validation';
 
 export type FareForDateRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -14,19 +14,19 @@ export type FareForDateRequest = FastifyRequest<{
   };
 }>;
 
-export const scheduledFaresForTheDateQuery = async (
+export const subcontractedFaresForTheDateQuery = async (
   server: FastifyInstance
   // eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<void> => {
   server.route({
     method: 'GET',
-    url: '/scheduled-fares-for-date/:date',
+    url: '/subcontracted-fares-for-date/:date',
     handler: async (req: FareForDateRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         isDateString.decode(req.params.date),
-        scheduledFaresForTheDatePersistenceQuery(server.pg),
-        taskEitherChain(scheduledFaresValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<(Entity & Scheduled)[]>)
+        subcontractedFaresForTheDatePersistenceQuery(server.pg),
+        taskEitherChain(subcontractedFaresValidation),
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<(Entity & Subcontracted)[]>)
       )();
     }
   });

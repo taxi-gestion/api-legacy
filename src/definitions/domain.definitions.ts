@@ -72,3 +72,21 @@ export type Scheduled = Drive &
     kind: 'one-way' | 'two-way';
     status: 'scheduled';
   };
+
+export type Subcontractor = {
+  subcontractor: string;
+};
+// TODO Refactor Drive to exclude driver
+export type FareToSubcontract = Subcontractor & {
+  status: 'to-subcontract';
+};
+
+// TODO Refactor Drive to exclude driver
+export type Subcontracted = DurationDistance &
+  Nature &
+  Omit<Drive, 'driver'> &
+  Passenger &
+  Subcontractor & {
+    kind: 'one-way' | 'two-way';
+    status: 'subcontracted';
+  };
