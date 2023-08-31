@@ -13,18 +13,8 @@ import { EditActions } from './edit-fare';
 import { pipe } from 'fp-ts/lib/function';
 
 type ScheduledPersistence = Scheduled;
-type ScheduledFromPersistence = Omit<ScheduledPersistence, 'departure' | 'destination'> & {
-  departure: string;
-  destination: string;
-};
-
 type PendingPersistence = Pending & {
   outwardFareId: string;
-};
-
-type PendingFromPersistence = Omit<PendingPersistence, 'departure' | 'destination'> & {
-  departure: string;
-  destination: string;
 };
 
 export const persistFareAndPending =
@@ -149,7 +139,7 @@ const toEditedFares = (queriesResults: QueryResult[]): unknown => [
   ...[queriesResults[1]?.rows[0]].map(fromDBtoPendingCandidate)
 ];
 
-const fromDBtoScheduledCandidate = (row: Entity & ScheduledFromPersistence): unknown => ({
+const fromDBtoScheduledCandidate = (row: Entity & ScheduledPersistence): unknown => ({
   id: row.id,
   passenger: row.passenger,
   datetime: row.datetime,
@@ -164,7 +154,7 @@ const fromDBtoScheduledCandidate = (row: Entity & ScheduledFromPersistence): unk
   status: 'scheduled'
 });
 
-const fromDBtoPendingCandidate = (row: Entity & PendingFromPersistence): unknown => ({
+const fromDBtoPendingCandidate = (row: Entity & PendingPersistence): unknown => ({
   id: row.id,
   passenger: row.passenger,
   datetime: row.datetime,

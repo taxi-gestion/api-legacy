@@ -2,7 +2,6 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { PostgresDb } from '@fastify/postgres';
 import { QueryResult } from 'pg';
 import { registerRegularValidation } from './register-regular.validation';
 import { Regular } from '../../definitions';
@@ -14,8 +13,7 @@ type RegularRequest = FastifyRequest<{
 }>;
 
 export const registerRegularCommand = async (
-  server: FastifyInstance,
-  _dependencies: { database: PostgresDb }
+  server: FastifyInstance
   // eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<void> => {
   server.route({

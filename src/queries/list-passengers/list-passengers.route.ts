@@ -2,12 +2,11 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { PostgresDb } from '@fastify/postgres';
 import { Entity, Passenger } from '../../definitions';
 import { listPassengersDatabaseQuery } from './list-passengers.persistence';
 
 /* eslint-disable @typescript-eslint/require-await */
-export const listPassengersQuery = async (server: FastifyInstance, _dependencies: { database: PostgresDb }): Promise<void> => {
+export const listPassengersQuery = async (server: FastifyInstance): Promise<void> => {
   server.route({
     method: 'GET',
     url: '/list-passengers',

@@ -2,7 +2,6 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { PostgresDb } from '@fastify/postgres';
 import { Entity, FareToEdit, Pending, Scheduled } from '../../definitions';
 import { persistFareAndPending } from './edit-fare.persistence';
 import { $editFareValidation, editedFaresValidation } from './edit-fare.validation';
@@ -14,8 +13,7 @@ export type EditFareRequest = FastifyRequest<{
 }>;
 
 export const editFareCommand = async (
-  server: FastifyInstance,
-  _dependencies: { database: PostgresDb }
+  server: FastifyInstance
   // eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<void> => {
   server.route({

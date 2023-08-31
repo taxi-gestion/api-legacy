@@ -2,7 +2,6 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { PostgresDb } from '@fastify/postgres';
 import { QueryResult } from 'pg';
 import { scheduleFareValidation } from './schedule-fare.validation';
 import { scheduleFare } from './schedule-fare';
@@ -15,7 +14,7 @@ type FareToScheduleRequest = FastifyRequest<{
 }>;
 
 // eslint-disable-next-line @typescript-eslint/require-await
-export const scheduleFareCommand = async (server: FastifyInstance, _dependencies: { database: PostgresDb }): Promise<void> => {
+export const scheduleFareCommand = async (server: FastifyInstance): Promise<void> => {
   server.route({
     method: 'POST',
     url: '/schedule-fare',

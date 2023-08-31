@@ -21,6 +21,8 @@ import { listPassengersQuery } from './queries/list-passengers/list-passengers.r
 import { registerRegularCommand } from './commands/register-regular/register-regular.route';
 import { deleteFareCommand } from './commands/delete-fare/delete-fare.route';
 import { editFareCommand } from './commands/edit-fare/edit-fare.route';
+import { subcontractFareCommand } from './commands/subcontract-fare/subcontract-fare.route';
+import { subcontractedFaresForTheDateQuery } from './queries/subcontracted-fares-for-date/subcontracted-fares-for-date.route';
 
 const server: FastifyInstance = fastify();
 
@@ -41,14 +43,16 @@ server.get('/health', async (_request: FastifyRequest, _reply: FastifyReply): Pr
 
 /* eslint-disable @typescript-eslint/no-floating-promises */
 server.register(databaseStatusQuery);
-server.register(pendingReturnsForTheDateQuery, { database: server.pg });
-server.register(scheduledFaresForTheDateQuery, { database: server.pg });
-server.register(resetDatabaseCommand, { database: server.pg });
-server.register(scheduleFareCommand, { database: server.pg });
-server.register(editFareCommand, { database: server.pg });
-server.register(scheduleReturnCommand, { database: server.pg });
-server.register(registerRegularCommand, { database: server.pg });
-server.register(deleteFareCommand, { database: server.pg });
+server.register(pendingReturnsForTheDateQuery);
+server.register(scheduledFaresForTheDateQuery);
+server.register(resetDatabaseCommand);
+server.register(scheduleFareCommand);
+server.register(editFareCommand);
+server.register(subcontractFareCommand);
+server.register(scheduleReturnCommand);
+server.register(registerRegularCommand);
+server.register(deleteFareCommand);
+server.register(subcontractedFaresForTheDateQuery);
 server.register(predictRecurrenceQuery, {
   adapter: $openAIPredictRecurrence(process.env['API_KEY_OPENAI'] ?? '')
 });
@@ -70,7 +74,7 @@ server.register(listDriversQuery, {
     }
   )
 });
-server.register(listPassengersQuery, { database: server.pg });
+server.register(listPassengersQuery);
 
 /* eslint-enable @typescript-eslint/no-floating-promises */
 

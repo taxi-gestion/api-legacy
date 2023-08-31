@@ -2,7 +2,6 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { PostgresDb } from '@fastify/postgres';
 import { QueryResult } from 'pg';
 import { Entity, ReturnToSchedule } from '../../definitions';
 import { persistFareAndDeleteReturnToSchedule } from './schedule-return.persistence';
@@ -15,8 +14,7 @@ export type ReturnToScheduleRequest = FastifyRequest<{
 }>;
 
 export const scheduleReturnCommand = async (
-  server: FastifyInstance,
-  _dependencies: { database: PostgresDb }
+  server: FastifyInstance
   // eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<void> => {
   server.route({
