@@ -9,10 +9,10 @@ import type { PoolClient, QueryResult } from 'pg';
 import { pipe } from 'fp-ts/lib/function';
 import { Either } from 'fp-ts/Either';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors } from '../../reporter/http-reporter';
+import { Errors } from '../../reporter';
 import { Regular } from '../../definitions';
 import { RegularToRegister } from './register-regular.route';
-import { onDatabaseError } from '../../reporter/database.error';
+import { onDatabaseError } from '../../errors';
 import { fromDBtoRegularCandidate } from '../../persistence/persistence-utils';
 
 export const persistRegisterRegular =

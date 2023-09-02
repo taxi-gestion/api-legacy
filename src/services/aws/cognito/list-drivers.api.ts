@@ -1,7 +1,7 @@
 import { chain as taskEitherChain, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { Errors } from '../../../reporter/http-reporter';
 import { pipe } from 'fp-ts/function';
-import { onDependencyError } from '../../../reporter/external-dependency.error';
+import { onDependencyError } from '../../../errors/external-dependency.error';
 import { Driver, Entity } from '../../../definitions';
 import { listUsersInGroupDriverValidation } from './list-drivers.validation';
 import { CognitoIdentityProviderClient, ListUsersInGroupCommand } from '@aws-sdk/client-cognito-identity-provider';

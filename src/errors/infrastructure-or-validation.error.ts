@@ -1,4 +1,4 @@
-import { Errors, InfrastructureError, isInfrastructureError, ValidationError } from './http-reporter';
+import { Errors, InfrastructureError, isInfrastructureError, ValidationError } from '../reporter';
 import { onDatabaseError } from './database.error';
 
 export const $onInfrastructureOrValidationError =

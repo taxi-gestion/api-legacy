@@ -9,7 +9,7 @@ import {
   toScheduleRulesCodec
 } from '../../codecs';
 import { FaresScheduled, FareToSchedule } from './schedule-fare.route';
-import { Errors } from '../../reporter/http-reporter';
+import { Errors } from '../../reporter';
 import { fromEither, TaskEither } from 'fp-ts/TaskEither';
 
 export const fareToScheduleValidation = (transfer: unknown): Either<Errors, FareToSchedule> =>

@@ -18,6 +18,16 @@ export const driveCodec: Type<Drive> = ioType({
   driver: ioString
 });
 
+export const durationDistanceCodec: Type<DurationDistance> = ioType({
+  duration: ioNumber,
+  distance: ioNumber
+});
+
+export const passengerCodec: Type<Passenger> = ioType({
+  passenger: ioString,
+  phone: ioString
+});
+
 // eslint-disable-next-line @typescript-eslint/typedef
 export const driveRulesCodec = ioType({
   datetime: isDateTimeISO8601String,
@@ -25,20 +35,10 @@ export const driveRulesCodec = ioType({
   destination: placeRulesCodec
 });
 
-export const durationDistanceCodec: Type<DurationDistance> = ioType({
-  duration: ioNumber,
-  distance: ioNumber
-});
-
 // eslint-disable-next-line @typescript-eslint/typedef
 export const durationDistanceRulesCodec = ioType({
   duration: isPositive,
   distance: isPositive
-});
-
-export const passengerCodec: Type<Passenger> = ioType({
-  passenger: ioString,
-  phone: ioString
 });
 
 // eslint-disable-next-line @typescript-eslint/typedef

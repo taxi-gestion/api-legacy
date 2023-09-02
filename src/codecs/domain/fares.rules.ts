@@ -1,8 +1,6 @@
-import type { Type } from 'io-ts';
-import { intersection as ioIntersection, tuple as ioTuple, undefined as ioUndefined, union as ioUnion } from 'io-ts';
-import { Entity, ToEdit } from '../../definitions';
-import { driveRulesCodec, durationDistanceRulesCodec, entityCodec, passengerRulesCodec } from './traits.codecs';
-import { fareToEditCodec, returnDriveCodec, toEditCodec, toScheduleCodec } from './fares.codecs';
+import {intersection as ioIntersection} from 'io-ts';
+import {driveRulesCodec, durationDistanceRulesCodec, passengerRulesCodec} from './traits.codecs';
+import {fareToEditCodec, returnDriveCodec, toEditCodec, toScheduleCodec} from './fares.codecs';
 
 // eslint-disable-next-line @typescript-eslint/typedef
 export const toScheduleRulesCodec = ioIntersection([
@@ -25,8 +23,3 @@ export const fareToEditRulesCodec = ioIntersection([
   passengerRulesCodec,
   durationDistanceRulesCodec
 ]);
-
-export const fareToEditAndOptionalPendingReturnEntityRulesCodec: Type<[Entity & ToEdit, Entity?]> = ioTuple([
-  fareToEditRulesCodec,
-  ioUnion([entityCodec, ioUndefined])
-]) as unknown as Type<[Entity & ToEdit, Entity?]>;

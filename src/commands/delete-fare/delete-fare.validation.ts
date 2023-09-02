@@ -1,12 +1,12 @@
-import { Errors } from '../../reporter/http-reporter';
+import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { QueryResult } from 'pg';
 import { FaresDeleted, FaresToDelete } from './delete-fare.route';
 import { type as ioType, Type, union as ioUnion } from 'io-ts';
-import { throwEntityNotFoundValidationError } from '../../reporter/entity-not-found.validation-error';
-import { $onInfrastructureOrValidationError } from '../../reporter/infrastructure-or-validation.error';
+import { throwEntityNotFoundValidationError } from '../../errors/entity-not-found.validation-error';
+import { $onInfrastructureOrValidationError } from '../../errors/infrastructure-or-validation.error';
 import { entityCodec, externalTypeCheckFor, pendingReturnCodec, scheduledFareCodec, stringCodec } from '../../codecs';
 
 export const $fareToDeleteValidation =

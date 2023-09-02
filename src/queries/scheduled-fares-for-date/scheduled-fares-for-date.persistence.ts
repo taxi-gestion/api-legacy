@@ -9,7 +9,7 @@ import {
   tryCatch as taskEitherTryCatch
 } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
-import { Errors, InfrastructureError } from '../../reporter/http-reporter';
+import { Errors, InfrastructureError } from '../../reporter';
 import { Entity, Scheduled } from '../../definitions';
 import { addDays, subHours } from 'date-fns';
 

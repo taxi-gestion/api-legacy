@@ -1,6 +1,6 @@
 import { map as taskEitherMap, TaskEither } from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/function';
-import { Errors } from '../../reporter/http-reporter';
+import { Errors } from '../../reporter';
 import { PendingToSchedule, PendingToSchedulePersist } from './schedule-pending.route';
 
 export const schedulePending = (payload: TaskEither<Errors, PendingToSchedule>): TaskEither<Errors, PendingToSchedulePersist> =>

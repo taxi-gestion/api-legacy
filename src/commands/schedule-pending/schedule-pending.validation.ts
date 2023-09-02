@@ -1,4 +1,4 @@
-import { Errors } from '../../reporter/http-reporter';
+import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
@@ -13,8 +13,8 @@ import {
 } from '../../codecs';
 import { PendingScheduled, PendingToSchedule } from './schedule-pending.route';
 import { intersection as ioIntersection, Type, type as ioType } from 'io-ts';
-import { throwEntityNotFoundValidationError } from '../../reporter/entity-not-found.validation-error';
-import { $onInfrastructureOrValidationError } from '../../reporter/infrastructure-or-validation.error';
+import { throwEntityNotFoundValidationError } from '../../errors/entity-not-found.validation-error';
+import { $onInfrastructureOrValidationError } from '../../errors/infrastructure-or-validation.error';
 
 export const $schedulePendingValidation =
   (db: PostgresDb) =>

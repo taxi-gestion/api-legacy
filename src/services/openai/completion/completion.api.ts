@@ -3,7 +3,7 @@ import { Errors } from '../../../reporter/http-reporter';
 import { pipe } from 'fp-ts/function';
 import { OpenAICompletionPayload, OpenAICompletionResponseTransfer } from './completion.codec';
 import { completionValidation } from './completion.validation';
-import { onDependencyError } from '../../../reporter/external-dependency.error';
+import { onDependencyError } from '../../../errors/external-dependency.error';
 import axios from 'axios';
 
 export const $openAICompletion =

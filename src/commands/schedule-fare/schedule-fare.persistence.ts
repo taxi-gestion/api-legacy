@@ -5,55 +5,54 @@ import {
   TaskEither,
   tryCatch as taskEitherTryCatch
 } from 'fp-ts/TaskEither';
-import type { PoolClient, QueryResult } from 'pg';
-import { pipe } from 'fp-ts/lib/function';
-import type { PostgresDb } from '@fastify/postgres';
-import { Errors } from '../../reporter/http-reporter';
-import { PendingPersistence, ScheduledPersistence } from '../../persistence/persistence.definitions';
-import { FaresToSchedulePersist } from './schedule-fare.route';
-import { onDatabaseError } from '../../reporter/database.error';
-import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate } from '../../persistence/persistence-utils';
-import { Pending } from '../../definitions';
-import { throwEntityNotFoundValidationError } from '../../reporter/entity-not-found.validation-error';
-import { Either } from 'fp-ts/Either';
+import type {PoolClient, QueryResult} from 'pg';
+import {pipe} from 'fp-ts/lib/function';
+import type {PostgresDb} from '@fastify/postgres';
+import {Errors} from '../../reporter';
+import {PendingPersistence, ScheduledPersistence} from '../../persistence/persistence.definitions';
+import {FaresToSchedulePersist} from './schedule-fare.route';
+import {onDatabaseError, throwEntityNotFoundValidationError} from '../../errors';
+import {fromDBtoPendingCandidate, fromDBtoScheduledCandidate} from '../../persistence/persistence-utils';
+import {Pending} from '../../definitions';
+import {Either} from 'fp-ts/Either';
 
 export const persistScheduledFares =
   (database: PostgresDb) =>
-  (fares: Either<Errors, FaresToSchedulePersist>): TaskEither<Errors, unknown> =>
-    pipe(fares, fromEither, taskEitherChain(insertIn(database)));
+    (fares: Either<Errors, FaresToSchedulePersist>): TaskEither<Errors, unknown> =>
+      pipe(fares, fromEither, taskEitherChain(insertIn(database)));
 
 const insertIn =
   (database: PostgresDb) =>
-  (fares: FaresToSchedulePersist): TaskEither<Errors, unknown> =>
-    pipe(
-      taskEitherTryCatch(applyQueries(database)(fares), onDatabaseError(`persistScheduledFares`)),
-      taskEitherMap(toScheduledFares)
-    );
+    (fares: FaresToSchedulePersist): TaskEither<Errors, unknown> =>
+      pipe(
+        taskEitherTryCatch(applyQueries(database)(fares), onDatabaseError(`persistScheduledFares`)),
+        taskEitherMap(toScheduledFares)
+      );
 
 const applyQueries =
   (database: PostgresDb) =>
-  ({ scheduledToCreate, pendingToCreate }: FaresToSchedulePersist) =>
-  async (): Promise<QueryResult[]> =>
-    database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
-      const scheduledCreatedQueryResult: QueryResult = await insertScheduledFareQuery(client, scheduledToCreate);
+    ({scheduledToCreate, pendingToCreate}: FaresToSchedulePersist) =>
+      async (): Promise<QueryResult[]> =>
+        database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
+          const scheduledCreatedQueryResult: QueryResult = await insertScheduledFareQuery(client, scheduledToCreate);
 
-      if (scheduledCreatedQueryResult.rows[0] === undefined) throwEntityNotFoundValidationError('undefinedId');
+          if (scheduledCreatedQueryResult.rows[0] === undefined) throwEntityNotFoundValidationError('undefinedId');
 
-      return pendingToCreate === undefined
-        ? [scheduledCreatedQueryResult]
-        : $withPendingToCreateQueryResult(client)(scheduledCreatedQueryResult, pendingToCreate);
-    });
+          return pendingToCreate === undefined
+            ? [scheduledCreatedQueryResult]
+            : $withPendingToCreateQueryResult(client)(scheduledCreatedQueryResult, pendingToCreate);
+        });
 
 const $withPendingToCreateQueryResult =
   (client: PoolClient) =>
-  async (scheduledCreatedQueryResult: QueryResult, pendingToCreate: Pending): Promise<QueryResult[]> => {
-    const pendingCreatedQueryResult: QueryResult = await insertPendingQuery(client, {
-      ...pendingToCreate,
-      outwardFareId: scheduledCreatedQueryResult.rows[0].id as string
-    } satisfies PendingPersistence);
+    async (scheduledCreatedQueryResult: QueryResult, pendingToCreate: Pending): Promise<QueryResult[]> => {
+      const pendingCreatedQueryResult: QueryResult = await insertPendingQuery(client, {
+        ...pendingToCreate,
+        outwardFareId: scheduledCreatedQueryResult.rows[0].id as string
+      } satisfies PendingPersistence);
 
-    return [scheduledCreatedQueryResult, pendingCreatedQueryResult];
-  };
+      return [scheduledCreatedQueryResult, pendingCreatedQueryResult];
+    };
 
 const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledPersistence): Promise<QueryResult> =>
   client.query(insertFareQueryString, [
@@ -121,5 +120,5 @@ const insertPendingQueryString: string = `
 
 const toScheduledFares = (queriesResults: QueryResult[]): unknown => ({
   scheduledCreated: [queriesResults[0]?.rows[0]].map(fromDBtoScheduledCandidate)[0],
-  ...(queriesResults[1] === undefined ? {} : { pendingCreated: [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0] })
+  ...(queriesResults[1] === undefined ? {} : {pendingCreated: [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0]})
 });

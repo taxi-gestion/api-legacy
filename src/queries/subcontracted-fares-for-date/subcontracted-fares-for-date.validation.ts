@@ -1,4 +1,4 @@
-import { Errors } from '../../reporter/http-reporter';
+import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { fromEither, TaskEither } from 'fp-ts/TaskEither';
 import { Entity, Subcontracted } from '../../definitions';

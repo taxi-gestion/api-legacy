@@ -1,13 +1,13 @@
 import { map as taskEitherMap, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors } from '../../reporter/http-reporter';
+import { Errors } from '../../reporter';
 import { Entity, Pending } from '../../definitions';
 import { pipe } from 'fp-ts/lib/function';
 import { PendingPersistence, ScheduledPersistence } from '../../persistence/persistence.definitions';
 import { EditedToPersist } from './edit-fare.route';
 import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate } from '../../persistence/persistence-utils';
-import { onDatabaseError } from '../../reporter/database.error';
+import { onDatabaseError } from '../../errors';
 
 export const persistEditedFares =
   (database: PostgresDb) =>

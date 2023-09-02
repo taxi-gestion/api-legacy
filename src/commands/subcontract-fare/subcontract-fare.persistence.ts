@@ -6,7 +6,7 @@ import {
 } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors, InfrastructureError } from '../../reporter/http-reporter';
+import { Errors, InfrastructureError } from '../../reporter';
 import { Entity } from '../../definitions';
 import { pipe } from 'fp-ts/lib/function';
 import { SubcontractedToPersist } from './subcontract-fare.route';

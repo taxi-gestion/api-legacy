@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import type { Type } from 'io-ts';
 import {
   array as ioArray,
@@ -22,11 +21,6 @@ import {
 import { placeCodec } from '../common';
 import { driveCodec, durationDistanceCodec, entityCodec, passengerCodec } from './traits.codecs';
 
-//export const entityTupleWithSecondOptionalCodec: Type<[Entity, Entity?]> = ioTuple([
-//  entityCodec,
-//  ioUnion([entityCodec, ioUndefined])
-//]) as unknown as Type<[Entity, Entity?]>;
-
 export const toScheduleCodec: Type<ToSchedule> = ioIntersection([
   driveCodec,
   durationDistanceCodec,
@@ -46,18 +40,6 @@ export const returnDriveCodec: Type<ReturnDrive> = ioIntersection([
     status: ioLiteral('return-drive')
   })
 ]);
-
-/*export const completedReturnToScheduleCodec: Type<CompletedReturnToSchedule & Entity> = ioIntersection([
-  driveCodec,
-  durationDistanceCodec,
-  passengerCodec,
-  ioType({
-    id: ioString,
-    kind: ioLiteral('two-way'),
-    status: ioLiteral('return-to-schedule'),
-    nature: ioKeyof({ medical: null, standard: null })
-  })
-]);*/
 
 export const toEditCodec: Type<ToEdit> = ioIntersection([
   driveCodec,

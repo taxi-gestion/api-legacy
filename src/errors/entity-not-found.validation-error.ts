@@ -1,4 +1,4 @@
-import { ValidationError } from './http-reporter';
+import { ValidationError } from '../reporter/http-reporter';
 import { Decoder } from 'io-ts';
 
 export const entityNotFoundValidationError = (id: string): ValidationError => ({

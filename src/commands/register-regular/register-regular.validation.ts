@@ -10,7 +10,7 @@ import {
 } from '../../codecs';
 import { RegularRegistered, RegularToRegister } from './register-regular.route';
 import { fromEither, TaskEither } from 'fp-ts/TaskEither';
-import { Errors } from '../../reporter/http-reporter';
+import { Errors } from '../../reporter';
 
 export const registerRegularValidation = (transfer: unknown): Either<Errors, RegularToRegister> =>
   pipe(transfer, externalTypeCheckFor<RegularToRegister>(regularToRegisterCodec), eitherChain(rulesCheck));
