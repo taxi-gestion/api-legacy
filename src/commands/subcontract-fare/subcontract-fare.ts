@@ -1,17 +1,17 @@
 import { pipe } from 'fp-ts/lib/function';
 import { map as taskEitherMap, TaskEither } from 'fp-ts/TaskEither';
 import { Entity, Scheduled, Subcontracted } from '../../definitions';
-import { Errors } from '../../reporter/HttpReporter';
-import { SubcontractedActions, ToSubcontractValidation } from './subcontract-fare.route';
+import { Errors } from '../../reporter/http-reporter';
+import { SubcontractedToPersist, FaresToSubcontract } from './subcontract-fare.route';
 
 // eslint-disable-next-line max-lines-per-function
 export const subcontractFare = (
-  fareToSubcontract: TaskEither<Errors, ToSubcontractValidation>
-): TaskEither<Errors, SubcontractedActions> =>
+  fareToSubcontract: TaskEither<Errors, FaresToSubcontract>
+): TaskEither<Errors, SubcontractedToPersist> =>
   pipe(
     fareToSubcontract,
     taskEitherMap(
-      ({ toSubcontract, scheduledToCopyAndDelete, pendingToDelete }: ToSubcontractValidation): SubcontractedActions => {
+      ({ toSubcontract, scheduledToCopyAndDelete, pendingToDelete }: FaresToSubcontract): SubcontractedToPersist => {
         const {
           id: scheduledToDeleteId,
           driver,

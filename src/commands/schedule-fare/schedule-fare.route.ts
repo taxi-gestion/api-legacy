@@ -1,31 +1,44 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { fold as taskEitherFold } from 'fp-ts/TaskEither';
-import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { QueryResult } from 'pg';
-import { scheduleFareValidation } from './schedule-fare.validation';
+import { fareToScheduleValidation, scheduledFaresValidation } from './schedule-fare.validation';
 import { scheduleFare } from './schedule-fare';
-import { persistFares, toFaresPersistence } from './schedule-fare.persistence';
-import { FareToSchedule } from '../../definitions';
+import { Entity, Pending, Scheduled, ToSchedule } from '../../definitions';
+import { persistScheduledFares } from './schedule-fare.persistence';
+import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 
 type FareToScheduleRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  Body: FareToSchedule;
+  Body: ToSchedule;
 }>;
+
+export type FareToSchedule = {
+  toSchedule: ToSchedule;
+};
+
+export type FaresToSchedulePersist = {
+  scheduledToCreate: Scheduled;
+  pendingToCreate?: Pending;
+};
+
+export type FaresScheduled = {
+  scheduledCreated: Entity & Scheduled;
+  pendingCreated?: Entity & Pending;
+};
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export const scheduleFareCommand = async (server: FastifyInstance): Promise<void> => {
   server.route({
     method: 'POST',
-    url: '/schedule-fare',
+    url: '/fare/schedule',
     handler: async (req: FareToScheduleRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         req.body,
-        scheduleFareValidation,
+        fareToScheduleValidation,
         scheduleFare,
-        toFaresPersistence,
-        persistFares(server.pg),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<QueryResult[]>)
+        persistScheduledFares(server.pg),
+        scheduledFaresValidation,
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<FaresScheduled>)
       )();
     }
   });

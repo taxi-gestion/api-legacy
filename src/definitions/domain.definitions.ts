@@ -34,7 +34,7 @@ export type Nature = {
   nature: 'medical' | 'standard';
 };
 
-export type FareToSchedule = Drive &
+export type ToSchedule = Drive &
   DurationDistance &
   Nature &
   Passenger & {
@@ -42,7 +42,7 @@ export type FareToSchedule = Drive &
     status: 'to-schedule';
   };
 
-export type FareToEdit = Drive &
+export type ToEdit = Drive &
   DurationDistance &
   Nature &
   Passenger & {
@@ -50,13 +50,12 @@ export type FareToEdit = Drive &
     status: 'to-edit';
   };
 
-export type ReturnToSchedule = Drive &
+export type ReturnDrive = Drive &
   DurationDistance & {
-    kind: 'two-way';
-    status: 'return-to-schedule';
+    status: 'return-drive';
   };
 
-export type CompletedReturnToSchedule = Nature & Passenger & ReturnToSchedule;
+export type CompletedReturnToSchedule = Nature & Passenger & ReturnDrive;
 
 export type Pending = Drive &
   Nature &

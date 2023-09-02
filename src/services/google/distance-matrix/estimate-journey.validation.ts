@@ -8,7 +8,7 @@ import {
   googleMapsDistanceMatrixTransferCodec
 } from './distance-matrix.codec';
 import { JourneyEstimate } from '../../../definitions';
-import { Errors } from '../../../reporter/HttpReporter';
+import { Errors } from '../../../reporter/http-reporter';
 import { externalTypeCheckFor, journeyEstimateCodec, journeyEstimateRulesCodec } from '../../../codecs';
 
 export const journeyEstimateValidation = (transfer: unknown): TaskEither<Errors, JourneyEstimate> =>

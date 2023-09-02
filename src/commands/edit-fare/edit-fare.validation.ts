@@ -1,95 +1,121 @@
-import { Errors, InfrastructureError, isInfrastructureError, ValidationError } from '../../reporter/HttpReporter';
+import { Errors } from '../../reporter/http-reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { Entity, FareToEdit, Pending, Scheduled } from '../../definitions';
-import { QueryResult } from 'pg';
+import { Entity, Scheduled, ToEdit } from '../../definitions';
+import { type as ioType, Type, union as ioUnion } from 'io-ts';
+import { FaresEdited, FaresToEdit } from './edit-fare.route';
+import { throwEntityNotFoundValidationError } from '../../reporter/entity-not-found.validation-error';
+import { $onInfrastructureOrValidationError } from '../../reporter/infrastructure-or-validation.error';
 import {
+  entityCodec,
   externalTypeCheckFor,
-  fareToEditAndOptionalPendingReturnEntityCodec,
-  fareToEditAndOptionalPendingReturnEntityRulesCodec,
   fareToEditCodec,
-  scheduledFareAndOptionalPendingReturnCodec
+  pendingReturnCodec,
+  scheduledFareCodec,
+  toEditCodec,
+  toEditRulesCodec
 } from '../../codecs';
-import { Decoder } from 'io-ts';
 
-export const $editFareValidation =
+export const $faresToEditValidation =
   (db: PostgresDb) =>
-  (transfer: unknown): TaskEither<Errors, [Entity & FareToEdit, Entity?]> =>
+  (transfer: unknown): TaskEither<Errors, FaresToEdit> =>
     pipe(
       transfer,
-      externalTypeCheckFor<Entity & FareToEdit>(fareToEditCodec),
+      externalTypeCheckFor<Entity & ToEdit>(fareToEditCodec),
       fromEither,
-      taskEitherChain($fareToEditExistInDb(db)),
-      taskEitherChain(internalTypeCheckForFareToEdit),
-      taskEitherChain(rulesCheckForFareToEdit)
+      taskEitherChain($checkFareToEditExist(db)),
+      taskEitherChain(typeCheck),
+      taskEitherChain(rulesCheck)
     );
 
-export const editedFaresValidation = (transfer: unknown): TaskEither<Errors, [Entity & Scheduled, (Entity & Pending)?]> =>
-  pipe(
-    transfer,
-    externalTypeCheckFor<[Entity & Scheduled, (Entity & Pending)?]>(scheduledFareAndOptionalPendingReturnCodec),
-    fromEither
-  );
+export const editedFaresValidation = (transfer: unknown): TaskEither<Errors, FaresEdited> =>
+  pipe(transfer, externalTypeCheckFor<FaresEdited>(faresEditedCodec), fromEither);
 
-const $fareToEditExistInDb =
+const $checkFareToEditExist =
   (db: PostgresDb) =>
-  (editFareTransfer: Entity & FareToEdit): TaskEither<Errors, unknown> =>
+  (transfer: Entity & ToEdit): TaskEither<Errors, unknown> =>
     taskEitherTryCatch(async (): Promise<unknown> => {
-      const fareToEditQueryResult: QueryResult = await db.query('SELECT * FROM scheduled_fares WHERE id = $1 LIMIT 1', [
-        editFareTransfer.id
-      ]);
+      const {
+        id: scheduledId,
+        ...toEdit
+      }: {
+        id: string;
+      } = transfer;
 
-      if (fareToEditQueryResult.rows.length === 0)
-        // eslint-disable-next-line @typescript-eslint/no-throw-literal
-        throw entityNotFoundValidationError(editFareTransfer.id) satisfies ValidationError;
+      const [scheduledToEdit]: ((Entity & Scheduled) | undefined)[] = (
+        await db.query<Entity & Scheduled>('SELECT * FROM scheduled_fares WHERE id = $1 LIMIT 1', [scheduledId])
+      ).rows;
 
-      const fareToEditPendingReturnQueryResult: QueryResult = await db.query(
-        'SELECT id FROM pending_returns WHERE outward_fare_id = $1 LIMIT 1',
-        [editFareTransfer.id]
-      );
+      if (scheduledToEdit === undefined) throwEntityNotFoundValidationError(transfer.id);
 
-      return fareToEditPendingReturnQueryResult.rows.length === 0
-        ? [editFareTransfer]
-        : // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          [editFareTransfer, { id: fareToEditPendingReturnQueryResult.rows[0].id }];
-    }, onError);
+      return isOneWay(scheduledToEdit as Scheduled)
+        ? { toEdit: toEdit as ToEdit, scheduledToEdit }
+        : // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+          $withPendingToDelete(db)(scheduledId, { toEdit: toEdit as ToEdit, scheduledToEdit } as FaresToEdit);
+    }, $onInfrastructureOrValidationError(`$checkFareToEditExist`));
 
-const internalTypeCheckForFareToEdit = (fromDB: unknown): TaskEither<Errors, [Entity & FareToEdit, Entity?]> =>
-  fromEither(fareToEditAndOptionalPendingReturnEntityCodec.decode(fromDB));
+const $withPendingToDelete =
+  (db: PostgresDb) =>
+  async (scheduledId: string, faresToEdit: FaresToEdit): Promise<FaresToEdit> => {
+    const [pendingToDelete]: (Entity | undefined)[] = (
+      await db.query<Entity>('SELECT id FROM pending_returns WHERE outward_fare_id = $1 LIMIT 1', [scheduledId])
+    ).rows;
 
-const rulesCheckForFareToEdit = (
-  fareToEdit: [Entity & FareToEdit, Entity?]
-): TaskEither<Errors, [Entity & FareToEdit, Entity?]> =>
-  fromEither(fareToEditAndOptionalPendingReturnEntityRulesCodec.decode(fareToEdit));
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    return {
+      ...faresToEdit,
+      pendingToDelete
+    } as FaresToEdit;
+  };
 
-const onError = (error: unknown): Errors =>
-  isInfrastructureError(error as InfrastructureError)
-    ? ([
-        {
-          isInfrastructureError: true,
-          message: `database error fareToEditExistInDb  - ${(error as Error).message}`,
-          // eslint-disable-next-line id-denylist
-          value: (error as Error).name,
-          stack: (error as Error).stack ?? 'no stack available',
-          code: (error as Error).message.includes('ECONNREFUSED') ? '503' : '500'
-        } satisfies InfrastructureError
-      ] satisfies Errors)
-    : [error as ValidationError];
+const isOneWay = (scheduled: Scheduled): boolean => scheduled.kind === 'one-way';
 
-const entityNotFoundValidationError = (id: string): ValidationError => ({
-  context: [
-    {
-      actual: id,
-      key: 'id',
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      type: {
-        name: 'isValidId'
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as Decoder<any, any>
-    }
-  ],
-  message: `Rules check failed, '${id}' not found in the database`,
-  // eslint-disable-next-line id-denylist
-  value: id
-});
+const typeCheck = (fromDB: unknown): TaskEither<Errors, FaresToEdit> => fromEither(faresToEditCodec.decode(fromDB));
+
+const rulesCheck = (fareToEdit: FaresToEdit): TaskEither<Errors, FaresToEdit> =>
+  fromEither(faresToEditRulesCodec.decode(fareToEdit));
+
+const faresToEditCodec: Type<FaresToEdit> = ioUnion([
+  ioType({
+    toEdit: toEditCodec,
+    scheduledToEdit: scheduledFareCodec
+  }),
+  ioType({
+    toEdit: toEditCodec,
+    scheduledToEdit: scheduledFareCodec,
+    pendingToDelete: entityCodec
+  })
+]);
+
+// eslint-disable-next-line @typescript-eslint/typedef
+const faresToEditRulesCodec = ioUnion([
+  ioType({
+    toEdit: toEditRulesCodec,
+    scheduledToEdit: scheduledFareCodec
+  }),
+  ioType({
+    toEdit: toEditRulesCodec,
+    scheduledToEdit: scheduledFareCodec,
+    pendingToDelete: entityCodec
+  })
+]);
+
+const faresEditedCodec: Type<FaresEdited> = ioUnion([
+  ioType({
+    scheduledEdited: scheduledFareCodec
+  }),
+  ioType({
+    scheduledEdited: scheduledFareCodec,
+    pendingCreated: pendingReturnCodec
+  }),
+  ioType({
+    scheduledEdited: scheduledFareCodec,
+    pendingCreated: pendingReturnCodec,
+    pendingDeleted: pendingReturnCodec
+  }),
+  ioType({
+    scheduledEdited: scheduledFareCodec,
+    pendingDeleted: pendingReturnCodec
+  })
+]);

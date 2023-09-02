@@ -5,7 +5,7 @@ import { chain as eitherChain, Either } from 'fp-ts/Either';
 import { OpenAICompletionResponseTransfer } from '../completion/completion.codec';
 import { predictedRecurrenceCodec, predictedRecurrenceRulesCodec } from './predicted-recurrence.codec';
 import { PredictedRecurrence } from '../../../definitions';
-import { Errors } from '../../../reporter/HttpReporter';
+import { Errors } from '../../../reporter/http-reporter';
 
 export const predictedRecurrenceValidation = (
   transfer: OpenAICompletionResponseTransfer

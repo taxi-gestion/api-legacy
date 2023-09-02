@@ -1,89 +1,59 @@
-/* eslint-disable max-lines */
-import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
+import {
+  chain as taskEitherChain,
+  fromEither,
+  map as taskEitherMap,
+  TaskEither,
+  tryCatch as taskEitherTryCatch
+} from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import { pipe } from 'fp-ts/lib/function';
-import { Either, map as eitherMap } from 'fp-ts/Either';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { Pending, Scheduled } from '../../definitions';
+import { Errors } from '../../reporter/http-reporter';
+import { PendingPersistence, ScheduledPersistence } from '../../persistence/persistence.definitions';
+import { FaresToSchedulePersist } from './schedule-fare.route';
+import { onDatabaseError } from '../../reporter/database.error';
+import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate } from '../../persistence/persistence-utils';
+import { Pending } from '../../definitions';
+import { throwEntityNotFoundValidationError } from '../../reporter/entity-not-found.validation-error';
+import { Either } from 'fp-ts/Either';
 
-type ScheduledPersistence = Omit<Scheduled, 'departure' | 'destination'> & {
-  departure: string;
-  destination: string;
-};
-
-type PendingPersistence = Omit<Pending, 'departure' | 'destination'> & {
-  departure: string;
-  destination: string;
-  outwardFareId: string;
-};
-
-export type FaresToPersist = [ScheduledPersistence, PendingPersistence?];
-
-export const persistFares =
+export const persistScheduledFares =
   (database: PostgresDb) =>
-  (farePersistence: Either<Errors, FaresToPersist>): TaskEither<Errors, QueryResult[]> =>
-    pipe(farePersistence, fromEither, taskEitherChain(insertFaresIn(database)));
+  (fares: Either<Errors, FaresToSchedulePersist>): TaskEither<Errors, unknown> =>
+    pipe(fares, fromEither, taskEitherChain(insertIn(database)));
 
-export const toFaresPersistence = (fare: Either<Errors, [Scheduled, Pending?]>): Either<Errors, FaresToPersist> =>
-  pipe(
-    fare,
-    eitherMap(
-      ([scheduledFare, fareReturnToSchedule]: [Scheduled, Pending?]): FaresToPersist =>
-        fareReturnToSchedule == null
-          ? [toScheduledFarePersistence(scheduledFare)]
-          : [toScheduledFarePersistence(scheduledFare), toPendingPersistence(fareReturnToSchedule)]
-    )
-  );
-
-const toScheduledFarePersistence = (scheduledFare: Scheduled): ScheduledPersistence => ({
-  ...scheduledFare,
-  departure: JSON.stringify(scheduledFare.departure),
-  destination: JSON.stringify(scheduledFare.destination)
-});
-
-const toPendingPersistence = (pending: Pending): PendingPersistence => ({
-  ...pending,
-  departure: JSON.stringify(pending.departure),
-  destination: JSON.stringify(pending.destination),
-  outwardFareId: ''
-});
-
-const insertFaresIn =
+const insertIn =
   (database: PostgresDb) =>
-  (fares: FaresToPersist): TaskEither<Errors, QueryResult[]> =>
-    taskEitherTryCatch(insertFares(database, fares), onInsertFaresError);
+  (fares: FaresToSchedulePersist): TaskEither<Errors, unknown> =>
+    pipe(
+      taskEitherTryCatch(applyQueries(database)(fares), onDatabaseError(`persistScheduledFares`)),
+      taskEitherMap(toScheduledFares)
+    );
 
-const insertFares =
-  (database: PostgresDb, fares: [ScheduledPersistence, PendingPersistence?]) => async (): Promise<QueryResult[]> =>
+const applyQueries =
+  (database: PostgresDb) =>
+  ({ scheduledToCreate, pendingToCreate }: FaresToSchedulePersist) =>
+  async (): Promise<QueryResult[]> =>
     database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
-      const [fare, fareToSchedule]: [ScheduledPersistence, PendingPersistence?] = fares;
+      const scheduledCreatedQueryResult: QueryResult = await insertScheduledFareQuery(client, scheduledToCreate);
 
-      const scheduledFareResult: QueryResult = await insertScheduledFareQuery(client, fare);
+      if (scheduledCreatedQueryResult.rows[0] === undefined) throwEntityNotFoundValidationError('undefinedId');
 
-      if (fareToSchedule == null) {
-        return [scheduledFareResult];
-      }
-
-      const pendingFareResult: QueryResult = await insertPendingQuery(client, {
-        ...fareToSchedule,
-        outwardFareId: scheduledFareResult.rows[0].id as string
-      });
-
-      return [scheduledFareResult, pendingFareResult];
+      return pendingToCreate === undefined
+        ? [scheduledCreatedQueryResult]
+        : $withPendingToCreateQueryResult(client)(scheduledCreatedQueryResult, pendingToCreate);
     });
 
-const onInsertFaresError = (error: unknown): Errors =>
-  [
-    {
-      isInfrastructureError: true,
-      message: `insertFaresIn database error - ${(error as Error).message}`,
-      // eslint-disable-next-line id-denylist
-      value: (error as Error).name,
-      stack: (error as Error).stack ?? 'no stack available',
-      code: (error as Error).message.includes('ECONNREFUSED') ? '503' : '500'
-    } satisfies InfrastructureError
-  ] satisfies Errors;
+const $withPendingToCreateQueryResult =
+  (client: PoolClient) =>
+  async (scheduledCreatedQueryResult: QueryResult, pendingToCreate: Pending): Promise<QueryResult[]> => {
+    const pendingCreatedQueryResult: QueryResult = await insertPendingQuery(client, {
+      ...pendingToCreate,
+      outwardFareId: scheduledCreatedQueryResult.rows[0].id as string
+    } satisfies PendingPersistence);
+
+    return [scheduledCreatedQueryResult, pendingCreatedQueryResult];
+  };
 
 const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledPersistence): Promise<QueryResult> =>
   client.query(insertFareQueryString, [
@@ -148,3 +118,8 @@ const insertPendingQueryString: string = `
       )
       RETURNING *
       `;
+
+const toScheduledFares = (queriesResults: QueryResult[]): unknown => ({
+  scheduledCreated: [queriesResults[0]?.rows[0]].map(fromDBtoScheduledCandidate)[0],
+  ...(queriesResults[1] === undefined ? {} : { pendingCreated: [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0] })
+});

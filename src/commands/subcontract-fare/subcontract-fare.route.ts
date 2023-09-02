@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { Entity, FareToSubcontract, Pending, Scheduled, Subcontracted } from '../../definitions';
-import { persistSubcontractAndDeleteScheduledAndPending } from './subcontract-fare.persistence';
+import { persistSubcontractedFares } from './subcontract-fare.persistence';
 import { $subcontractFareValidation, subcontractedValidation } from './subcontract-fare.validation';
 import { subcontractFare } from './subcontract-fare';
 
@@ -12,19 +12,19 @@ export type SubcontractFareRequest = FastifyRequest<{
   Body: Entity & FareToSubcontract;
 }>;
 
-export type ToSubcontractValidation = {
+export type FaresToSubcontract = {
   toSubcontract: FareToSubcontract;
   scheduledToCopyAndDelete: Entity & Scheduled;
   pendingToDelete?: Entity;
 };
 
-export type SubcontractedActions = {
+export type SubcontractedToPersist = {
   subcontractedToPersist: Subcontracted;
   scheduledToDelete: Entity;
   pendingToDelete?: Entity;
 };
 
-export type SubcontractedValidated = {
+export type FaresSubcontracted = {
   subcontracted: Entity & Subcontracted;
   scheduledDeleted: Entity & Scheduled;
   pendingDeleted?: Entity & Pending;
@@ -42,9 +42,9 @@ export const subcontractFareCommand = async (
         req.body,
         $subcontractFareValidation(server.pg),
         subcontractFare,
-        taskEitherChain(persistSubcontractAndDeleteScheduledAndPending(server.pg)),
+        taskEitherChain(persistSubcontractedFares(server.pg)),
         taskEitherChain(subcontractedValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<SubcontractedValidated>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<FaresSubcontracted>)
       )();
     }
   });

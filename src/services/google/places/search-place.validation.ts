@@ -10,7 +10,7 @@ import {
   PlaceResultTransfer
 } from './places.codec';
 import { Place } from '../../../definitions';
-import { Errors } from '../../../reporter/HttpReporter';
+import { Errors } from '../../../reporter/http-reporter';
 import { externalTypeCheckFor } from '../../../codecs';
 
 export const searchPlaceValidation = (transfer: unknown): TaskEither<Errors, Place[]> =>

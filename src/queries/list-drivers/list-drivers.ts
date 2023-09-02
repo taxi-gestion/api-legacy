@@ -1,5 +1,5 @@
 import { TaskEither } from 'fp-ts/TaskEither';
-import { Errors } from '../../reporter/HttpReporter';
+import { Errors } from '../../reporter/http-reporter';
 import { Driver, Entity } from '../../definitions';
 
 export type ListDriversAdapter = () => TaskEither<Errors, (Driver & Entity)[]>;

@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import {
   chain as taskEitherChain,
   right as taskEitherRight,
@@ -7,20 +6,20 @@ import {
 } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { Entity, Pending, Scheduled, Subcontracted } from '../../definitions';
+import { Errors, InfrastructureError } from '../../reporter/http-reporter';
+import { Entity } from '../../definitions';
 import { pipe } from 'fp-ts/lib/function';
-import { SubcontractedActions } from './subcontract-fare.route';
+import { SubcontractedToPersist } from './subcontract-fare.route';
+import { SubcontractedPersistence } from '../../persistence/persistence.definitions';
+import {
+  fromDBtoPendingCandidate,
+  fromDBtoScheduledCandidate,
+  fromDBtoSubcontractedCandidate
+} from '../../persistence/persistence-utils';
 
-type SubcontractedPersistence = Subcontracted;
-type ScheduledPersistence = Scheduled;
-type PendingPersistence = Pending & {
-  outwardFareId: string;
-};
-
-export const persistSubcontractAndDeleteScheduledAndPending =
+export const persistSubcontractedFares =
   (database: PostgresDb) =>
-  (fares: SubcontractedActions): TaskEither<Errors, unknown> =>
+  (fares: SubcontractedToPersist): TaskEither<Errors, unknown> =>
     pipe(
       taskEitherTryCatch(applyQueries(database, fares), onApplySubcontractFareQueriesError),
       taskEitherChain(
@@ -30,7 +29,7 @@ export const persistSubcontractAndDeleteScheduledAndPending =
     );
 
 const applyQueries =
-  (database: PostgresDb, { subcontractedToPersist, scheduledToDelete, pendingToDelete }: SubcontractedActions) =>
+  (database: PostgresDb, { subcontractedToPersist, scheduledToDelete, pendingToDelete }: SubcontractedToPersist) =>
   async (): Promise<QueryResult[]> =>
     database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
       const promises: Promise<QueryResult>[] = [
@@ -110,49 +109,3 @@ const toSubcontractedFareAndDeleted = (queriesResults: QueryResult[]): unknown =
   scheduledDeleted: [queriesResults[1]?.rows[0]].map(fromDBtoScheduledCandidate)[0],
   ...(queriesResults[2] === undefined ? {} : { pendingDeleted: [queriesResults[2].rows[0]].map(fromDBtoPendingCandidate)[0] })
 });
-
-const fromDBtoSubcontractedCandidate = (row: Entity & SubcontractedPersistence): unknown =>
-  ({
-    id: row.id,
-    subcontractor: row.subcontractor,
-    passenger: row.passenger,
-    datetime: row.datetime,
-    departure: row.departure,
-    destination: row.destination,
-    distance: Number(row.distance),
-    duration: Number(row.duration),
-    kind: row.kind,
-    nature: row.nature,
-    phone: row.phone,
-    status: 'subcontracted'
-  } satisfies Entity & Subcontracted);
-
-export const fromDBtoScheduledCandidate = (row: Entity & ScheduledPersistence): unknown =>
-  ({
-    id: row.id,
-    passenger: row.passenger,
-    datetime: row.datetime,
-    departure: row.departure,
-    destination: row.destination,
-    driver: row.driver,
-    distance: Number(row.distance),
-    duration: Number(row.duration),
-    kind: row.kind,
-    nature: row.nature,
-    phone: row.phone,
-    status: 'scheduled'
-  } satisfies Entity & Scheduled);
-
-const fromDBtoPendingCandidate = (row: Entity & PendingPersistence): unknown =>
-  ({
-    id: row.id,
-    passenger: row.passenger,
-    datetime: row.datetime,
-    departure: row.departure,
-    destination: row.destination,
-    driver: row.driver,
-    kind: row.kind,
-    nature: row.nature,
-    phone: row.phone,
-    status: 'pending-return'
-  } satisfies Entity & Pending);

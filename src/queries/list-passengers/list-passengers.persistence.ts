@@ -3,7 +3,7 @@ import { PostgresDb } from '@fastify/postgres';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, right as taskEitherRight, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
-import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
+import { Errors, InfrastructureError } from '../../reporter/http-reporter';
 import { Entity, Passenger } from '../../definitions';
 
 type PassengerPersistence = Entity & {

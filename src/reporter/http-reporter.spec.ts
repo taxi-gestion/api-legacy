@@ -1,6 +1,6 @@
 import { Decoder, ValidationError } from 'io-ts';
 import { Either, left } from 'fp-ts/Either';
-import HttpReporter, { DevFriendlyError, Errors, InfrastructureError } from './HttpReporter';
+import HttpReporter, { DevFriendlyError, Errors, InfrastructureError } from './http-reporter';
 
 describe('HttpReporter specification tests', (): void => {
   // Define the error message and context

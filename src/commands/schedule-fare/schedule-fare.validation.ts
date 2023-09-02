@@ -1,14 +1,40 @@
-import type { Errors, Validation } from 'io-ts';
+import { Type, type as ioType, union as ioUnion } from 'io-ts';
 import { pipe } from 'fp-ts/function';
 import { chain as eitherChain, Either } from 'fp-ts/Either';
+import {
+  externalTypeCheckFor,
+  pendingReturnCodec,
+  scheduledFareCodec,
+  toScheduleCodec,
+  toScheduleRulesCodec
+} from '../../codecs';
+import { FaresScheduled, FareToSchedule } from './schedule-fare.route';
+import { Errors } from '../../reporter/http-reporter';
+import { fromEither, TaskEither } from 'fp-ts/TaskEither';
 
-import { FareToSchedule } from '../../definitions';
-import { fareToScheduleCodec, fareToScheduleRulesCodec } from '../../codecs';
+export const fareToScheduleValidation = (transfer: unknown): Either<Errors, FareToSchedule> =>
+  pipe(transfer, externalTypeCheckFor<FareToSchedule>(fareToScheduleCodec), eitherChain(rulesCheck));
 
-export const scheduleFareValidation = (transfer: unknown): Either<Errors, FareToSchedule> =>
-  pipe(transfer, internalTypeCheckForFareToSchedule, eitherChain(rulesCheckForFareToSchedule));
-const internalTypeCheckForFareToSchedule = (fareTransfer: unknown): Validation<FareToSchedule> =>
-  fareToScheduleCodec.decode(fareTransfer);
+export const scheduledFaresValidation = (transfer: unknown): TaskEither<Errors, FaresScheduled> =>
+  pipe(transfer, externalTypeCheckFor<FaresScheduled>(fareScheduledCodec), fromEither);
 
-const rulesCheckForFareToSchedule = (fareDraft: FareToSchedule): Validation<FareToSchedule> =>
-  fareToScheduleRulesCodec.decode(fareDraft);
+const rulesCheck = (transfer: FareToSchedule): Either<Errors, FareToSchedule> => fareToScheduleRulesCodec.decode(transfer);
+
+const fareToScheduleCodec: Type<FareToSchedule> = ioType({
+  toSchedule: toScheduleCodec
+});
+
+// eslint-disable-next-line @typescript-eslint/typedef
+const fareToScheduleRulesCodec = ioType({
+  toSchedule: toScheduleRulesCodec
+});
+
+const fareScheduledCodec: Type<FaresScheduled> = ioUnion([
+  ioType({
+    scheduledCreated: scheduledFareCodec
+  }),
+  ioType({
+    scheduledCreated: scheduledFareCodec,
+    pendingCreated: pendingReturnCodec
+  })
+]);

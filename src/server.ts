@@ -13,7 +13,6 @@ import { $googleMapsSearchPlace } from './services/google/places/search-place.ap
 import { estimateJourneyQuery } from './queries/estimate-journey/estimate-journey.route';
 import { $googleMapsEstimateJourney } from './services/google/distance-matrix/estimate-journey.api';
 import { pendingReturnsForTheDateQuery } from './queries/pending-returns-for-date/pending-returns-for-date.route';
-import { scheduleReturnCommand } from './commands/schedule-return/schedule-return.route';
 import { scheduledFaresForTheDateQuery } from './queries/scheduled-fares-for-date/scheduled-fares-for-date.route';
 import { listDriversQuery } from './queries/list-drivers/list-drivers.route';
 import { $awsCognitoListUsersInGroupDriver } from './services/aws/cognito/list-drivers.api';
@@ -23,6 +22,7 @@ import { deleteFareCommand } from './commands/delete-fare/delete-fare.route';
 import { editFareCommand } from './commands/edit-fare/edit-fare.route';
 import { subcontractFareCommand } from './commands/subcontract-fare/subcontract-fare.route';
 import { subcontractedFaresForTheDateQuery } from './queries/subcontracted-fares-for-date/subcontracted-fares-for-date.route';
+import { schedulePendingCommand } from './commands/schedule-pending/schedule-pending.route';
 
 const server: FastifyInstance = fastify();
 
@@ -49,7 +49,7 @@ server.register(resetDatabaseCommand);
 server.register(scheduleFareCommand);
 server.register(editFareCommand);
 server.register(subcontractFareCommand);
-server.register(scheduleReturnCommand);
+server.register(schedulePendingCommand);
 server.register(registerRegularCommand);
 server.register(deleteFareCommand);
 server.register(subcontractedFaresForTheDateQuery);
