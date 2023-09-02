@@ -1,4 +1,4 @@
-import { Type, type as ioType, string as ioString, number as ioNumber } from 'io-ts';
+import { number as ioNumber, string as ioString, Type, type as ioType } from 'io-ts';
 import { placeCodec, placeRulesCodec } from './place.codec';
 import { isDateTimeISO8601String } from './dateTimeISO8601.rule';
 import { isPositive } from './positive.rule';

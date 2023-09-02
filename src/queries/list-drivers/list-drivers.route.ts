@@ -19,7 +19,7 @@ export const listDriversQuery = async (
 ): Promise<void> => {
   server.route({
     method: 'GET',
-    url: '/list-drivers',
+    url: '/driver/list',
     handler: async (_req: ListDriversRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         listDrivers(dependencies.adapter),

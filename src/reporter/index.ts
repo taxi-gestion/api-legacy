@@ -1,1 +1,1 @@
-export * from './http-reporter'
+export * from './http-reporter';

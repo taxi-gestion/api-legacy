@@ -13,8 +13,7 @@ import {
 } from '../../codecs';
 import { PendingScheduled, PendingToSchedule } from './schedule-pending.route';
 import { intersection as ioIntersection, Type, type as ioType } from 'io-ts';
-import { throwEntityNotFoundValidationError } from '../../errors/entity-not-found.validation-error';
-import { $onInfrastructureOrValidationError } from '../../errors/infrastructure-or-validation.error';
+import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
 
 export const $schedulePendingValidation =
   (db: PostgresDb) =>

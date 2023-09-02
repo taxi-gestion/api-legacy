@@ -1,5 +1,5 @@
 import { withMessage } from 'io-ts-types';
-import { BrandC, Type, brand, Branded } from 'io-ts';
+import { brand, BrandC, Branded, Type } from 'io-ts';
 import { locationCodec } from './location.codec';
 import { isValidLocation, Location } from '../../definitions';
 

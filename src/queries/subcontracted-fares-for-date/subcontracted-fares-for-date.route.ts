@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
-import { fold as taskEitherFold, chain as taskEitherChain } from 'fp-ts/TaskEither';
+import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { isDateString } from '../../codecs';
 import { Entity, Subcontracted } from '../../definitions';
@@ -20,7 +20,7 @@ export const subcontractedFaresForTheDateQuery = async (
 ): Promise<void> => {
   server.route({
     method: 'GET',
-    url: '/subcontracted-fares-for-date/:date',
+    url: '/subcontracted/:date',
     handler: async (req: FareForDateRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         isDateString.decode(req.params.date),

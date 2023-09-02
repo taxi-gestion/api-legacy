@@ -5,8 +5,7 @@ import { PostgresDb } from '@fastify/postgres';
 import { QueryResult } from 'pg';
 import { FaresDeleted, FaresToDelete } from './delete-fare.route';
 import { type as ioType, Type, union as ioUnion } from 'io-ts';
-import { throwEntityNotFoundValidationError } from '../../errors/entity-not-found.validation-error';
-import { $onInfrastructureOrValidationError } from '../../errors/infrastructure-or-validation.error';
+import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
 import { entityCodec, externalTypeCheckFor, pendingReturnCodec, scheduledFareCodec, stringCodec } from '../../codecs';
 
 export const $fareToDeleteValidation =

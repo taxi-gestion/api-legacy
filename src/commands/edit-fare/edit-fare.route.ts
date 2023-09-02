@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { Entity, ToEdit, Pending, Scheduled } from '../../definitions';
+import { Entity, Pending, Scheduled, ToEdit } from '../../definitions';
 import { persistEditedFares } from './edit-fare.persistence';
 import { $faresToEditValidation, editedFaresValidation } from './edit-fare.validation';
 import { editFare } from './edit-fare';

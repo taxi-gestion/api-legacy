@@ -15,9 +15,8 @@ import {
 } from '../../codecs';
 import { type as ioType, Type, union as ioUnion } from 'io-ts';
 import { FaresSubcontracted, FaresToSubcontract } from './subcontract-fare.route';
-import { throwEntityNotFoundValidationError } from '../../errors/entity-not-found.validation-error';
-import { $onInfrastructureOrValidationError } from '../../errors/infrastructure-or-validation.error';
-import { fromDBtoScheduledCandidate } from '../../persistence/persistence-utils';
+import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
+import { fromDBtoScheduledCandidate } from '../../mappers';
 
 export const $subcontractFareValidation =
   (db: PostgresDb) =>

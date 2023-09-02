@@ -1,7 +1,7 @@
 import { chain as taskEitherChain, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
-import { Errors } from '../../../reporter/http-reporter';
+import { Errors } from '../../../reporter';
 import { pipe } from 'fp-ts/function';
-import { onDependencyError } from '../../../errors/external-dependency.error';
+import { onDependencyError } from '../../../errors';
 import axios from 'axios';
 import { Place } from '../../../definitions';
 import { searchPlaceValidation } from './search-place.validation';

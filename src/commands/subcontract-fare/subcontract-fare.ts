@@ -2,7 +2,7 @@ import { pipe } from 'fp-ts/lib/function';
 import { map as taskEitherMap, TaskEither } from 'fp-ts/TaskEither';
 import { Entity, Scheduled, Subcontracted } from '../../definitions';
 import { Errors } from '../../reporter';
-import { SubcontractedToPersist, FaresToSubcontract } from './subcontract-fare.route';
+import { FaresToSubcontract, SubcontractedToPersist } from './subcontract-fare.route';
 
 // eslint-disable-next-line max-lines-per-function
 export const subcontractFare = (

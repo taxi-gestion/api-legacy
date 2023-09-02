@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
-import { fold as taskEitherFold, chain as taskEitherChain } from 'fp-ts/TaskEither';
+import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { Entity, Pending } from '../../definitions';
 import { isDateString } from '../../codecs';
@@ -18,7 +18,7 @@ export type PendingReturnsForDateRequest = FastifyRequest<{
 export const pendingReturnsForTheDateQuery = async (server: FastifyInstance): Promise<void> => {
   server.route({
     method: 'GET',
-    url: '/pending-returns-for-date/:date',
+    url: '/pending/:date',
     handler: async (req: PendingReturnsForDateRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         isDateString.decode(req.params.date),

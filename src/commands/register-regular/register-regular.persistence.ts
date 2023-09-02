@@ -13,7 +13,7 @@ import { Errors } from '../../reporter';
 import { Regular } from '../../definitions';
 import { RegularToRegister } from './register-regular.route';
 import { onDatabaseError } from '../../errors';
-import { fromDBtoRegularCandidate } from '../../persistence/persistence-utils';
+import { fromDBtoRegularCandidate } from '../../mappers';
 
 export const persistRegisterRegular =
   (database: PostgresDb) =>

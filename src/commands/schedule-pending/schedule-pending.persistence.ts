@@ -6,7 +6,7 @@ import { Entity, Scheduled } from '../../definitions';
 import { PendingToSchedulePersist } from './schedule-pending.route';
 import { pipe } from 'fp-ts/function';
 import { onDatabaseError } from '../../errors';
-import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate } from '../../persistence/persistence-utils';
+import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate } from '../../mappers';
 
 export const persistPendingScheduled =
   (database: PostgresDb) =>

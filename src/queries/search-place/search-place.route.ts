@@ -20,7 +20,7 @@ export const searchPlaceQuery = async (
 ): Promise<void> => {
   server.route({
     method: 'GET',
-    url: '/search-place/:query',
+    url: '/place/search/:query',
     handler: async (req: SearchPlaceRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         req.params.query,

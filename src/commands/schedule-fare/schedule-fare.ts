@@ -1,7 +1,7 @@
 import { pipe } from 'fp-ts/lib/function';
 import { Either, map as eitherMap } from 'fp-ts/Either';
 import { FaresToSchedulePersist, FareToSchedule } from './schedule-fare.route';
-import { isOneWay } from '../../domain/utils';
+import { isOneWay } from '../../domain';
 import { toPending } from '../../mappers';
 import { Errors } from '../../reporter';
 

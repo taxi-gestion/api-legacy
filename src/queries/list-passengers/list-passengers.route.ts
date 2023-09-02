@@ -9,7 +9,7 @@ import { listPassengersDatabaseQuery } from './list-passengers.persistence';
 export const listPassengersQuery = async (server: FastifyInstance): Promise<void> => {
   server.route({
     method: 'GET',
-    url: '/list-passengers',
+    url: '/passenger/list',
     handler: async (_req: FastifyRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         listPassengersDatabaseQuery(server.pg)(),

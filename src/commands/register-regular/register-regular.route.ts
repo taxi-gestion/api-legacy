@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
-import { fold as taskEitherFold, chain as taskEitherChain } from 'fp-ts/TaskEither';
+import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { registeredRegularValidation, registerRegularValidation } from './register-regular.validation';
 import { Entity, Regular } from '../../definitions';

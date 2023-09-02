@@ -4,7 +4,7 @@ import {
   RegularPersistence,
   ScheduledPersistence,
   SubcontractedPersistence
-} from './persistence.definitions';
+} from '../definitions/persistence.definitions';
 
 export const fromDBtoSubcontractedCandidate = (row: Entity & SubcontractedPersistence): unknown =>
   ({

@@ -1,4 +1,4 @@
-import { Pending, Regular, Scheduled, Subcontracted } from '../definitions';
+import { Pending, Regular, Scheduled, Subcontracted } from './index';
 
 export type ScheduledPersistence = Scheduled;
 

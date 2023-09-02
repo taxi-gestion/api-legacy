@@ -7,15 +7,10 @@ import {
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
 import { Errors, InfrastructureError } from '../../reporter';
-import { Entity } from '../../definitions';
+import { Entity, SubcontractedPersistence } from '../../definitions';
 import { pipe } from 'fp-ts/lib/function';
 import { SubcontractedToPersist } from './subcontract-fare.route';
-import { SubcontractedPersistence } from '../../persistence/persistence.definitions';
-import {
-  fromDBtoPendingCandidate,
-  fromDBtoScheduledCandidate,
-  fromDBtoSubcontractedCandidate
-} from '../../persistence/persistence-utils';
+import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate, fromDBtoSubcontractedCandidate } from '../../mappers';
 
 export const persistSubcontractedFares =
   (database: PostgresDb) =>

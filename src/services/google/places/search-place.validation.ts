@@ -5,12 +5,12 @@ import { chain as eitherChain, Either } from 'fp-ts/Either';
 import {
   GoogleMapsPlacesResponseTransfer,
   googleMapsPlacesTransferCodec,
-  placesRulesCodec,
+  PlaceResultTransfer,
   placesCodec,
-  PlaceResultTransfer
+  placesRulesCodec
 } from './places.codec';
 import { Place } from '../../../definitions';
-import { Errors } from '../../../reporter/http-reporter';
+import { Errors } from '../../../reporter';
 import { externalTypeCheckFor } from '../../../codecs';
 
 export const searchPlaceValidation = (transfer: unknown): TaskEither<Errors, Place[]> =>

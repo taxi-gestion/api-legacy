@@ -1,12 +1,12 @@
-import {map as taskEitherMap, TaskEither, tryCatch as taskEitherTryCatch} from 'fp-ts/TaskEither';
-import type {PoolClient, QueryResult} from 'pg';
-import type {PostgresDb} from '@fastify/postgres';
+import { map as taskEitherMap, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
+import type { PoolClient, QueryResult } from 'pg';
+import type { PostgresDb } from '@fastify/postgres';
 import { Errors } from '../../reporter';
-import {Entity} from '../../definitions';
-import {FaresToDelete} from './delete-fare.route';
-import {onDatabaseError} from '../../errors';
-import {pipe} from 'fp-ts/lib/function';
-import {fromDBtoPendingCandidate, fromDBtoScheduledCandidate} from '../../persistence/persistence-utils';
+import { Entity } from '../../definitions';
+import { FaresToDelete } from './delete-fare.route';
+import { onDatabaseError } from '../../errors';
+import { pipe } from 'fp-ts/lib/function';
+import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate } from '../../mappers';
 
 export const persistDeleteFares =
   (database: PostgresDb) =>
