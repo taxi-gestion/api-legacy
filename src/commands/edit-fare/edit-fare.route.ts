@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { Entity, Pending, Scheduled, ToEdit } from '../../definitions';
+import { Entity, FaresEdited, Pending, Scheduled, ToEdit } from '../../definitions';
 import { persistEditedFares } from './edit-fare.persistence';
 import { $faresToEditValidation, editedFaresValidation } from './edit-fare.validation';
 import { editFare } from './edit-fare';
@@ -22,12 +22,6 @@ export type EditedToPersist = {
   scheduledToEdit: Entity & Scheduled;
   pendingToCreate?: Pending;
   pendingToDelete?: Entity;
-};
-
-export type FaresEdited = {
-  scheduledEdited: Entity & Scheduled;
-  pendingCreated?: Entity & Pending;
-  pendingDeleted?: Entity & Pending;
 };
 
 export const editFareCommand = async (

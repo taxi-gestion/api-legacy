@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function';
 import { fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { fareToScheduleValidation, scheduledFaresValidation } from './schedule-fare.validation';
 import { scheduleFare } from './schedule-fare';
-import { Entity, Pending, Scheduled, ToSchedule } from '../../definitions';
+import { FaresScheduled, Pending, Scheduled, ToSchedule } from '../../definitions';
 import { persistScheduledFares } from './schedule-fare.persistence';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 
@@ -19,11 +19,6 @@ export type FareToSchedule = {
 export type FaresToSchedulePersist = {
   scheduledToCreate: Scheduled;
   pendingToCreate?: Pending;
-};
-
-export type FaresScheduled = {
-  scheduledCreated: Entity & Scheduled;
-  pendingCreated?: Entity & Pending;
 };
 
 // eslint-disable-next-line @typescript-eslint/require-await

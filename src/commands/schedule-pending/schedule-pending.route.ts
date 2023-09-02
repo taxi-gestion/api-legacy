@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
-import { Entity, Pending, ReturnDrive, Scheduled } from '../../definitions';
+import { Entity, Pending, PendingScheduled, ReturnDrive, Scheduled } from '../../definitions';
 import { $schedulePendingValidation, scheduledPendingValidation } from './schedule-pending.validation';
 import { schedulePending } from './schedule-pending';
 import { persistPendingScheduled } from './schedule-pending.persistence';
@@ -20,11 +20,6 @@ export type PendingToSchedule = {
 export type PendingToSchedulePersist = {
   scheduledToCreate: Scheduled;
   pendingToDelete: Entity;
-};
-
-export type PendingScheduled = {
-  scheduledCreated: Entity & Scheduled;
-  pendingDeleted: Entity & Pending;
 };
 
 export const schedulePendingCommand = async (

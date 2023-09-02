@@ -1,4 +1,4 @@
-import { intersection as ioIntersection, string as ioString, type as ioType, Type, array as ioArray } from 'io-ts';
+import { intersection as ioIntersection, string as ioString, type as ioType, Type } from 'io-ts';
 import { Entity, Regular } from '../../definitions';
 import { entityCodec } from './traits.codecs';
 
@@ -9,5 +9,3 @@ export const regularPassengerCodec: Type<Regular> = ioType({
 });
 
 export const regularPassengerEntityCodec: Type<Entity & Regular> = ioIntersection([entityCodec, regularPassengerCodec]);
-
-export const regularsCodec: Type<(Entity & Regular)[]> = ioArray(regularPassengerEntityCodec);

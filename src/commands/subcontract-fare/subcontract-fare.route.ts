@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { Entity, FareToSubcontract, Pending, Scheduled, Subcontracted } from '../../definitions';
+import { Entity, FaresSubcontracted, FareToSubcontract, Scheduled, Subcontracted } from '../../definitions';
 import { persistSubcontractedFares } from './subcontract-fare.persistence';
 import { $subcontractFareValidation, subcontractedValidation } from './subcontract-fare.validation';
 import { subcontractFare } from './subcontract-fare';
@@ -22,12 +22,6 @@ export type SubcontractedToPersist = {
   subcontractedToPersist: Subcontracted;
   scheduledToDelete: Entity;
   pendingToDelete?: Entity;
-};
-
-export type FaresSubcontracted = {
-  subcontracted: Entity & Subcontracted;
-  scheduledDeleted: Entity & Scheduled;
-  pendingDeleted?: Entity & Pending;
 };
 
 export const subcontractFareCommand = async (

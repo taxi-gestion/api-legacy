@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { registeredRegularValidation, registerRegularValidation } from './register-regular.validation';
-import { Entity, Regular } from '../../definitions';
+import { Regular, RegularRegistered } from '../../definitions';
 import { persistRegisterRegular } from './register-regular.persistence';
 
 type RegularRequest = FastifyRequest<{
@@ -13,10 +13,6 @@ type RegularRequest = FastifyRequest<{
 
 export type RegularToRegister = {
   toRegister: Regular;
-};
-
-export type RegularRegistered = {
-  regularRegistered: Entity & Regular;
 };
 
 export const registerRegularCommand = async (

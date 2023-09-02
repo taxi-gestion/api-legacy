@@ -2,16 +2,16 @@ import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { Entity, Pending, ReturnDrive } from '../../definitions';
+import { Entity, Pending, PendingScheduled, ReturnDrive } from '../../definitions';
 import {
   entityCodec,
   externalTypeCheckFor,
   pendingReturnCodec,
+  pendingScheduledCodec,
   returnDriveCodec,
-  returnDriveRulesCodec,
-  scheduledFareCodec
+  returnDriveRulesCodec
 } from '../../codecs';
-import { PendingScheduled, PendingToSchedule } from './schedule-pending.route';
+import { PendingToSchedule } from './schedule-pending.route';
 import { intersection as ioIntersection, Type, type as ioType } from 'io-ts';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
 
@@ -70,9 +70,4 @@ const pendingToScheduleCodec: Type<PendingToSchedule> = ioType({
 const pendingToScheduleRulesCodec = ioType({
   driveToSchedule: returnDriveRulesCodec,
   pendingToDelete: pendingReturnCodec
-});
-
-const pendingScheduledCodec: Type<PendingScheduled> = ioType({
-  scheduledCreated: scheduledFareCodec,
-  pendingDeleted: pendingReturnCodec
 });

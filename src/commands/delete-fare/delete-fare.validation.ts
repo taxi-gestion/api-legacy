@@ -2,11 +2,11 @@ import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { FaresDeleted, FaresToDelete } from './delete-fare.route';
+import { FaresToDelete } from './delete-fare.route';
 import { type as ioType, Type, union as ioUnion } from 'io-ts';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
-import { entityCodec, externalTypeCheckFor, pendingReturnCodec, scheduledFareCodec, stringCodec } from '../../codecs';
-import { Entity } from '../../definitions';
+import { entityCodec, externalTypeCheckFor, faresDeletedCodec, stringCodec } from '../../codecs';
+import { Entity, FaresDeleted } from '../../definitions';
 import { isOneWay } from '../../domain';
 
 export const $fareToDeleteValidation =
@@ -21,7 +21,7 @@ export const $fareToDeleteValidation =
     );
 
 export const deletedValidation = (transfer: unknown): TaskEither<Errors, FaresDeleted> =>
-  pipe(transfer, externalTypeCheckFor<FaresDeleted>(deletedCodec), fromEither);
+  pipe(transfer, externalTypeCheckFor<FaresDeleted>(faresDeletedCodec), fromEither);
 
 const $checkEntitiesToDeleteExist =
   (db: PostgresDb) =>
@@ -37,16 +37,6 @@ const toDeleteTransferCodec: Type<FaresToDelete> = ioUnion([
   ioType({
     scheduledToDelete: entityCodec,
     pendingToDelete: entityCodec
-  })
-]);
-
-const deletedCodec: Type<FaresDeleted> = ioUnion([
-  ioType({
-    scheduledDeleted: scheduledFareCodec
-  }),
-  ioType({
-    scheduledDeleted: scheduledFareCodec,
-    pendingDeleted: pendingReturnCodec
   })
 ]);
 

@@ -2,15 +2,11 @@ import type { Validation } from 'io-ts';
 import { type as ioType, Type } from 'io-ts';
 import { pipe } from 'fp-ts/function';
 import { chain as eitherChain, Either } from 'fp-ts/Either';
-import {
-  externalTypeCheckFor,
-  regularPassengerCodec,
-  regularPassengerEntityCodec,
-  regularPassengerRulesCodec
-} from '../../codecs';
-import { RegularRegistered, RegularToRegister } from './register-regular.route';
+import { externalTypeCheckFor, regularPassengerCodec, regularPassengerRulesCodec, regularRegisteredCodec } from '../../codecs';
+import { RegularToRegister } from './register-regular.route';
 import { fromEither, TaskEither } from 'fp-ts/TaskEither';
 import { Errors } from '../../reporter';
+import { RegularRegistered } from '../../definitions';
 
 export const registerRegularValidation = (transfer: unknown): Either<Errors, RegularToRegister> =>
   pipe(transfer, externalTypeCheckFor<RegularToRegister>(regularToRegisterCodec), eitherChain(rulesCheck));
@@ -27,8 +23,4 @@ const regularToRegisterCodec: Type<RegularToRegister> = ioType({
 // eslint-disable-next-line @typescript-eslint/typedef
 const regularToRegisterRulesCodec = ioType({
   toRegister: regularPassengerRulesCodec
-});
-
-const regularRegisteredCodec: Type<RegularRegistered> = ioType({
-  regularRegistered: regularPassengerEntityCodec
 });

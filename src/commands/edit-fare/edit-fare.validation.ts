@@ -2,15 +2,15 @@ import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { Entity, Scheduled, ToEdit } from '../../definitions';
+import { Entity, FaresEdited, Scheduled, ToEdit } from '../../definitions';
 import { type as ioType, Type, union as ioUnion } from 'io-ts';
-import { FaresEdited, FaresToEdit } from './edit-fare.route';
+import { FaresToEdit } from './edit-fare.route';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
 import {
   entityCodec,
   externalTypeCheckFor,
+  faresEditedCodec,
   fareToEditCodec,
-  pendingReturnCodec,
   scheduledFareCodec,
   toEditCodec,
   toEditRulesCodec
@@ -97,24 +97,5 @@ const faresToEditRulesCodec = ioUnion([
     toEdit: toEditRulesCodec,
     scheduledToEdit: scheduledFareCodec,
     pendingToDelete: entityCodec
-  })
-]);
-
-const faresEditedCodec: Type<FaresEdited> = ioUnion([
-  ioType({
-    scheduledEdited: scheduledFareCodec
-  }),
-  ioType({
-    scheduledEdited: scheduledFareCodec,
-    pendingCreated: pendingReturnCodec
-  }),
-  ioType({
-    scheduledEdited: scheduledFareCodec,
-    pendingCreated: pendingReturnCodec,
-    pendingDeleted: pendingReturnCodec
-  }),
-  ioType({
-    scheduledEdited: scheduledFareCodec,
-    pendingDeleted: pendingReturnCodec
   })
 ]);

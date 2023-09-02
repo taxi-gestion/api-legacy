@@ -1,16 +1,11 @@
-import { Type, type as ioType, union as ioUnion } from 'io-ts';
+import { Type, type as ioType } from 'io-ts';
 import { pipe } from 'fp-ts/function';
 import { chain as eitherChain, Either } from 'fp-ts/Either';
-import {
-  externalTypeCheckFor,
-  pendingReturnCodec,
-  scheduledFareCodec,
-  toScheduleCodec,
-  toScheduleRulesCodec
-} from '../../codecs';
-import { FaresScheduled, FareToSchedule } from './schedule-fare.route';
+import { externalTypeCheckFor, fareScheduledCodec, toScheduleCodec, toScheduleRulesCodec } from '../../codecs';
+import { FareToSchedule } from './schedule-fare.route';
 import { Errors } from '../../reporter';
 import { fromEither, TaskEither } from 'fp-ts/TaskEither';
+import { FaresScheduled } from '../../definitions';
 
 export const fareToScheduleValidation = (transfer: unknown): Either<Errors, FareToSchedule> =>
   pipe(transfer, externalTypeCheckFor<FareToSchedule>(fareToScheduleCodec), eitherChain(rulesCheck));
@@ -28,13 +23,3 @@ const fareToScheduleCodec: Type<FareToSchedule> = ioType({
 const fareToScheduleRulesCodec = ioType({
   toSchedule: toScheduleRulesCodec
 });
-
-const fareScheduledCodec: Type<FaresScheduled> = ioUnion([
-  ioType({
-    scheduledCreated: scheduledFareCodec
-  }),
-  ioType({
-    scheduledCreated: scheduledFareCodec,
-    pendingCreated: pendingReturnCodec
-  })
-]);

@@ -2,18 +2,17 @@ import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { Entity, FareToSubcontract, Scheduled } from '../../definitions';
+import { Entity, FaresSubcontracted, FareToSubcontract, Scheduled } from '../../definitions';
 import {
   entityCodec,
   externalTypeCheckFor,
   fareToSubcontractCodec,
-  pendingReturnCodec,
   scheduledFareCodec,
-  subcontractedFareCodec,
+  faresSubcontractedCodec,
   toSubcontractCodec
 } from '../../codecs';
 import { type as ioType, Type, union as ioUnion } from 'io-ts';
-import { FaresSubcontracted, FaresToSubcontract } from './subcontract-fare.route';
+import { FaresToSubcontract } from './subcontract-fare.route';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
 import { isOneWay } from '../../domain';
 
@@ -29,7 +28,7 @@ export const $subcontractFareValidation =
     );
 
 export const subcontractedValidation = (transfer: unknown): TaskEither<Errors, FaresSubcontracted> =>
-  pipe(transfer, externalTypeCheckFor<FaresSubcontracted>(subcontractedCodec), fromEither);
+  pipe(transfer, externalTypeCheckFor<FaresSubcontracted>(faresSubcontractedCodec), fromEither);
 
 const $fareToSubcontractExistIn =
   (db: PostgresDb) =>
@@ -69,18 +68,6 @@ const $withPendingToDelete =
 
 const internalTypeCheckForFareToSubcontract = (fromDB: unknown): TaskEither<Errors, FaresToSubcontract> =>
   fromEither(toSubcontractTransferCodec.decode(fromDB));
-
-const subcontractedCodec: Type<FaresSubcontracted> = ioUnion([
-  ioType({
-    subcontracted: subcontractedFareCodec,
-    scheduledDeleted: scheduledFareCodec
-  }),
-  ioType({
-    subcontracted: subcontractedFareCodec,
-    scheduledDeleted: scheduledFareCodec,
-    pendingDeleted: pendingReturnCodec
-  })
-]);
 
 const toSubcontractTransferCodec: Type<FaresToSubcontract> = ioUnion([
   ioType({

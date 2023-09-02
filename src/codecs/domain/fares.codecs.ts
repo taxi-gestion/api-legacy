@@ -1,6 +1,5 @@
 import type { Type } from 'io-ts';
 import {
-  array as ioArray,
   intersection as ioIntersection,
   keyof as ioKeyof,
   literal as ioLiteral,
@@ -66,8 +65,6 @@ export const pendingReturnCodec: Type<Entity & Pending> = ioIntersection([
   })
 ]);
 
-export const pendingReturnsCodec: Type<(Entity & Pending)[]> = ioArray(pendingReturnCodec);
-
 export const scheduledFareCodec: Type<Entity & Scheduled> = ioIntersection([
   entityCodec,
   passengerCodec,
@@ -80,8 +77,6 @@ export const scheduledFareCodec: Type<Entity & Scheduled> = ioIntersection([
     nature: ioKeyof({ medical: null, standard: null })
   })
 ]);
-
-export const scheduledFaresCodec: Type<(Entity & Scheduled)[]> = ioArray(scheduledFareCodec);
 
 // TODO Remove once type Drive has been updated
 const driveWithoutDriverCodec: Type<Omit<Drive, 'driver'>> = ioType({
@@ -111,8 +106,6 @@ export const subcontractedFareCodec: Type<Entity & Subcontracted> = ioIntersecti
     nature: ioKeyof({ medical: null, standard: null })
   })
 ]);
-
-export const subcontractedFaresCodec: Type<(Entity & Subcontracted)[]> = ioArray(subcontractedFareCodec);
 
 export const toSubcontractCodec: Type<FareToSubcontract> = ioType({
   subcontractor: ioString,
