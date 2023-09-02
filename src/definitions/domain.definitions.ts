@@ -74,7 +74,7 @@ export type Subcontractor = {
   subcontractor: string;
 };
 // TODO Refactor Drive to exclude driver
-export type FareToSubcontract = Subcontractor & {
+export type ToSubcontract = Subcontractor & {
   status: 'to-subcontract';
 };
 

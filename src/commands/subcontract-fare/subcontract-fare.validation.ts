@@ -2,7 +2,7 @@ import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { Entity, FaresSubcontracted, FareToSubcontract, Scheduled } from '../../definitions';
+import { Entity, FaresSubcontracted, ToSubcontract, Scheduled } from '../../definitions';
 import {
   entityCodec,
   externalTypeCheckFor,
@@ -21,7 +21,7 @@ export const $subcontractFareValidation =
   (transfer: unknown): TaskEither<Errors, FaresToSubcontract> =>
     pipe(
       transfer,
-      externalTypeCheckFor<Entity & FareToSubcontract>(fareToSubcontractCodec),
+      externalTypeCheckFor<Entity & ToSubcontract>(fareToSubcontractCodec),
       fromEither,
       taskEitherChain($fareToSubcontractExistIn(db)),
       taskEitherChain(internalTypeCheckForFareToSubcontract)
@@ -32,7 +32,7 @@ export const subcontractedValidation = (transfer: unknown): TaskEither<Errors, F
 
 const $fareToSubcontractExistIn =
   (db: PostgresDb) =>
-  (subcontractFareTransfer: Entity & FareToSubcontract): TaskEither<Errors, unknown> =>
+  (subcontractFareTransfer: Entity & ToSubcontract): TaskEither<Errors, unknown> =>
     taskEitherTryCatch(async (): Promise<unknown> => {
       const [fareToSubcontract]: ((Entity & Scheduled) | undefined)[] = (
         await db.query<Entity & Scheduled>('SELECT * FROM scheduled_fares WHERE id = $1 LIMIT 1', [subcontractFareTransfer.id])

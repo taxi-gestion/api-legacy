@@ -9,7 +9,7 @@ import {
 import {
   Drive,
   Entity,
-  FareToSubcontract,
+  ToSubcontract,
   Pending,
   ReturnDrive,
   Scheduled,
@@ -85,7 +85,7 @@ const driveWithoutDriverCodec: Type<Omit<Drive, 'driver'>> = ioType({
   destination: placeCodec
 });
 
-export const fareToSubcontractCodec: Type<Entity & FareToSubcontract> = ioIntersection([
+export const fareToSubcontractCodec: Type<Entity & ToSubcontract> = ioIntersection([
   entityCodec,
   ioType({
     subcontractor: ioString,
@@ -107,7 +107,7 @@ export const subcontractedFareCodec: Type<Entity & Subcontracted> = ioIntersecti
   })
 ]);
 
-export const toSubcontractCodec: Type<FareToSubcontract> = ioType({
+export const toSubcontractCodec: Type<ToSubcontract> = ioType({
   subcontractor: ioString,
   status: ioLiteral('to-subcontract')
 });

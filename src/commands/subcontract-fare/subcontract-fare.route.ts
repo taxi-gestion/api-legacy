@@ -2,18 +2,18 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { Entity, FaresSubcontracted, FareToSubcontract, Scheduled, Subcontracted } from '../../definitions';
+import { Entity, FaresSubcontracted, ToSubcontract, Scheduled, Subcontracted } from '../../definitions';
 import { persistSubcontractedFares } from './subcontract-fare.persistence';
 import { $subcontractFareValidation, subcontractedValidation } from './subcontract-fare.validation';
 import { subcontractFare } from './subcontract-fare';
 
 export type SubcontractFareRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  Body: Entity & FareToSubcontract;
+  Body: Entity & ToSubcontract;
 }>;
 
 export type FaresToSubcontract = {
-  toSubcontract: FareToSubcontract;
+  toSubcontract: ToSubcontract;
   scheduledToCopyAndDelete: Entity & Scheduled;
   pendingToDelete?: Entity;
 };
