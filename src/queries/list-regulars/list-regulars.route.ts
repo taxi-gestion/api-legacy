@@ -4,7 +4,7 @@ import { fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { Entity, Regular } from '../../definitions';
 import { listRegularsDatabaseQuery } from './list-regulars.persistence';
-import {regularsValidation} from './list-regulars.validation';
+import { regularsValidation } from './list-regulars.validation';
 
 /* eslint-disable @typescript-eslint/require-await */
 export const listRegularsQuery = async (server: FastifyInstance): Promise<void> => {

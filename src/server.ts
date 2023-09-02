@@ -16,13 +16,13 @@ import { pendingReturnsForTheDateQuery } from './queries/pending-returns-for-dat
 import { scheduledFaresForTheDateQuery } from './queries/scheduled-fares-for-date/scheduled-fares-for-date.route';
 import { listDriversQuery } from './queries/list-drivers/list-drivers.route';
 import { $awsCognitoListUsersInGroupDriver } from './services/aws/cognito/list-drivers.api';
-import { listPassengersQuery } from './queries/list-passengers/list-passengers.route';
 import { registerRegularCommand } from './commands/register-regular/register-regular.route';
 import { deleteFareCommand } from './commands/delete-fare/delete-fare.route';
 import { editFareCommand } from './commands/edit-fare/edit-fare.route';
 import { subcontractFareCommand } from './commands/subcontract-fare/subcontract-fare.route';
 import { subcontractedFaresForTheDateQuery } from './queries/subcontracted-fares-for-date/subcontracted-fares-for-date.route';
 import { schedulePendingCommand } from './commands/schedule-pending/schedule-pending.route';
+import { listRegularsQuery } from './queries/list-regulars/list-regulars.route';
 
 const server: FastifyInstance = fastify();
 
@@ -74,7 +74,7 @@ server.register(listDriversQuery, {
     }
   )
 });
-server.register(listPassengersQuery);
+server.register(listRegularsQuery);
 
 /* eslint-enable @typescript-eslint/no-floating-promises */
 

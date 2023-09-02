@@ -1,6 +1,6 @@
 import { number as ioNumber, string as ioString, type as ioType, Type } from 'io-ts';
 import { Drive, Driver, DurationDistance, Entity, Passenger } from '../../definitions';
-import { isDateTimeISO8601String, isFrenchPhoneNumber, isPositive, placeCodec, placeRulesCodec } from '../common';
+import { placeCodec } from '../common';
 
 export const entityCodec: Type<Entity> = ioType({
   id: ioString
@@ -26,22 +26,4 @@ export const durationDistanceCodec: Type<DurationDistance> = ioType({
 export const passengerCodec: Type<Passenger> = ioType({
   passenger: ioString,
   phone: ioString
-});
-
-// eslint-disable-next-line @typescript-eslint/typedef
-export const driveRulesCodec = ioType({
-  datetime: isDateTimeISO8601String,
-  departure: placeRulesCodec,
-  destination: placeRulesCodec
-});
-
-// eslint-disable-next-line @typescript-eslint/typedef
-export const durationDistanceRulesCodec = ioType({
-  duration: isPositive,
-  distance: isPositive
-});
-
-// eslint-disable-next-line @typescript-eslint/typedef
-export const passengerRulesCodec = ioType({
-  phone: isFrenchPhoneNumber
 });

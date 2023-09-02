@@ -4,7 +4,7 @@ import { pipe } from 'fp-ts/lib/function';
 import { map as taskEitherMap, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors } from '../../reporter';
-import {Entity, Regular, RegularPersistence} from '../../definitions';
+import { Entity, Regular, RegularPersistence } from '../../definitions';
 import { onDatabaseError } from '../../errors';
 
 export const listRegularsDatabaseQuery = (database: PostgresDb) => (): TaskEither<Errors, unknown> =>
