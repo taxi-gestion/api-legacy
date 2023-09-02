@@ -1,6 +1,5 @@
 import {
-  chain as taskEitherChain,
-  right as taskEitherRight,
+  map as taskEitherMap,
   TaskEither,
   tryCatch as taskEitherTryCatch
 } from 'fp-ts/TaskEither';
@@ -18,9 +17,7 @@ export const persistSubcontractedFares =
   (fares: SubcontractedToPersist): TaskEither<Errors, unknown> =>
     pipe(
       taskEitherTryCatch(applyQueries(database)(fares), onDatabaseError(`persistSubcontractedFares`)),
-      taskEitherChain(
-        (queriesResults: QueryResult[]): TaskEither<Errors, unknown> => taskEitherRight(toTransfer(queriesResults))
-      )
+      taskEitherMap(toTransfer)
     );
 
 const applyQueries =

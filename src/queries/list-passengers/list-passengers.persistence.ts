@@ -1,10 +1,11 @@
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { pipe } from 'fp-ts/lib/function';
-import { chain as taskEitherChain, right as taskEitherRight, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
+import { map as taskEitherMap, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
-import { Errors, InfrastructureError } from '../../reporter';
+import { Errors } from '../../reporter';
 import { Entity, Passenger } from '../../definitions';
+import {onDatabaseError} from '../../errors';
 
 type PassengerPersistence = Entity & {
   firstname: string;
@@ -12,35 +13,14 @@ type PassengerPersistence = Entity & {
   phone: string;
 };
 
-export const listPassengersDatabaseQuery = (database: PostgresDb) => (): TaskEither<Errors, (Entity & Passenger)[]> =>
+export const listPassengersDatabaseQuery = (database: PostgresDb) => (): TaskEither<Errors, unknown> =>
   pipe(
     listPassengers(database)(),
-    taskEitherChain(
-      (queryResult: QueryResult): TaskEither<Errors, (Entity & Passenger)[]> => taskEitherRight(toPassengerReturns(queryResult))
-    )
+    taskEitherMap(toTransfer)
   );
 
-const toPassengerReturns = (queryResult: QueryResult): (Entity & Passenger)[] =>
-  queryResult.rows.map((row: PassengerPersistence): Entity & Passenger => ({
-    id: row.id,
-    passenger: `${row.lastname} ${row.firstname}`,
-    phone: row.phone
-  }));
-
 const listPassengers = (database: PostgresDb) => (): TaskEither<Errors, QueryResult> =>
-  taskEitherTryCatch(selectFromPassenger(database)(), onSelectPassengerReturnsError);
-
-const onSelectPassengerReturnsError = (error: unknown): Errors =>
-  [
-    {
-      isInfrastructureError: true,
-      message: `listPassengers database error - ${(error as Error).message}`,
-      // eslint-disable-next-line id-denylist
-      value: (error as Error).name,
-      stack: (error as Error).stack ?? 'no stack available',
-      code: (error as Error).message.includes('ECONNREFUSED') ? '503' : '500'
-    } satisfies InfrastructureError
-  ] satisfies Errors;
+  taskEitherTryCatch(selectFromPassenger(database)(), onDatabaseError(`listPassengersDatabaseQuery`));
 
 const selectFromPassenger = (database: PostgresDb) => () => async (): Promise<QueryResult> => {
   const client: PoolClient = await database.connect();
@@ -56,3 +36,10 @@ const selectPassengersQuery = async (client: PoolClient): Promise<QueryResult> =
 const selectPassengersQueryString: string = `
       SELECT * FROM passengers
     `;
+
+const toTransfer = (queryResult: QueryResult): unknown =>
+  queryResult.rows.map((row: PassengerPersistence): Entity & Passenger => ({
+    id: row.id,
+    passenger: `${row.lastname} ${row.firstname}`,
+    phone: row.phone
+  }));

@@ -5,7 +5,7 @@ import { pipe } from 'fp-ts/lib/function';
 import {
   chain as taskEitherChain,
   fromEither,
-  right as taskEitherRight,
+  map as taskEitherMap,
   tryCatch as taskEitherTryCatch
 } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
@@ -26,7 +26,7 @@ export const pendingReturnsForTheDateDatabaseQuery =
       date,
       fromEither,
       taskEitherChain(selectPendingReturnsForDate(database)),
-      taskEitherChain((queryResult: QueryResult): TaskEither<Errors, unknown> => taskEitherRight(toTransfer(queryResult)))
+      taskEitherMap(toTransfer)
     );
 
 const toTransfer = (queryResult: QueryResult): unknown =>
