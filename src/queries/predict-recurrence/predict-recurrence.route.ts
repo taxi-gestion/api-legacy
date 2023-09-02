@@ -18,7 +18,7 @@ export const predictRecurrenceQuery = async (
 ): Promise<void> => {
   server.route({
     method: 'POST',
-    url: '/predict-recurrence',
+    url: '/predict/recurrence',
     handler: async (req: PredictRecurrenceRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         req.body,

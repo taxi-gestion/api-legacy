@@ -1,49 +1,54 @@
-import { TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
+import { map as taskEitherMap, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
+import { Errors } from '../../reporter';
 import { Entity } from '../../definitions';
+import { FaresToDelete } from './delete-fare.route';
+import { onDatabaseError } from '../../errors';
+import { pipe } from 'fp-ts/lib/function';
+import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate } from '../../mappers';
 
-export const deleteScheduledFareAndReturn =
+export const persistDeleteFares =
   (database: PostgresDb) =>
-  (entities: [Entity, Entity?]): TaskEither<Errors, QueryResult[]> =>
-    taskEitherTryCatch(applyQueries(database, entities), onApplyQueriesError);
+  (fares: FaresToDelete): TaskEither<Errors, unknown> =>
+    pipe(taskEitherTryCatch(applyQueries(database)(fares), onDatabaseError('deleteFares')), taskEitherMap(toTransfer));
 
-const applyQueries = (database: PostgresDb, entities: [Entity, Entity?]) => async (): Promise<QueryResult[]> =>
-  database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
-    const [fareToDelete, returnToDelete]: [Entity, Entity?] = entities;
-    const promises: Promise<QueryResult>[] = [
-      deleteScheduledFareQuery(client, fareToDelete),
-      ...removePendingReturnQueryOrEmpty(client, returnToDelete)
-    ];
-    return Promise.all(promises);
-  });
+const applyQueries =
+  (database: PostgresDb) =>
+  ({ scheduledToDelete, pendingToDelete }: FaresToDelete) =>
+  async (): Promise<QueryResult[]> =>
+    database.transact(
+      async (client: PoolClient): Promise<QueryResult[]> =>
+        Promise.all([
+          deleteScheduledFareQuery(client)(scheduledToDelete),
+          ...removePendingReturnQueryOrEmpty(client)(pendingToDelete)
+        ])
+    );
 
-const removePendingReturnQueryOrEmpty = (client: PoolClient, returnToDelete: Entity | undefined): [] | [Promise<QueryResult>] =>
-  returnToDelete === undefined ? [] : [removePendingReturnQuery(client, returnToDelete)];
+const removePendingReturnQueryOrEmpty =
+  (client: PoolClient) =>
+  (returnToDelete: Entity | undefined): [] | [Promise<QueryResult>] =>
+    returnToDelete === undefined ? [] : [removePendingReturnQuery(client)(returnToDelete)];
 
-const onApplyQueriesError = (error: unknown): Errors =>
-  [
-    {
-      isInfrastructureError: true,
-      message: `database error - ${(error as Error).message}`,
-      // eslint-disable-next-line id-denylist
-      value: (error as Error).name,
-      stack: (error as Error).stack ?? 'no stack available',
-      code: (error as Error).message.includes('ECONNREFUSED') ? '503' : '500'
-    } satisfies InfrastructureError
-  ] satisfies Errors;
-
-const deleteScheduledFareQuery = async (client: PoolClient, farePg: Entity): Promise<QueryResult> =>
-  client.query(deleteScheduledFareQueryString, [farePg.id]);
+const deleteScheduledFareQuery =
+  (client: PoolClient) =>
+  async (farePg: Entity): Promise<QueryResult> =>
+    client.query(deleteScheduledFareQueryString, [farePg.id]);
 
 const deleteScheduledFareQueryString: string = `
       DELETE FROM scheduled_fares WHERE id = $1 RETURNING *
       `;
 
-const removePendingReturnQuery = async (client: PoolClient, returnToDelete: Entity): Promise<QueryResult> =>
-  client.query(removePendingReturnQueryString, [returnToDelete.id]);
+const removePendingReturnQuery =
+  (client: PoolClient) =>
+  async (returnToDelete: Entity): Promise<QueryResult> =>
+    client.query(removePendingReturnQueryString, [returnToDelete.id]);
 
 const removePendingReturnQueryString: string = `
   DELETE FROM pending_returns WHERE id = $1 RETURNING *
 `;
+
+const toTransfer = (queriesResults: QueryResult[]): unknown => ({
+  scheduledDeleted: [queriesResults[0]?.rows[0]].map(fromDBtoScheduledCandidate)[0],
+  ...(queriesResults[1] === undefined ? {} : { pendingDeleted: [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0] })
+});

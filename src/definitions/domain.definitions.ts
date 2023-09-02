@@ -1,6 +1,6 @@
 import { Place } from './place.definition';
+
 export type Entity = { id: string };
-export type ReturnToDelete = { idToDelete: string };
 
 export type Driver = {
   identifier: string;
@@ -34,7 +34,7 @@ export type Nature = {
   nature: 'medical' | 'standard';
 };
 
-export type FareToSchedule = Drive &
+export type ToSchedule = Drive &
   DurationDistance &
   Nature &
   Passenger & {
@@ -42,7 +42,7 @@ export type FareToSchedule = Drive &
     status: 'to-schedule';
   };
 
-export type FareToEdit = Drive &
+export type ToEdit = Drive &
   DurationDistance &
   Nature &
   Passenger & {
@@ -50,13 +50,10 @@ export type FareToEdit = Drive &
     status: 'to-edit';
   };
 
-export type ReturnToSchedule = Drive &
+export type ReturnDrive = Drive &
   DurationDistance & {
-    kind: 'two-way';
-    status: 'return-to-schedule';
+    status: 'return-drive';
   };
-
-export type CompletedReturnToSchedule = Nature & Passenger & ReturnToSchedule;
 
 export type Pending = Drive &
   Nature &
@@ -77,7 +74,7 @@ export type Subcontractor = {
   subcontractor: string;
 };
 // TODO Refactor Drive to exclude driver
-export type FareToSubcontract = Subcontractor & {
+export type ToSubcontract = Subcontractor & {
   status: 'to-subcontract';
 };
 

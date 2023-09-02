@@ -1,12 +1,26 @@
-import type { Errors, Validation } from 'io-ts';
+import type { Validation } from 'io-ts';
+import { type as ioType, Type } from 'io-ts';
 import { pipe } from 'fp-ts/function';
 import { chain as eitherChain, Either } from 'fp-ts/Either';
-import { Regular } from '../../definitions';
-import { regularPassengerCodec, regularPassengerRulesCodec } from '../../codecs';
+import { externalTypeCheckFor, regularPassengerCodec, regularPassengerRulesCodec, regularRegisteredCodec } from '../../codecs';
+import { RegularToRegister } from './register-regular.route';
+import { fromEither, TaskEither } from 'fp-ts/TaskEither';
+import { Errors } from '../../reporter';
+import { RegularRegistered } from '../../definitions';
 
-export const registerRegularValidation = (transfer: unknown): Either<Errors, Regular> =>
-  pipe(transfer, internalTypeCheckForRegular, eitherChain(rulesCheckForRegular));
-const internalTypeCheckForRegular = (regularTransfer: unknown): Validation<Regular> =>
-  regularPassengerCodec.decode(regularTransfer);
+export const registerRegularValidation = (transfer: unknown): Either<Errors, RegularToRegister> =>
+  pipe(transfer, externalTypeCheckFor<RegularToRegister>(regularToRegisterCodec), eitherChain(rulesCheck));
 
-const rulesCheckForRegular = (regular: Regular): Validation<Regular> => regularPassengerRulesCodec.decode(regular);
+export const registeredRegularValidation = (transfer: unknown): TaskEither<Errors, RegularRegistered> =>
+  pipe(transfer, externalTypeCheckFor<RegularRegistered>(regularRegisteredCodec), fromEither);
+
+const rulesCheck = (regular: RegularToRegister): Validation<RegularToRegister> => regularToRegisterRulesCodec.decode(regular);
+
+const regularToRegisterCodec: Type<RegularToRegister> = ioType({
+  toRegister: regularPassengerCodec
+});
+
+// eslint-disable-next-line @typescript-eslint/typedef
+const regularToRegisterRulesCodec = ioType({
+  toRegister: regularPassengerRulesCodec
+});

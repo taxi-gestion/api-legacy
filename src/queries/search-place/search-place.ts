@@ -1,5 +1,5 @@
 import { TaskEither } from 'fp-ts/TaskEither';
-import { Errors } from '../../reporter/HttpReporter';
+import { Errors } from '../../reporter';
 import { Place } from '../../definitions';
 
 export type SearchPlaceAdapter = (predict: string) => TaskEither<Errors, Place[]>;

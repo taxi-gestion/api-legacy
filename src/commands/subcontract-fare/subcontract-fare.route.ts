@@ -2,32 +2,26 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { Entity, FareToSubcontract, Pending, Scheduled, Subcontracted } from '../../definitions';
-import { persistSubcontractAndDeleteScheduledAndPending } from './subcontract-fare.persistence';
+import { Entity, FaresSubcontracted, ToSubcontract, Scheduled, Subcontracted } from '../../definitions';
+import { persistSubcontractedFares } from './subcontract-fare.persistence';
 import { $subcontractFareValidation, subcontractedValidation } from './subcontract-fare.validation';
 import { subcontractFare } from './subcontract-fare';
 
 export type SubcontractFareRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  Body: Entity & FareToSubcontract;
+  Body: Entity & ToSubcontract;
 }>;
 
-export type ToSubcontractValidation = {
-  toSubcontract: FareToSubcontract;
+export type FaresToSubcontract = {
+  toSubcontract: ToSubcontract;
   scheduledToCopyAndDelete: Entity & Scheduled;
   pendingToDelete?: Entity;
 };
 
-export type SubcontractedActions = {
+export type SubcontractedToPersist = {
   subcontractedToPersist: Subcontracted;
   scheduledToDelete: Entity;
   pendingToDelete?: Entity;
-};
-
-export type SubcontractedValidated = {
-  subcontracted: Entity & Subcontracted;
-  scheduledDeleted: Entity & Scheduled;
-  pendingDeleted?: Entity & Pending;
 };
 
 export const subcontractFareCommand = async (
@@ -42,9 +36,9 @@ export const subcontractFareCommand = async (
         req.body,
         $subcontractFareValidation(server.pg),
         subcontractFare,
-        taskEitherChain(persistSubcontractAndDeleteScheduledAndPending(server.pg)),
+        taskEitherChain(persistSubcontractedFares(server.pg)),
         taskEitherChain(subcontractedValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<SubcontractedValidated>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<FaresSubcontracted>)
       )();
     }
   });

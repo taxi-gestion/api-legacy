@@ -3,7 +3,7 @@ import { CompletionChoiceTransfer, OpenAICompletionResponseTransfer } from '../c
 import { predictedRecurrenceValidation } from './predicted-recurrence.validation';
 import { TaskEither } from 'fp-ts/TaskEither';
 import { PredictedRecurrence } from '../../../definitions';
-import HttpReporter, { DevFriendlyError, Errors } from '../../../reporter/HttpReporter';
+import HttpReporter, { DevFriendlyError, Errors } from '../../../reporter/http-reporter';
 
 describe('Predicted recurrence validation tests', (): void => {
   const base: OpenAICompletionResponseTransfer = {

@@ -1,10 +1,10 @@
 import {
   array as ioArray,
   boolean as ioBoolean,
+  intersection as ioIntersection,
   string as ioString,
-  Type,
   type as ioType,
-  intersection as ioIntersection
+  Type
 } from 'io-ts';
 import { date as ioDate } from 'io-ts-types';
 import { Driver, Entity } from '../../../definitions';

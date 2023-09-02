@@ -1,132 +1,75 @@
-import { Errors, InfrastructureError, isInfrastructureError, ValidationError } from '../../reporter/HttpReporter';
+import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { Entity, FareToSubcontract, Scheduled } from '../../definitions';
-import { QueryResult } from 'pg';
+import { Entity, FaresSubcontracted, ToSubcontract, Scheduled } from '../../definitions';
 import {
   entityCodec,
   externalTypeCheckFor,
   fareToSubcontractCodec,
-  pendingReturnCodec,
   scheduledFareCodec,
-  subcontractedFareCodec,
+  faresSubcontractedCodec,
   toSubcontractCodec
 } from '../../codecs';
-import { Decoder, type as ioType, Type, union as ioUnion } from 'io-ts';
-import { SubcontractedValidated, ToSubcontractValidation } from './subcontract-fare.route';
-import { fromDBtoScheduledCandidate } from './subcontract-fare.persistence';
+import { type as ioType, Type, union as ioUnion } from 'io-ts';
+import { FaresToSubcontract } from './subcontract-fare.route';
+import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
+import { isOneWay } from '../../domain';
 
 export const $subcontractFareValidation =
   (db: PostgresDb) =>
-  (transfer: unknown): TaskEither<Errors, ToSubcontractValidation> =>
+  (transfer: unknown): TaskEither<Errors, FaresToSubcontract> =>
     pipe(
       transfer,
-      externalTypeCheckFor<Entity & FareToSubcontract>(fareToSubcontractCodec),
+      externalTypeCheckFor<Entity & ToSubcontract>(fareToSubcontractCodec),
       fromEither,
-      taskEitherChain($fareToSubcontractExistInDb(db)),
+      taskEitherChain($fareToSubcontractExistIn(db)),
       taskEitherChain(internalTypeCheckForFareToSubcontract)
     );
 
-export const subcontractedValidation = (transfer: unknown): TaskEither<Errors, SubcontractedValidated> =>
-  pipe(transfer, externalTypeCheckFor<SubcontractedValidated>(subcontractedCodec), fromEither);
+export const subcontractedValidation = (transfer: unknown): TaskEither<Errors, FaresSubcontracted> =>
+  pipe(transfer, externalTypeCheckFor<FaresSubcontracted>(faresSubcontractedCodec), fromEither);
 
-const $fareToSubcontractExistInDb =
+const $fareToSubcontractExistIn =
   (db: PostgresDb) =>
-  (subcontractFareTransfer: Entity & FareToSubcontract): TaskEither<Errors, unknown> =>
+  (subcontractFareTransfer: Entity & ToSubcontract): TaskEither<Errors, unknown> =>
     taskEitherTryCatch(async (): Promise<unknown> => {
-      const fareToSubcontractQueryResult: QueryResult = await db.query('SELECT * FROM scheduled_fares WHERE id = $1 LIMIT 1', [
-        subcontractFareTransfer.id
-      ]);
+      const [fareToSubcontract]: ((Entity & Scheduled) | undefined)[] = (
+        await db.query<Entity & Scheduled>('SELECT * FROM scheduled_fares WHERE id = $1 LIMIT 1', [subcontractFareTransfer.id])
+      ).rows;
 
-      if (fareToSubcontractQueryResult.rows.length === 0)
-        // eslint-disable-next-line @typescript-eslint/no-throw-literal
-        throw entityNotFoundValidationError(subcontractFareTransfer.id) satisfies ValidationError;
+      if (fareToSubcontract === undefined) throwEntityNotFoundValidationError(subcontractFareTransfer.id);
 
-      const fareToSubcontractPendingReturnQueryResult: QueryResult = await db.query(
-        'SELECT id FROM pending_returns WHERE outward_fare_id = $1 LIMIT 1',
-        [subcontractFareTransfer.id]
-      );
+      return isOneWay(fareToSubcontract as { kind: 'one-way' | 'two-way' })
+        ? {
+            toSubcontract: subcontractFareTransfer,
+            scheduledToCopyAndDelete: fareToSubcontract
+          }
+        : $withPendingToDelete(db)(subcontractFareTransfer.id, {
+            toSubcontract: subcontractFareTransfer,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            scheduledToCopyAndDelete: fareToSubcontract!
+          });
+    }, $onInfrastructureOrValidationError(`$fareToSubcontractExistIn`));
 
-      return fareToSubcontractPendingReturnQueryResult.rows.length === 0
-        ? toSubcontractValidationWithoutPendingCandidate(subcontractFareTransfer, fareToSubcontractQueryResult)
-        : toSubcontractValidationWithPendingCandidate(
-            subcontractFareTransfer,
-            fareToSubcontractQueryResult,
-            fareToSubcontractPendingReturnQueryResult
-          );
-    }, onError);
+const $withPendingToDelete =
+  (db: PostgresDb) =>
+  async (scheduledId: string, { toSubcontract, scheduledToCopyAndDelete }: FaresToSubcontract): Promise<FaresToSubcontract> => {
+    const [pendingToDelete]: (Entity | undefined)[] = (
+      await db.query<Entity>('SELECT id FROM pending_returns WHERE outward_fare_id = $1 LIMIT 1', [scheduledId])
+    ).rows;
 
-const internalTypeCheckForFareToSubcontract = (fromDB: unknown): TaskEither<Errors, ToSubcontractValidation> =>
-  fromEither(toSubcontractActionsCodec.decode(fromDB));
+    return {
+      toSubcontract,
+      scheduledToCopyAndDelete,
+      ...(pendingToDelete === undefined ? {} : { pendingToDelete })
+    } satisfies FaresToSubcontract;
+  };
 
-const onError = (error: unknown): Errors =>
-  isInfrastructureError(error as InfrastructureError)
-    ? ([
-        {
-          isInfrastructureError: true,
-          message: `database error fareToSubcontractExistInDb  - ${(error as Error).message}`,
-          // eslint-disable-next-line id-denylist
-          value: (error as Error).name,
-          stack: (error as Error).stack ?? 'no stack available',
-          code: (error as Error).message.includes('ECONNREFUSED') ? '503' : '500'
-        } satisfies InfrastructureError
-      ] satisfies Errors)
-    : [error as ValidationError];
+const internalTypeCheckForFareToSubcontract = (fromDB: unknown): TaskEither<Errors, FaresToSubcontract> =>
+  fromEither(toSubcontractTransferCodec.decode(fromDB));
 
-const entityNotFoundValidationError = (id: string): ValidationError => ({
-  context: [
-    {
-      actual: id,
-      key: 'id',
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      type: {
-        name: 'isValidId'
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as Decoder<any, any>
-    }
-  ],
-  message: `Rules check failed, '${id}' not found in the database`,
-  // eslint-disable-next-line id-denylist
-  value: id
-});
-
-const toSubcontractValidationWithoutPendingCandidate = (
-  subcontractFareTransfer: Entity & FareToSubcontract,
-  fareToSubcontractQueryResult: QueryResult
-): unknown =>
-  ({
-    toSubcontract: subcontractFareTransfer,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-argument
-    scheduledToCopyAndDelete: fromDBtoScheduledCandidate(fareToSubcontractQueryResult.rows[0]) as Entity & Scheduled
-  } satisfies ToSubcontractValidation);
-
-const toSubcontractValidationWithPendingCandidate = (
-  subcontractFareTransfer: Entity & FareToSubcontract,
-  fareToSubcontractQueryResult: QueryResult,
-  fareToSubcontractPendingReturnQueryResult: QueryResult
-): unknown =>
-  ({
-    toSubcontract: subcontractFareTransfer,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-argument
-    scheduledToCopyAndDelete: fromDBtoScheduledCandidate(fareToSubcontractQueryResult.rows[0]) as Entity & Scheduled,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    pendingToDelete: { id: fareToSubcontractPendingReturnQueryResult.rows[0].id }
-  } satisfies ToSubcontractValidation);
-
-const subcontractedCodec: Type<SubcontractedValidated> = ioUnion([
-  ioType({
-    subcontracted: subcontractedFareCodec,
-    scheduledDeleted: scheduledFareCodec
-  }),
-  ioType({
-    subcontracted: subcontractedFareCodec,
-    scheduledDeleted: scheduledFareCodec,
-    pendingDeleted: pendingReturnCodec
-  })
-]);
-
-const toSubcontractActionsCodec: Type<ToSubcontractValidation> = ioUnion([
+const toSubcontractTransferCodec: Type<FaresToSubcontract> = ioUnion([
   ioType({
     toSubcontract: toSubcontractCodec,
     scheduledToCopyAndDelete: scheduledFareCodec

@@ -1,7 +1,7 @@
 import { chain as taskEitherChain, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
-import { Errors } from '../../../reporter/HttpReporter';
+import { Errors } from '../../../reporter';
 import { pipe } from 'fp-ts/function';
-import { onDependencyError } from '../../../reporter/onDependencyError.error';
+import { onDependencyError } from '../../../errors';
 import axios from 'axios';
 import { Journey, JourneyEstimate } from '../../../definitions';
 import { journeyEstimateValidation } from './estimate-journey.validation';

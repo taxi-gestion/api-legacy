@@ -19,7 +19,7 @@ export const estimateJourneyQuery = async (
 ): Promise<void> => {
   server.route({
     method: 'POST',
-    url: '/estimate-journey',
+    url: '/journey/estimate',
     handler: async (req: EstimateJourneyRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         req.body,

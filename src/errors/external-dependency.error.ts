@@ -1,4 +1,4 @@
-import { Errors, InfrastructureError } from './HttpReporter';
+import { Errors, InfrastructureError } from '../reporter';
 
 export const onDependencyError = (messagePrefix: string, error: unknown): Errors =>
   [

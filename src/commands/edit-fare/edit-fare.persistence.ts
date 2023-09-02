@@ -1,84 +1,59 @@
-/* eslint-disable max-lines */
-import {
-  chain as taskEitherChain,
-  right as taskEitherRight,
-  TaskEither,
-  tryCatch as taskEitherTryCatch
-} from 'fp-ts/TaskEither';
+import { map as taskEitherMap, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors, InfrastructureError } from '../../reporter/HttpReporter';
-import { Entity, Pending, Scheduled } from '../../definitions';
-import { EditActions } from './edit-fare';
+import { Errors } from '../../reporter';
+import { Entity, Pending, PendingPersistence, ScheduledPersistence } from '../../definitions';
 import { pipe } from 'fp-ts/lib/function';
+import { EditedToPersist } from './edit-fare.route';
+import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate } from '../../mappers';
+import { onDatabaseError } from '../../errors';
 
-type ScheduledPersistence = Scheduled;
-type PendingPersistence = Pending & {
-  outwardFareId: string;
-};
-
-export const persistFareAndPending =
+export const persistEditedFares =
   (database: PostgresDb) =>
-  (fares: EditActions): TaskEither<Errors, unknown> =>
-    pipe(
-      taskEitherTryCatch(applyQueries(database, fares), onApplyEditFareQueriesError),
-      taskEitherChain(
-        (queriesResults: QueryResult[]): TaskEither<Errors, unknown> => taskEitherRight(toEditedFares(queriesResults))
-      )
-    );
+  (fares: EditedToPersist): TaskEither<Errors, unknown> =>
+    pipe(taskEitherTryCatch(applyQueries(database)(fares), onDatabaseError(`persistEditedFares`)), taskEitherMap(toTransfer));
 
 const applyQueries =
-  (database: PostgresDb, { scheduleToEdit, pendingToCreate, pendingEntityToDelete }: EditActions) =>
+  (database: PostgresDb) =>
+  ({ scheduledToEdit, pendingToCreate, pendingToDelete }: EditedToPersist) =>
   async (): Promise<QueryResult[]> =>
     database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
       const promises: Promise<QueryResult>[] = [
-        updateScheduledFareQuery(client, scheduleToEdit),
-        ...insertPendingToCreateQueryOrEmpty(client, pendingToCreate, scheduleToEdit.id),
-        ...insertPendingToDeleteQueryOrEmpty(client, pendingEntityToDelete)
+        updateScheduledFareQuery(client)(scheduledToEdit),
+        ...insertPendingToCreateQueryOrEmpty(client)(pendingToCreate, scheduledToEdit.id),
+        ...insertPendingToDeleteQueryOrEmpty(client)(pendingToDelete)
       ];
 
       return Promise.all(promises);
     });
 
-const insertPendingToCreateQueryOrEmpty = (
-  client: PoolClient,
-  pendingToCreate: Pending | null,
-  outwardFareId: string
-): [] | [Promise<QueryResult>] =>
-  pendingToCreate === null ? [] : [insertPendingQuery(client, { ...pendingToCreate, outwardFareId })];
+const insertPendingToCreateQueryOrEmpty =
+  (client: PoolClient) =>
+  (pendingToCreate: Pending | undefined, outwardFareId: string): [] | [Promise<QueryResult>] =>
+    pendingToCreate === undefined ? [] : [insertPendingQuery(client)({ ...pendingToCreate, outwardFareId })];
 
-const insertPendingToDeleteQueryOrEmpty = (
-  client: PoolClient,
-  pendingEntityToDelete: Entity | null
-): [] | [Promise<QueryResult>] => (pendingEntityToDelete === null ? [] : [deletePendingQuery(client, pendingEntityToDelete)]);
+const insertPendingToDeleteQueryOrEmpty =
+  (client: PoolClient) =>
+  (pendingEntityToDelete: Entity | undefined): [] | [Promise<QueryResult>] =>
+    pendingEntityToDelete === undefined ? [] : [deletePendingQuery(client)(pendingEntityToDelete)];
 
-const onApplyEditFareQueriesError = (error: unknown): Errors =>
-  [
-    {
-      isInfrastructureError: true,
-      message: `database error onApplyEditFareQueriesError - ${(error as Error).message}`,
-      // eslint-disable-next-line id-denylist
-      value: (error as Error).name,
-      stack: (error as Error).stack ?? 'no stack available',
-      code: (error as Error).message.includes('ECONNREFUSED') ? '503' : '500'
-    } satisfies InfrastructureError
-  ] satisfies Errors;
-
-const updateScheduledFareQuery = async (client: PoolClient, farePg: Entity & ScheduledPersistence): Promise<QueryResult> =>
-  client.query(updateFareQueryString, [
-    farePg.id,
-    farePg.passenger,
-    farePg.datetime,
-    farePg.departure,
-    farePg.destination,
-    farePg.distance,
-    farePg.driver,
-    farePg.duration,
-    farePg.kind,
-    farePg.nature,
-    farePg.phone,
-    farePg.status
-  ]);
+const updateScheduledFareQuery =
+  (client: PoolClient) =>
+  async (farePg: Entity & ScheduledPersistence): Promise<QueryResult> =>
+    client.query(updateFareQueryString, [
+      farePg.id,
+      farePg.passenger,
+      farePg.datetime,
+      farePg.departure,
+      farePg.destination,
+      farePg.distance,
+      farePg.driver,
+      farePg.duration,
+      farePg.kind,
+      farePg.nature,
+      farePg.phone,
+      farePg.status
+    ]);
 
 const updateFareQueryString: string = `
       UPDATE scheduled_fares
@@ -98,18 +73,20 @@ const updateFareQueryString: string = `
       RETURNING *
     `;
 
-const insertPendingQuery = async (client: PoolClient, pendingPg: PendingPersistence): Promise<QueryResult> =>
-  client.query(insertPendingQueryString, [
-    pendingPg.passenger,
-    pendingPg.datetime,
-    pendingPg.departure,
-    pendingPg.destination,
-    pendingPg.driver,
-    pendingPg.kind,
-    pendingPg.nature,
-    pendingPg.phone,
-    pendingPg.outwardFareId
-  ]);
+const insertPendingQuery =
+  (client: PoolClient) =>
+  async (pendingPg: PendingPersistence): Promise<QueryResult> =>
+    client.query(insertPendingQueryString, [
+      pendingPg.passenger,
+      pendingPg.datetime,
+      pendingPg.departure,
+      pendingPg.destination,
+      pendingPg.driver,
+      pendingPg.kind,
+      pendingPg.nature,
+      pendingPg.phone,
+      pendingPg.outwardFareId
+    ]);
 
 const insertPendingQueryString: string = `
       INSERT INTO pending_returns (
@@ -128,41 +105,16 @@ const insertPendingQueryString: string = `
       RETURNING *
       `;
 
-const deletePendingQuery = async (client: PoolClient, pendingToDelete: Entity): Promise<QueryResult> =>
-  client.query(removeReturnToScheduleQueryString, [pendingToDelete.id]);
+const deletePendingQuery =
+  (client: PoolClient) =>
+  async (pendingToDelete: Entity): Promise<QueryResult> =>
+    client.query(removeReturnToScheduleQueryString, [pendingToDelete.id]);
 
-const removeReturnToScheduleQueryString: string = `DELETE FROM pending_returns WHERE id = $1;
+const removeReturnToScheduleQueryString: string = `DELETE FROM pending_returns WHERE id = $1 RETURNING *;
       `;
 
-const toEditedFares = (queriesResults: QueryResult[]): unknown => [
-  ...[queriesResults[0]?.rows[0]].map(fromDBtoScheduledCandidate),
-  ...[queriesResults[1]?.rows[0]].map(fromDBtoPendingCandidate)
-];
-
-const fromDBtoScheduledCandidate = (row: Entity & ScheduledPersistence): unknown => ({
-  id: row.id,
-  passenger: row.passenger,
-  datetime: row.datetime,
-  departure: row.departure,
-  destination: row.destination,
-  distance: Number(row.distance),
-  driver: row.driver,
-  duration: Number(row.duration),
-  kind: row.kind,
-  nature: row.nature,
-  phone: row.phone,
-  status: 'scheduled'
-});
-
-const fromDBtoPendingCandidate = (row: Entity & PendingPersistence): unknown => ({
-  id: row.id,
-  passenger: row.passenger,
-  datetime: row.datetime,
-  departure: row.departure,
-  destination: row.destination,
-  driver: row.driver,
-  kind: row.kind,
-  nature: row.nature,
-  phone: row.phone,
-  status: 'pending-return'
+const toTransfer = (queriesResults: QueryResult[]): unknown => ({
+  scheduledEdited: [queriesResults[0]?.rows[0]].map(fromDBtoScheduledCandidate)[0],
+  ...(queriesResults[1] === undefined ? {} : { pendingCreated: [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0] }),
+  ...(queriesResults[2] === undefined ? {} : { pendingDeleted: [queriesResults[2].rows[0]].map(fromDBtoPendingCandidate)[0] })
 });

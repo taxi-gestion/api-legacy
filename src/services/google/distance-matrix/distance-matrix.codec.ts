@@ -1,4 +1,4 @@
-import { array as ioArray, string as ioString, number as ioNumber, Type, type as ioType } from 'io-ts';
+import { array as ioArray, number as ioNumber, string as ioString, Type, type as ioType } from 'io-ts';
 
 /* eslint-disable @typescript-eslint/naming-convention,id-denylist */
 export type GoogleMapsDistanceMatrixResponse = {

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { FastifyReply } from 'fastify';
 import { Task } from 'fp-ts/Task';
-import HttpReporter, { Errors } from './reporter/HttpReporter';
+import HttpReporter, { Errors } from './reporter/http-reporter';
 import { left as eitherLeft } from 'fp-ts/Either';
 
 type ServerAndProcess = {
