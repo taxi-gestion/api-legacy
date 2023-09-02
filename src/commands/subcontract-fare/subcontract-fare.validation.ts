@@ -3,7 +3,6 @@ import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { Entity, FareToSubcontract, Scheduled } from '../../definitions';
-import { QueryResult } from 'pg';
 import {
   entityCodec,
   externalTypeCheckFor,
@@ -16,7 +15,7 @@ import {
 import { type as ioType, Type, union as ioUnion } from 'io-ts';
 import { FaresSubcontracted, FaresToSubcontract } from './subcontract-fare.route';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
-import { fromDBtoScheduledCandidate } from '../../mappers';
+import { isOneWay } from '../../domain';
 
 export const $subcontractFareValidation =
   (db: PostgresDb) =>
@@ -36,51 +35,40 @@ const $fareToSubcontractExistIn =
   (db: PostgresDb) =>
   (subcontractFareTransfer: Entity & FareToSubcontract): TaskEither<Errors, unknown> =>
     taskEitherTryCatch(async (): Promise<unknown> => {
-      const fareToSubcontractQueryResult: QueryResult = await db.query('SELECT * FROM scheduled_fares WHERE id = $1 LIMIT 1', [
-        subcontractFareTransfer.id
-      ]);
+      const [fareToSubcontract]: ((Entity & Scheduled) | undefined)[] = (
+        await db.query<Entity & Scheduled>('SELECT * FROM scheduled_fares WHERE id = $1 LIMIT 1', [subcontractFareTransfer.id])
+      ).rows;
 
-      if (fareToSubcontractQueryResult.rows.length === 0) throwEntityNotFoundValidationError(subcontractFareTransfer.id);
+      if (fareToSubcontract === undefined) throwEntityNotFoundValidationError(subcontractFareTransfer.id);
 
-      const fareToSubcontractPendingReturnQueryResult: QueryResult = await db.query(
-        'SELECT id FROM pending_returns WHERE outward_fare_id = $1 LIMIT 1',
-        [subcontractFareTransfer.id]
-      );
-
-      return fareToSubcontractPendingReturnQueryResult.rows.length === 0
-        ? toSubcontractValidationWithoutPendingCandidate(subcontractFareTransfer, fareToSubcontractQueryResult)
-        : toSubcontractValidationWithPendingCandidate(
-            subcontractFareTransfer,
-            fareToSubcontractQueryResult,
-            fareToSubcontractPendingReturnQueryResult
-          );
+      return isOneWay(fareToSubcontract as { kind: 'one-way' | 'two-way' })
+        ? {
+            toSubcontract: subcontractFareTransfer,
+            scheduledToCopyAndDelete: fareToSubcontract
+          }
+        : $withPendingToDelete(db)(subcontractFareTransfer.id, {
+            toSubcontract: subcontractFareTransfer,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            scheduledToCopyAndDelete: fareToSubcontract!
+          });
     }, $onInfrastructureOrValidationError(`$fareToSubcontractExistIn`));
+
+const $withPendingToDelete =
+  (db: PostgresDb) =>
+  async (scheduledId: string, { toSubcontract, scheduledToCopyAndDelete }: FaresToSubcontract): Promise<FaresToSubcontract> => {
+    const [pendingToDelete]: (Entity | undefined)[] = (
+      await db.query<Entity>('SELECT id FROM pending_returns WHERE outward_fare_id = $1 LIMIT 1', [scheduledId])
+    ).rows;
+
+    return {
+      toSubcontract,
+      scheduledToCopyAndDelete,
+      ...(pendingToDelete === undefined ? {} : { pendingToDelete })
+    } satisfies FaresToSubcontract;
+  };
 
 const internalTypeCheckForFareToSubcontract = (fromDB: unknown): TaskEither<Errors, FaresToSubcontract> =>
   fromEither(toSubcontractTransferCodec.decode(fromDB));
-
-const toSubcontractValidationWithoutPendingCandidate = (
-  subcontractFareTransfer: Entity & FareToSubcontract,
-  fareToSubcontractQueryResult: QueryResult
-): unknown =>
-  ({
-    toSubcontract: subcontractFareTransfer,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-argument
-    scheduledToCopyAndDelete: fromDBtoScheduledCandidate(fareToSubcontractQueryResult.rows[0]) as Entity & Scheduled
-  } satisfies FaresToSubcontract);
-
-const toSubcontractValidationWithPendingCandidate = (
-  subcontractFareTransfer: Entity & FareToSubcontract,
-  fareToSubcontractQueryResult: QueryResult,
-  fareToSubcontractPendingReturnQueryResult: QueryResult
-): unknown =>
-  ({
-    toSubcontract: subcontractFareTransfer,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-argument
-    scheduledToCopyAndDelete: fromDBtoScheduledCandidate(fareToSubcontractQueryResult.rows[0]) as Entity & Scheduled,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    pendingToDelete: { id: fareToSubcontractPendingReturnQueryResult.rows[0].id }
-  } satisfies FaresToSubcontract);
 
 const subcontractedCodec: Type<FaresSubcontracted> = ioUnion([
   ioType({

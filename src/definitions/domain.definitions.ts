@@ -55,8 +55,6 @@ export type ReturnDrive = Drive &
     status: 'return-drive';
   };
 
-export type CompletedReturnToSchedule = Nature & Passenger & ReturnDrive;
-
 export type Pending = Drive &
   Nature &
   Passenger & {
