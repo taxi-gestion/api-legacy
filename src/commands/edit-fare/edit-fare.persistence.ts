@@ -11,52 +11,49 @@ import { onDatabaseError } from '../../errors';
 export const persistEditedFares =
   (database: PostgresDb) =>
   (fares: EditedToPersist): TaskEither<Errors, unknown> =>
-    pipe(
-      taskEitherTryCatch(applyQueries(database, fares), onDatabaseError(`persistEditedFares`)),
-      taskEitherMap(toPersistedFares)
-    );
+    pipe(taskEitherTryCatch(applyQueries(database)(fares), onDatabaseError(`persistEditedFares`)), taskEitherMap(toTransfer));
 
 const applyQueries =
-  (database: PostgresDb, { scheduledToEdit, pendingToCreate, pendingToDelete }: EditedToPersist) =>
+  (database: PostgresDb) =>
+  ({ scheduledToEdit, pendingToCreate, pendingToDelete }: EditedToPersist) =>
   async (): Promise<QueryResult[]> =>
     database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
       const promises: Promise<QueryResult>[] = [
-        updateScheduledFareQuery(client, scheduledToEdit),
-        ...insertPendingToCreateQueryOrEmpty(client, pendingToCreate, scheduledToEdit.id),
-        ...insertPendingToDeleteQueryOrEmpty(client, pendingToDelete)
+        updateScheduledFareQuery(client)(scheduledToEdit),
+        ...insertPendingToCreateQueryOrEmpty(client)(pendingToCreate, scheduledToEdit.id),
+        ...insertPendingToDeleteQueryOrEmpty(client)(pendingToDelete)
       ];
 
       return Promise.all(promises);
     });
 
-const insertPendingToCreateQueryOrEmpty = (
-  client: PoolClient,
-  pendingToCreate: Pending | undefined,
-  outwardFareId: string
-): [] | [Promise<QueryResult>] =>
-  pendingToCreate === undefined ? [] : [insertPendingQuery(client, { ...pendingToCreate, outwardFareId })];
+const insertPendingToCreateQueryOrEmpty =
+  (client: PoolClient) =>
+  (pendingToCreate: Pending | undefined, outwardFareId: string): [] | [Promise<QueryResult>] =>
+    pendingToCreate === undefined ? [] : [insertPendingQuery(client)({ ...pendingToCreate, outwardFareId })];
 
-const insertPendingToDeleteQueryOrEmpty = (
-  client: PoolClient,
-  pendingEntityToDelete: Entity | undefined
-): [] | [Promise<QueryResult>] =>
-  pendingEntityToDelete === undefined ? [] : [deletePendingQuery(client, pendingEntityToDelete)];
+const insertPendingToDeleteQueryOrEmpty =
+  (client: PoolClient) =>
+  (pendingEntityToDelete: Entity | undefined): [] | [Promise<QueryResult>] =>
+    pendingEntityToDelete === undefined ? [] : [deletePendingQuery(client)(pendingEntityToDelete)];
 
-const updateScheduledFareQuery = async (client: PoolClient, farePg: Entity & ScheduledPersistence): Promise<QueryResult> =>
-  client.query(updateFareQueryString, [
-    farePg.id,
-    farePg.passenger,
-    farePg.datetime,
-    farePg.departure,
-    farePg.destination,
-    farePg.distance,
-    farePg.driver,
-    farePg.duration,
-    farePg.kind,
-    farePg.nature,
-    farePg.phone,
-    farePg.status
-  ]);
+const updateScheduledFareQuery =
+  (client: PoolClient) =>
+  async (farePg: Entity & ScheduledPersistence): Promise<QueryResult> =>
+    client.query(updateFareQueryString, [
+      farePg.id,
+      farePg.passenger,
+      farePg.datetime,
+      farePg.departure,
+      farePg.destination,
+      farePg.distance,
+      farePg.driver,
+      farePg.duration,
+      farePg.kind,
+      farePg.nature,
+      farePg.phone,
+      farePg.status
+    ]);
 
 const updateFareQueryString: string = `
       UPDATE scheduled_fares
@@ -76,18 +73,20 @@ const updateFareQueryString: string = `
       RETURNING *
     `;
 
-const insertPendingQuery = async (client: PoolClient, pendingPg: PendingPersistence): Promise<QueryResult> =>
-  client.query(insertPendingQueryString, [
-    pendingPg.passenger,
-    pendingPg.datetime,
-    pendingPg.departure,
-    pendingPg.destination,
-    pendingPg.driver,
-    pendingPg.kind,
-    pendingPg.nature,
-    pendingPg.phone,
-    pendingPg.outwardFareId
-  ]);
+const insertPendingQuery =
+  (client: PoolClient) =>
+  async (pendingPg: PendingPersistence): Promise<QueryResult> =>
+    client.query(insertPendingQueryString, [
+      pendingPg.passenger,
+      pendingPg.datetime,
+      pendingPg.departure,
+      pendingPg.destination,
+      pendingPg.driver,
+      pendingPg.kind,
+      pendingPg.nature,
+      pendingPg.phone,
+      pendingPg.outwardFareId
+    ]);
 
 const insertPendingQueryString: string = `
       INSERT INTO pending_returns (
@@ -106,13 +105,15 @@ const insertPendingQueryString: string = `
       RETURNING *
       `;
 
-const deletePendingQuery = async (client: PoolClient, pendingToDelete: Entity): Promise<QueryResult> =>
-  client.query(removeReturnToScheduleQueryString, [pendingToDelete.id]);
+const deletePendingQuery =
+  (client: PoolClient) =>
+  async (pendingToDelete: Entity): Promise<QueryResult> =>
+    client.query(removeReturnToScheduleQueryString, [pendingToDelete.id]);
 
 const removeReturnToScheduleQueryString: string = `DELETE FROM pending_returns WHERE id = $1 RETURNING *;
       `;
 
-const toPersistedFares = (queriesResults: QueryResult[]): unknown => ({
+const toTransfer = (queriesResults: QueryResult[]): unknown => ({
   scheduledEdited: [queriesResults[0]?.rows[0]].map(fromDBtoScheduledCandidate)[0],
   ...(queriesResults[1] === undefined ? {} : { pendingCreated: [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0] }),
   ...(queriesResults[2] === undefined ? {} : { pendingDeleted: [queriesResults[2].rows[0]].map(fromDBtoPendingCandidate)[0] })

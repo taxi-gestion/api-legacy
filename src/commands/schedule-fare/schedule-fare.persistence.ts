@@ -25,7 +25,7 @@ const insertIn =
   (fares: FaresToSchedulePersist): TaskEither<Errors, unknown> =>
     pipe(
       taskEitherTryCatch(applyQueries(database)(fares), onDatabaseError(`persistScheduledFares`)),
-      taskEitherMap(toScheduledFares)
+      taskEitherMap(toTransfer)
     );
 
 const applyQueries =
@@ -33,7 +33,7 @@ const applyQueries =
   ({ scheduledToCreate, pendingToCreate }: FaresToSchedulePersist) =>
   async (): Promise<QueryResult[]> =>
     database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
-      const scheduledCreatedQueryResult: QueryResult = await insertScheduledFareQuery(client, scheduledToCreate);
+      const scheduledCreatedQueryResult: QueryResult = await insertScheduledFareQuery(client)(scheduledToCreate);
 
       if (scheduledCreatedQueryResult.rows[0] === undefined) throwEntityNotFoundValidationError('undefinedId');
 
@@ -45,7 +45,7 @@ const applyQueries =
 const $withPendingToCreateQueryResult =
   (client: PoolClient) =>
   async (scheduledCreatedQueryResult: QueryResult, pendingToCreate: Pending): Promise<QueryResult[]> => {
-    const pendingCreatedQueryResult: QueryResult = await insertPendingQuery(client, {
+    const pendingCreatedQueryResult: QueryResult = await insertPendingQuery(client)({
       ...pendingToCreate,
       outwardFareId: scheduledCreatedQueryResult.rows[0].id as string
     } satisfies PendingPersistence);
@@ -53,20 +53,22 @@ const $withPendingToCreateQueryResult =
     return [scheduledCreatedQueryResult, pendingCreatedQueryResult];
   };
 
-const insertScheduledFareQuery = async (client: PoolClient, farePg: ScheduledPersistence): Promise<QueryResult> =>
-  client.query(insertFareQueryString, [
-    farePg.passenger,
-    farePg.datetime,
-    farePg.departure,
-    farePg.destination,
-    farePg.distance,
-    farePg.driver,
-    farePg.duration,
-    farePg.kind,
-    farePg.nature,
-    farePg.phone,
-    farePg.status
-  ]);
+const insertScheduledFareQuery =
+  (client: PoolClient) =>
+  async (farePg: ScheduledPersistence): Promise<QueryResult> =>
+    client.query(insertFareQueryString, [
+      farePg.passenger,
+      farePg.datetime,
+      farePg.departure,
+      farePg.destination,
+      farePg.distance,
+      farePg.driver,
+      farePg.duration,
+      farePg.kind,
+      farePg.nature,
+      farePg.phone,
+      farePg.status
+    ]);
 
 const insertFareQueryString: string = `
       INSERT INTO scheduled_fares (
@@ -87,18 +89,20 @@ const insertFareQueryString: string = `
       RETURNING *
     `;
 
-const insertPendingQuery = async (client: PoolClient, pendingPg: PendingPersistence): Promise<QueryResult> =>
-  client.query(insertPendingQueryString, [
-    pendingPg.passenger,
-    pendingPg.datetime,
-    pendingPg.departure,
-    pendingPg.destination,
-    pendingPg.driver,
-    pendingPg.kind,
-    pendingPg.nature,
-    pendingPg.phone,
-    pendingPg.outwardFareId
-  ]);
+const insertPendingQuery =
+  (client: PoolClient) =>
+  async (pendingPg: PendingPersistence): Promise<QueryResult> =>
+    client.query(insertPendingQueryString, [
+      pendingPg.passenger,
+      pendingPg.datetime,
+      pendingPg.departure,
+      pendingPg.destination,
+      pendingPg.driver,
+      pendingPg.kind,
+      pendingPg.nature,
+      pendingPg.phone,
+      pendingPg.outwardFareId
+    ]);
 
 const insertPendingQueryString: string = `
       INSERT INTO pending_returns (
@@ -117,7 +121,7 @@ const insertPendingQueryString: string = `
       RETURNING *
       `;
 
-const toScheduledFares = (queriesResults: QueryResult[]): unknown => ({
+const toTransfer = (queriesResults: QueryResult[]): unknown => ({
   scheduledCreated: [queriesResults[0]?.rows[0]].map(fromDBtoScheduledCandidate)[0],
   ...(queriesResults[1] === undefined ? {} : { pendingCreated: [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0] })
 });

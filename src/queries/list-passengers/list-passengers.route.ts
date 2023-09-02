@@ -13,6 +13,7 @@ export const listPassengersQuery = async (server: FastifyInstance): Promise<void
     handler: async (_req: FastifyRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         listPassengersDatabaseQuery(server.pg)(),
+        // TODO ADD VALIDATION
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<(Entity & Passenger)[]>)
       )();
     }

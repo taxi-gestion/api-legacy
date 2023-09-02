@@ -23,20 +23,20 @@ export const persistRegisterRegular =
 const insertRegularIn =
   (database: PostgresDb) =>
   (regular: RegularToRegister): TaskEither<Errors, unknown> =>
-    pipe(
-      taskEitherTryCatch(insertRegular(database, regular), onDatabaseError(`insertRegularIn`)),
-      taskEitherMap(toRegisteredRegular)
-    );
+    pipe(taskEitherTryCatch(insertRegular(database)(regular), onDatabaseError(`insertRegularIn`)), taskEitherMap(toTransfer));
 
 const insertRegular =
-  (database: PostgresDb, { toRegister }: RegularToRegister) =>
+  (database: PostgresDb) =>
+  ({ toRegister }: RegularToRegister) =>
   async (): Promise<QueryResult[]> =>
     database.transact(
-      async (client: PoolClient): Promise<QueryResult[]> => Promise.all([insertRegularQuery(client, toRegister)])
+      async (client: PoolClient): Promise<QueryResult[]> => Promise.all([insertRegularQuery(client)(toRegister)])
     );
 
-const insertRegularQuery = async (client: PoolClient, regularPg: Regular): Promise<QueryResult> =>
-  client.query(insertRegularQueryString, [regularPg.firstname, regularPg.lastname, regularPg.phone]);
+const insertRegularQuery =
+  (client: PoolClient) =>
+  async (regularPg: Regular): Promise<QueryResult> =>
+    client.query(insertRegularQueryString, [regularPg.firstname, regularPg.lastname, regularPg.phone]);
 
 const insertRegularQueryString: string = `
       INSERT INTO passengers (
@@ -49,6 +49,6 @@ const insertRegularQueryString: string = `
       RETURNING *
     `;
 
-const toRegisteredRegular = (queriesResults: QueryResult[]): unknown => ({
+const toTransfer = (queriesResults: QueryResult[]): unknown => ({
   regularRegistered: [queriesResults[0]?.rows[0]].map(fromDBtoRegularCandidate)[0]
 });
