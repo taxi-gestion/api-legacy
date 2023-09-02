@@ -2,12 +2,7 @@ import { TaskEither } from 'fp-ts/lib/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/lib/function';
-import {
-  chain as taskEitherChain,
-  fromEither,
-  map as taskEitherMap,
-  tryCatch as taskEitherTryCatch
-} from 'fp-ts/TaskEither';
+import { chain as taskEitherChain, fromEither, map as taskEitherMap, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors } from '../../reporter';
 import { Entity, Scheduled } from '../../definitions';
@@ -22,12 +17,7 @@ type ScheduledFarePersistence = Omit<Entity & Scheduled, 'departure' | 'destinat
 export const scheduledFaresForTheDatePersistenceQuery =
   (database: PostgresDb) =>
   (date: Either<Errors, string>): TaskEither<Errors, unknown> =>
-    pipe(
-      date,
-      fromEither,
-      taskEitherChain(selectFaresForDate(database)),
-      taskEitherMap(toTransfer)
-    );
+    pipe(date, fromEither, taskEitherChain(selectFaresForDate(database)), taskEitherMap(toTransfer));
 
 const toTransfer = (queryResult: QueryResult): unknown =>
   queryResult.rows.map((row: ScheduledFarePersistence): unknown => ({

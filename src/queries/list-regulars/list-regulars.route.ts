@@ -2,19 +2,20 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { Entity, Passenger } from '../../definitions';
-import { listPassengersDatabaseQuery } from './list-passengers.persistence';
+import { Entity, Regular } from '../../definitions';
+import { listRegularsDatabaseQuery } from './list-regulars.persistence';
+import {regularsValidation} from './list-regulars.validation';
 
 /* eslint-disable @typescript-eslint/require-await */
-export const listPassengersQuery = async (server: FastifyInstance): Promise<void> => {
+export const listRegularsQuery = async (server: FastifyInstance): Promise<void> => {
   server.route({
     method: 'GET',
-    url: '/passenger/list',
+    url: '/regular/list',
     handler: async (_req: FastifyRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
-        listPassengersDatabaseQuery(server.pg)(),
-        // TODO ADD VALIDATION
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<(Entity & Passenger)[]>)
+        listRegularsDatabaseQuery(server.pg)(),
+        regularsValidation,
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<(Entity & Regular)[]>)
       )();
     }
   });
