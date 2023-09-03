@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
-import { fold as taskEitherFold } from 'fp-ts/TaskEither';
+import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { fareToScheduleValidation, scheduledFaresValidation } from './schedule-fare.validation';
 import { scheduleFare } from './schedule-fare';
 import { FaresScheduled, Pending, Scheduled, ToSchedule } from '../../definitions';
@@ -32,7 +32,7 @@ export const scheduleFareCommand = async (server: FastifyInstance): Promise<void
         fareToScheduleValidation,
         scheduleFare,
         persistScheduledFares(server.pg),
-        scheduledFaresValidation,
+        taskEitherChain(scheduledFaresValidation),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<FaresScheduled>)
       )();
     }
