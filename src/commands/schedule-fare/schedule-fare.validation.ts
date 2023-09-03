@@ -8,7 +8,7 @@ import { fromEither, TaskEither } from 'fp-ts/TaskEither';
 import { FaresScheduled } from '../../definitions';
 
 export const fareToScheduleValidation = (transfer: unknown): Either<Errors, FareToSchedule> =>
-  pipe(transfer, externalTypeCheckFor<FareToSchedule>(fareToScheduleCodec), eitherChain(rulesCheck));
+  pipe({ toSchedule: transfer }, externalTypeCheckFor<FareToSchedule>(fareToScheduleCodec), eitherChain(rulesCheck));
 
 export const scheduledFaresValidation = (transfer: unknown): TaskEither<Errors, FaresScheduled> =>
   pipe(transfer, externalTypeCheckFor<FaresScheduled>(fareScheduledCodec), fromEither);

@@ -9,7 +9,7 @@ import { Errors } from '../../reporter';
 import { RegularRegistered } from '../../definitions';
 
 export const registerRegularValidation = (transfer: unknown): Either<Errors, RegularToRegister> =>
-  pipe(transfer, externalTypeCheckFor<RegularToRegister>(regularToRegisterCodec), eitherChain(rulesCheck));
+  pipe({ toRegister: transfer }, externalTypeCheckFor<RegularToRegister>(regularToRegisterCodec), eitherChain(rulesCheck));
 
 export const registeredRegularValidation = (transfer: unknown): TaskEither<Errors, RegularRegistered> =>
   pipe(transfer, externalTypeCheckFor<RegularRegistered>(regularRegisteredCodec), fromEither);

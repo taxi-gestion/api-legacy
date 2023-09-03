@@ -25,7 +25,7 @@ const selectFromRegular = (database: PostgresDb) => () => async (): Promise<Quer
 const selectRegularsQuery = async (client: PoolClient): Promise<QueryResult> => client.query(selectRegularsQueryString);
 
 const selectRegularsQueryString: string = `
-      SELECT * FROM regulars
+      SELECT * FROM passengers
     `;
 
 const toTransfer = (queryResult: QueryResult): unknown =>
