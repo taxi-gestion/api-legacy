@@ -2,8 +2,8 @@ import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { Entity, FaresEdited, Scheduled, ToEdit } from '../../definitions';
-import { type as ioType, Type, union as ioUnion } from 'io-ts';
+import { Entity, FaresEdited, ScheduledPersistence, ToEdit } from '../../definitions';
+import { type as ioType, Type, union as ioUnion, undefined as ioUndefined } from 'io-ts';
 import { FaresToEdit } from './edit-fare.route';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
 import {
@@ -12,9 +12,11 @@ import {
   faresEditedCodec,
   fareToEditCodec,
   scheduledFareCodec,
-  toEditCodec,
-  toEditRulesCodec
+  toEditCodec
 } from '../../codecs';
+import { isDefinedGuard } from '../../domain';
+import { fromDBtoScheduledCandidate } from '../../mappers';
+import { toEditRulesCodec } from '../../rules';
 
 export const $faresToEditValidation =
   (db: PostgresDb) =>
@@ -42,60 +44,37 @@ const $checkFareToEditExist =
         id: string;
       } = transfer;
 
-      const [scheduledToEdit]: ((Entity & Scheduled) | undefined)[] = (
-        await db.query<Entity & Scheduled>('SELECT * FROM scheduled_fares WHERE id = $1 LIMIT 1', [scheduledId])
+      const [scheduledToEdit]: ((Entity & ScheduledPersistence) | undefined)[] = (
+        await db.query<Entity & ScheduledPersistence>('SELECT * FROM scheduled_fares WHERE id = $1 LIMIT 1', [scheduledId])
       ).rows;
 
-      if (scheduledToEdit === undefined) throwEntityNotFoundValidationError(transfer.id);
+      if (!isDefinedGuard(scheduledToEdit)) return throwEntityNotFoundValidationError(transfer.id);
 
-      return isOneWay(scheduledToEdit as Scheduled)
-        ? { toEdit: toEdit as ToEdit, scheduledToEdit }
-        : // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-          $withPendingToDelete(db)(scheduledId, { toEdit: toEdit as ToEdit, scheduledToEdit } as FaresToEdit);
+      const [pendingToDelete]: (Entity | undefined)[] = (
+        await db.query<Entity>('SELECT id FROM pending_returns WHERE outward_fare_id = $1 LIMIT 1', [scheduledId])
+      ).rows;
+
+      return {
+        toEdit: toEdit as ToEdit,
+        scheduledToEdit: fromDBtoScheduledCandidate(scheduledToEdit),
+        pendingToDelete
+      };
     }, $onInfrastructureOrValidationError(`$checkFareToEditExist`));
-
-const $withPendingToDelete =
-  (db: PostgresDb) =>
-  async (scheduledId: string, faresToEdit: FaresToEdit): Promise<FaresToEdit> => {
-    const [pendingToDelete]: (Entity | undefined)[] = (
-      await db.query<Entity>('SELECT id FROM pending_returns WHERE outward_fare_id = $1 LIMIT 1', [scheduledId])
-    ).rows;
-
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    return {
-      ...faresToEdit,
-      pendingToDelete
-    } as FaresToEdit;
-  };
-
-const isOneWay = (scheduled: Scheduled): boolean => scheduled.kind === 'one-way';
 
 const typeCheck = (fromDB: unknown): TaskEither<Errors, FaresToEdit> => fromEither(faresToEditCodec.decode(fromDB));
 
 const rulesCheck = (fareToEdit: FaresToEdit): TaskEither<Errors, FaresToEdit> =>
   fromEither(faresToEditRulesCodec.decode(fareToEdit));
 
-const faresToEditCodec: Type<FaresToEdit> = ioUnion([
-  ioType({
-    toEdit: toEditCodec,
-    scheduledToEdit: scheduledFareCodec
-  }),
-  ioType({
-    toEdit: toEditCodec,
-    scheduledToEdit: scheduledFareCodec,
-    pendingToDelete: entityCodec
-  })
-]);
+const faresToEditCodec: Type<FaresToEdit> = ioType({
+  toEdit: toEditCodec,
+  scheduledToEdit: scheduledFareCodec,
+  pendingToDelete: ioUnion([entityCodec, ioUndefined])
+});
 
 // eslint-disable-next-line @typescript-eslint/typedef
-const faresToEditRulesCodec = ioUnion([
-  ioType({
-    toEdit: toEditRulesCodec,
-    scheduledToEdit: scheduledFareCodec
-  }),
-  ioType({
-    toEdit: toEditRulesCodec,
-    scheduledToEdit: scheduledFareCodec,
-    pendingToDelete: entityCodec
-  })
-]);
+const faresToEditRulesCodec = ioType({
+  toEdit: toEditRulesCodec,
+  scheduledToEdit: scheduledFareCodec,
+  pendingToDelete: ioUnion([entityCodec, ioUndefined])
+});

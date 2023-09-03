@@ -4,8 +4,7 @@ import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEith
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { persistDeleteFares } from './delete-fare.persistence';
 import { $fareToDeleteValidation, deletedValidation } from './delete-fare.validation';
-import { Entity } from '../../definitions';
-import { FaresDeleted } from '../../definitions/endpoints.definitions';
+import { Entity, FaresDeleted } from '../../definitions';
 
 export type ScheduledToDeleteRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -16,7 +15,7 @@ export type ScheduledToDeleteRequest = FastifyRequest<{
 
 export type FaresToDelete = {
   scheduledToDelete: Entity;
-  pendingToDelete?: Entity;
+  pendingToDelete: Entity | undefined;
 };
 
 export const deleteFareCommand = async (

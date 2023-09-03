@@ -2,18 +2,14 @@ import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { Entity, Pending, PendingScheduled, ReturnDrive } from '../../definitions';
-import {
-  entityCodec,
-  externalTypeCheckFor,
-  pendingReturnCodec,
-  pendingScheduledCodec,
-  returnDriveCodec,
-  returnDriveRulesCodec
-} from '../../codecs';
+import { Entity, PendingPersistence, PendingScheduled, ReturnDrive } from '../../definitions';
+import { entityCodec, externalTypeCheckFor, pendingReturnCodec, pendingScheduledCodec, returnDriveCodec } from '../../codecs';
 import { PendingToSchedule } from './schedule-pending.route';
 import { intersection as ioIntersection, Type, type as ioType } from 'io-ts';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
+import { fromDBtoPendingCandidate } from '../../mappers';
+import { isDefinedGuard } from '../../domain';
+import { returnDriveRulesCodec } from '../../rules';
 
 export const $schedulePendingValidation =
   (db: PostgresDb) =>
@@ -41,15 +37,15 @@ const $checkPendingToScheduleExist =
         id: string;
       } = transfer;
 
-      const [pendingToDelete]: ((Entity & Pending) | undefined)[] = (
-        await db.query<Entity & Pending>('SELECT * FROM pending_returns WHERE id = $1 LIMIT 1', [pendingId])
+      const [pendingToDelete]: ((Entity & PendingPersistence) | undefined)[] = (
+        await db.query<Entity & PendingPersistence>('SELECT * FROM pending_returns WHERE id = $1 LIMIT 1', [pendingId])
       ).rows;
 
-      if (pendingToDelete === undefined) throwEntityNotFoundValidationError(transfer.id);
+      if (!isDefinedGuard(pendingToDelete)) return throwEntityNotFoundValidationError(transfer.id);
 
       return {
         driveToSchedule,
-        pendingToDelete
+        pendingToDelete: fromDBtoPendingCandidate(pendingToDelete)
       };
     }, $onInfrastructureOrValidationError(`$pendingToScheduleExist`));
 

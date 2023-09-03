@@ -50,5 +50,5 @@ const removePendingReturnQueryString: string = `
 
 const toTransfer = (queriesResults: QueryResult[]): unknown => ({
   scheduledDeleted: [queriesResults[0]?.rows[0]].map(fromDBtoScheduledCandidate)[0],
-  ...(queriesResults[1] === undefined ? {} : { pendingDeleted: [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0] })
+  pendingDeleted: queriesResults[1] === undefined ? undefined : [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0]
 });

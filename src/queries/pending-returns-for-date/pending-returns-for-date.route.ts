@@ -3,9 +3,9 @@ import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { Entity, Pending } from '../../definitions';
-import { isDateString } from '../../codecs';
 import { pendingReturnsForTheDateDatabaseQuery } from './pending-returns-for-date.persistence';
 import { pendingReturnsValidation } from './pending-returns-for-date.validation';
+import { isDateString } from '../../rules';
 
 export type PendingReturnsForDateRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention

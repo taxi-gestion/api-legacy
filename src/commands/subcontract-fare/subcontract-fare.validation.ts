@@ -2,7 +2,7 @@ import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { Entity, FaresSubcontracted, ToSubcontract, Scheduled } from '../../definitions';
+import { Entity, FaresSubcontracted, ToSubcontract, ScheduledPersistence } from '../../definitions';
 import {
   entityCodec,
   externalTypeCheckFor,
@@ -11,10 +11,11 @@ import {
   faresSubcontractedCodec,
   toSubcontractCodec
 } from '../../codecs';
-import { type as ioType, Type, union as ioUnion } from 'io-ts';
+import { type as ioType, Type, union as ioUnion, undefined as ioUndefined } from 'io-ts';
 import { FaresToSubcontract } from './subcontract-fare.route';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
-import { isOneWay } from '../../domain';
+import { isDefinedGuard } from '../../domain';
+import { fromDBtoScheduledCandidate } from '../../mappers';
 
 export const $subcontractFareValidation =
   (db: PostgresDb) =>
@@ -32,51 +33,30 @@ export const subcontractedValidation = (transfer: unknown): TaskEither<Errors, F
 
 const $fareToSubcontractExistIn =
   (db: PostgresDb) =>
-  (subcontractFareTransfer: Entity & ToSubcontract): TaskEither<Errors, unknown> =>
+  (toSubcontract: Entity & ToSubcontract): TaskEither<Errors, unknown> =>
     taskEitherTryCatch(async (): Promise<unknown> => {
-      const [fareToSubcontract]: ((Entity & Scheduled) | undefined)[] = (
-        await db.query<Entity & Scheduled>('SELECT * FROM scheduled_fares WHERE id = $1 LIMIT 1', [subcontractFareTransfer.id])
+      const [scheduledToSubcontract]: ((Entity & ScheduledPersistence) | undefined)[] = (
+        await db.query<Entity & ScheduledPersistence>('SELECT * FROM scheduled_fares WHERE id = $1 LIMIT 1', [toSubcontract.id])
       ).rows;
 
-      if (fareToSubcontract === undefined) throwEntityNotFoundValidationError(subcontractFareTransfer.id);
+      if (!isDefinedGuard(scheduledToSubcontract)) return throwEntityNotFoundValidationError(toSubcontract.id);
 
-      return isOneWay(fareToSubcontract as { kind: 'one-way' | 'two-way' })
-        ? {
-            toSubcontract: subcontractFareTransfer,
-            scheduledToCopyAndDelete: fareToSubcontract
-          }
-        : $withPendingToDelete(db)(subcontractFareTransfer.id, {
-            toSubcontract: subcontractFareTransfer,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            scheduledToCopyAndDelete: fareToSubcontract!
-          });
+      const [pendingToDelete]: (Entity | undefined)[] = (
+        await db.query<Entity>('SELECT id FROM pending_returns WHERE outward_fare_id = $1 LIMIT 1', [toSubcontract.id])
+      ).rows;
+
+      return {
+        toSubcontract,
+        scheduledToCopyAndDelete: fromDBtoScheduledCandidate(scheduledToSubcontract),
+        pendingToDelete
+      };
     }, $onInfrastructureOrValidationError(`$fareToSubcontractExistIn`));
-
-const $withPendingToDelete =
-  (db: PostgresDb) =>
-  async (scheduledId: string, { toSubcontract, scheduledToCopyAndDelete }: FaresToSubcontract): Promise<FaresToSubcontract> => {
-    const [pendingToDelete]: (Entity | undefined)[] = (
-      await db.query<Entity>('SELECT id FROM pending_returns WHERE outward_fare_id = $1 LIMIT 1', [scheduledId])
-    ).rows;
-
-    return {
-      toSubcontract,
-      scheduledToCopyAndDelete,
-      ...(pendingToDelete === undefined ? {} : { pendingToDelete })
-    } satisfies FaresToSubcontract;
-  };
 
 const internalTypeCheckForFareToSubcontract = (fromDB: unknown): TaskEither<Errors, FaresToSubcontract> =>
   fromEither(toSubcontractTransferCodec.decode(fromDB));
 
-const toSubcontractTransferCodec: Type<FaresToSubcontract> = ioUnion([
-  ioType({
-    toSubcontract: toSubcontractCodec,
-    scheduledToCopyAndDelete: scheduledFareCodec
-  }),
-  ioType({
-    toSubcontract: toSubcontractCodec,
-    scheduledToCopyAndDelete: scheduledFareCodec,
-    pendingToDelete: entityCodec
-  })
-]);
+const toSubcontractTransferCodec: Type<FaresToSubcontract> = ioType({
+  toSubcontract: toSubcontractCodec,
+  scheduledToCopyAndDelete: scheduledFareCodec,
+  pendingToDelete: ioUnion([entityCodec, ioUndefined])
+});

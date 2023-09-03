@@ -9,7 +9,7 @@ import {
   TypeC
 } from 'io-ts';
 import { PredictedRecurrence } from '../../../definitions';
-import { CronBrand, isCronString } from '../../../codecs';
+import { CronBrand, isCronString } from '../../../rules';
 
 export const predictedRecurrenceCodec: Type<PredictedRecurrence> = ioType({
   query: ioString,

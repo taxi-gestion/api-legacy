@@ -18,7 +18,7 @@ export type FareToSchedule = {
 
 export type FaresToSchedulePersist = {
   scheduledToCreate: Scheduled;
-  pendingToCreate?: Pending;
+  pendingToCreate: Pending | undefined;
 };
 
 // eslint-disable-next-line @typescript-eslint/require-await

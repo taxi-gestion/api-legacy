@@ -3,11 +3,11 @@ import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { FaresToDelete } from './delete-fare.route';
-import { type as ioType, Type, union as ioUnion } from 'io-ts';
+import { type as ioType, Type, union as ioUnion, undefined as ioUndefined } from 'io-ts';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
 import { entityCodec, externalTypeCheckFor, faresDeletedCodec, stringCodec } from '../../codecs';
 import { Entity, FaresDeleted } from '../../definitions';
-import { isOneWay } from '../../domain';
+import { isDefinedGuard } from '../../domain';
 
 export const $fareToDeleteValidation =
   (db: PostgresDb) =>
@@ -30,42 +30,24 @@ const $checkEntitiesToDeleteExist =
 
 const typeCheck = (fromDB: unknown): TaskEither<Errors, FaresToDelete> => fromEither(toDeleteTransferCodec.decode(fromDB));
 
-const toDeleteTransferCodec: Type<FaresToDelete> = ioUnion([
-  ioType({
-    scheduledToDelete: entityCodec
-  }),
-  ioType({
-    scheduledToDelete: entityCodec,
-    pendingToDelete: entityCodec
-  })
-]);
+const toDeleteTransferCodec: Type<FaresToDelete> = ioType({
+  scheduledToDelete: entityCodec,
+  pendingToDelete: ioUnion([entityCodec, ioUndefined])
+});
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment */
 const toDeleteCandidate = (db: PostgresDb, scheduledId: string) => async (): Promise<unknown> => {
-  const [scheduledToDeleteWithKind]: ((Entity & { kind: string }) | undefined)[] = (
-    await db.query<Entity & { kind: string }>('SELECT id,kind FROM scheduled_fares WHERE id = $1 LIMIT 1', [scheduledId])
+  const [scheduledToDelete]: (Entity | undefined)[] = (
+    await db.query<Entity>('SELECT id FROM scheduled_fares WHERE id = $1 LIMIT 1', [scheduledId])
   ).rows;
 
-  if (scheduledToDeleteWithKind === undefined) throwEntityNotFoundValidationError(scheduledId);
+  if (!isDefinedGuard(scheduledToDelete)) return throwEntityNotFoundValidationError(scheduledId);
 
-  return isOneWay(scheduledToDeleteWithKind as { kind: 'one-way' | 'two-way' })
-    ? { scheduledToDelete: { id: scheduledToDeleteWithKind?.id } }
-    : $withPendingToDelete(db)(scheduledId, {
-        // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-        scheduledToDelete: { id: scheduledToDeleteWithKind?.id as string }
-      });
-};
+  const [pendingToDelete]: (Entity | undefined)[] = (
+    await db.query<Entity>('SELECT id FROM pending_returns WHERE outward_fare_id = $1 LIMIT 1', [scheduledId])
+  ).rows;
 
-const $withPendingToDelete =
-  (db: PostgresDb) =>
-  async (scheduledId: string, scheduledToDelete: FaresToDelete): Promise<FaresToDelete> => {
-    const [pendingToDelete]: (Entity | undefined)[] = (
-      await db.query<Entity>('SELECT id FROM pending_returns WHERE outward_fare_id = $1 LIMIT 1', [scheduledId])
-    ).rows;
-
-    return {
-      ...scheduledToDelete,
-      ...(pendingToDelete === undefined ? {} : { pendingToDelete })
-    } satisfies FaresToDelete;
+  return {
+    scheduledToDelete,
+    pendingToDelete
   };
-/* eslint-enable @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment */
+};

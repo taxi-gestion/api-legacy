@@ -1,10 +1,14 @@
-import { Entity, Pending, Regular, Scheduled, Subcontracted } from '../definitions';
 import {
+  Entity,
+  Pending,
   PendingPersistence,
+  Regular,
   RegularPersistence,
+  Scheduled,
   ScheduledPersistence,
+  Subcontracted,
   SubcontractedPersistence
-} from '../definitions/persistence.definitions';
+} from '../definitions';
 
 export const fromDBtoSubcontractedCandidate = (row: Entity & SubcontractedPersistence): unknown =>
   ({

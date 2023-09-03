@@ -123,5 +123,5 @@ const insertPendingQueryString: string = `
 
 const toTransfer = (queriesResults: QueryResult[]): unknown => ({
   scheduledCreated: [queriesResults[0]?.rows[0]].map(fromDBtoScheduledCandidate)[0],
-  ...(queriesResults[1] === undefined ? {} : { pendingCreated: [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0] })
+  pendingCreated: queriesResults[1] === undefined ? undefined : [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0]
 });

@@ -9,7 +9,8 @@ import {
 } from './distance-matrix.codec';
 import { JourneyEstimate } from '../../../definitions';
 import { Errors } from '../../../reporter';
-import { externalTypeCheckFor, journeyEstimateCodec, journeyEstimateRulesCodec } from '../../../codecs';
+import { externalTypeCheckFor, journeyEstimateCodec } from '../../../codecs';
+import { journeyEstimateRulesCodec } from '../../../rules';
 
 export const journeyEstimateValidation = (transfer: unknown): TaskEither<Errors, JourneyEstimate> =>
   pipe(

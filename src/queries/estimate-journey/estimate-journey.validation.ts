@@ -3,9 +3,10 @@ import { JourneyTransfer, journeyTransferCodec } from './estimate-journey.codec'
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 import { fromEither } from 'fp-ts/TaskEither';
 import { Errors } from '../../reporter';
-import { externalTypeCheckFor, journeyCodec, journeyRulesCodec } from '../../codecs';
+import { externalTypeCheckFor, journeyCodec } from '../../codecs';
 import { Journey } from '../../definitions';
 import { chain as eitherChain, Either } from 'fp-ts/Either';
+import { journeyRulesCodec } from '../../rules';
 
 export const estimateJourneyValidation = (transfer: unknown): TaskEither<Errors, Journey> =>
   pipe(
