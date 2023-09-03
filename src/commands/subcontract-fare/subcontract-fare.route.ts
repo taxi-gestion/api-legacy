@@ -15,13 +15,13 @@ export type SubcontractFareRequest = FastifyRequest<{
 export type FaresToSubcontract = {
   toSubcontract: ToSubcontract;
   scheduledToCopyAndDelete: Entity & Scheduled;
-  pendingToDelete?: Entity;
+  pendingToDelete: Entity | undefined;
 };
 
 export type SubcontractedToPersist = {
   subcontractedToPersist: Subcontracted;
   scheduledToDelete: Entity;
-  pendingToDelete?: Entity;
+  pendingToDelete: Entity | undefined;
 };
 
 export const subcontractFareCommand = async (

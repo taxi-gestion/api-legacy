@@ -26,14 +26,14 @@ const applySubcontract = ({
   } = scheduledToCopyAndDelete;
 
   const subcontractedFare: Subcontracted = {
+    ...(toCopy as Omit<Entity & Scheduled, 'driver' | 'id' | 'status'>),
     subcontractor: toSubcontract.subcontractor,
-    status: 'subcontracted',
-    ...(toCopy as Omit<Entity & Scheduled, 'driver' | 'id' | 'status'>)
+    status: 'subcontracted'
   };
 
   return {
     subcontractedToPersist: subcontractedFare,
     scheduledToDelete: { id: scheduledToDeleteId },
-    ...(pendingToDelete === undefined ? {} : { pendingToDelete })
+    pendingToDelete
   };
 };

@@ -15,13 +15,13 @@ export type EditFareRequest = FastifyRequest<{
 export type FaresToEdit = {
   toEdit: ToEdit;
   scheduledToEdit: Entity & Scheduled;
-  pendingToDelete?: Entity;
+  pendingToDelete: Entity | undefined;
 };
 
 export type EditedToPersist = {
   scheduledToEdit: Entity & Scheduled;
-  pendingToCreate?: Pending;
-  pendingToDelete?: Entity;
+  pendingToCreate: Pending | undefined;
+  pendingToDelete: Entity | undefined;
 };
 
 export const editFareCommand = async (

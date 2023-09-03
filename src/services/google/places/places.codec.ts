@@ -8,7 +8,8 @@ import {
   union as ioUnion
 } from 'io-ts';
 import { Place } from '../../../definitions';
-import { placeCodec, placeRulesCodec } from '../../../codecs';
+import { placeCodec } from '../../../codecs';
+import { placeRulesCodec } from '../../../rules';
 
 export type GoogleMapsPlacesResponseTransfer = {
   results: PlaceResultTransfer[];

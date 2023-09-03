@@ -90,5 +90,5 @@ const removeReturnToScheduleQueryString: string = `DELETE FROM pending_returns W
 const toTransfer = (queriesResults: QueryResult[]): unknown => ({
   subcontracted: [queriesResults[0]?.rows[0]].map(fromDBtoSubcontractedCandidate)[0],
   scheduledDeleted: [queriesResults[1]?.rows[0]].map(fromDBtoScheduledCandidate)[0],
-  ...(queriesResults[2] === undefined ? {} : { pendingDeleted: [queriesResults[2].rows[0]].map(fromDBtoPendingCandidate)[0] })
+  pendingDeleted: queriesResults[2] === undefined ? undefined : [queriesResults[2].rows[0]].map(fromDBtoPendingCandidate)[0]
 });

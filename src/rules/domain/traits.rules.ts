@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/typedef */
 import { type as ioType } from 'io-ts';
-import { isDateTimeISO8601String, isFrenchPhoneNumber, isPositive, placeRulesCodec } from '../common';
+import { isDateTimeISO8601String, isFrenchPhoneNumber, isPositive } from '../common';
+import { placeRulesCodec } from '../common/place.rule';
 
 export const driveRulesCodec = ioType({
   datetime: isDateTimeISO8601String,

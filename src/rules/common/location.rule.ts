@@ -1,7 +1,7 @@
 import { withMessage } from 'io-ts-types';
 import { brand, BrandC, Branded, Type } from 'io-ts';
-import { locationCodec } from './location.codec';
 import { isValidLocation, Location } from '../../definitions';
+import { locationCodec } from '../../codecs';
 
 export const isLocation: BrandC<Type<Location>, LocationBrand> = withMessage(
   brand(

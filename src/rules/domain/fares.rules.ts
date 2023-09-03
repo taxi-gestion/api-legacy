@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/typedef */
 import { intersection as ioIntersection } from 'io-ts';
-import { fareToEditCodec, returnDriveCodec, toEditCodec, toScheduleCodec } from './fares.codecs';
 import { driveRulesCodec, durationDistanceRulesCodec, passengerRulesCodec } from './traits.rules';
+import { fareToEditCodec, returnDriveCodec, toEditCodec, toScheduleCodec } from '../../codecs';
 
 export const toScheduleRulesCodec = ioIntersection([
   toScheduleCodec,

@@ -14,6 +14,6 @@ const applyEdit = ({ toEdit, scheduledToEdit, pendingToDelete }: FaresToEdit): E
     status: 'scheduled',
     id: scheduledToEdit.id
   },
-  ...(isOneWay(toEdit) ? {} : toPending(toEdit)),
-  ...(pendingToDelete === undefined ? {} : pendingToDelete)
+  pendingToCreate: isOneWay(toEdit) ? undefined : toPending(toEdit),
+  pendingToDelete
 });

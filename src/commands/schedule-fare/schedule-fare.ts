@@ -13,5 +13,5 @@ const applySchedule = ({ toSchedule }: FareToSchedule): FaresToSchedulePersist =
     ...toSchedule,
     status: 'scheduled'
   },
-  ...(isOneWay(toSchedule) ? {} : { pendingToCreate: toPending(toSchedule) })
+  pendingToCreate: isOneWay(toSchedule) ? undefined : toPending(toSchedule)
 });
