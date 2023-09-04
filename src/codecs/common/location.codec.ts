@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 import { number as ioNumber, Type, type as ioType } from 'io-ts';
 import { Location } from '../../definitions';
 

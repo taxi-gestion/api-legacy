@@ -4,8 +4,8 @@ import { pipe } from 'fp-ts/lib/function';
 import { map as taskEitherMap, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors } from '../../reporter';
-import { Entity, Regular, RegularPersistence } from '../../definitions';
 import { onDatabaseError } from '../../errors';
+import { fromDBtoRegularDetailsCandidate } from '../../mappers';
 
 export const listRegularsDatabaseQuery = (database: PostgresDb) => (): TaskEither<Errors, unknown> =>
   pipe(listRegulars(database)(), taskEitherMap(toTransfer));
@@ -25,13 +25,7 @@ const selectFromRegular = (database: PostgresDb) => () => async (): Promise<Quer
 const selectRegularsQuery = async (client: PoolClient): Promise<QueryResult> => client.query(selectRegularsQueryString);
 
 const selectRegularsQueryString: string = `
-      SELECT * FROM passengers
+      SELECT * FROM regulars
     `;
 
-const toTransfer = (queryResult: QueryResult): unknown =>
-  queryResult.rows.map((row: Entity & RegularPersistence): Entity & Regular => ({
-    id: row.id,
-    firstname: row.firstname,
-    lastname: row.lastname,
-    phone: row.phone
-  }));
+const toTransfer = (queryResult: QueryResult): unknown => queryResult.rows.map(fromDBtoRegularDetailsCandidate);

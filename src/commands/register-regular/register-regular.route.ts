@@ -3,16 +3,21 @@ import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { registeredRegularValidation, registerRegularValidation } from './register-regular.validation';
-import { Regular, RegularRegistered } from '../../definitions';
+import { RegularDetails, RegularRegistered } from '../../definitions';
 import { persistRegisterRegular } from './register-regular.persistence';
+import { registerRegular } from './register-regular';
 
 type RegularRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  Body: Regular;
+  Body: RegularDetails;
 }>;
 
 export type RegularToRegister = {
-  toRegister: Regular;
+  toRegister: RegularDetails;
+};
+
+export type RegularToRegisterPersist = {
+  regularToCreate: RegularDetails;
 };
 
 export const registerRegularCommand = async (
@@ -26,6 +31,7 @@ export const registerRegularCommand = async (
       await pipe(
         req.body,
         registerRegularValidation,
+        registerRegular,
         persistRegisterRegular(server.pg),
         taskEitherChain(registeredRegularValidation),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<RegularRegistered>)
