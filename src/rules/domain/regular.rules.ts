@@ -1,6 +1,29 @@
-import { intersection as ioIntersection } from 'io-ts';
+/* eslint-disable @typescript-eslint/typedef */
+import {
+  intersection as ioIntersection,
+  type as ioType,
+  array as ioArray,
+  union as ioUnion,
+  undefined as ioUndefined,
+  string as ioString
+} from 'io-ts';
 import { passengerRulesCodec } from './traits.rules';
-import { regularPassengerCodec } from '../../codecs';
+import { regularCodec, regularDetailsCodec } from '../../codecs';
+import { isFrenchPhoneNumber, placeRulesCodec } from '../common';
 
-// eslint-disable-next-line @typescript-eslint/typedef
-export const regularPassengerRulesCodec = ioIntersection([regularPassengerCodec, passengerRulesCodec]);
+export const regularRulesCodec = ioIntersection([regularCodec, passengerRulesCodec]);
+
+export const phoneRulesCodec = ioType({
+  // eslint-disable-next-line id-denylist
+  number: isFrenchPhoneNumber,
+  name: ioString
+});
+
+export const regularDetailsRulesCodec = ioIntersection([
+  regularDetailsCodec,
+  ioType({
+    phones: ioUnion([ioArray(phoneRulesCodec), ioUndefined]),
+    home: ioUnion([placeRulesCodec, ioUndefined]),
+    destinations: ioUnion([ioArray(placeRulesCodec), ioUndefined])
+  })
+]);

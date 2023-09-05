@@ -7,48 +7,74 @@ import {
 } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import { pipe } from 'fp-ts/lib/function';
-import { Either } from 'fp-ts/Either';
+import { Either, map as eitherMap } from 'fp-ts/Either';
 import type { PostgresDb } from '@fastify/postgres';
 import { Errors } from '../../reporter';
-import { Regular } from '../../definitions';
-import { RegularToRegister } from './register-regular.route';
+import { RegularToRegisterPersist } from './register-regular.route';
 import { onDatabaseError } from '../../errors';
-import { fromDBtoRegularCandidate } from '../../mappers';
+import { fromDBtoRegularDetailsCandidate } from '../../mappers';
+import { RegularDetailsPersistence } from '../../definitions';
+
+type RegularToRegisterPersistReady = {
+  regularToCreate: RegularDetailsPersistence;
+};
 
 export const persistRegisterRegular =
   (database: PostgresDb) =>
-  (regularPersistence: Either<Errors, RegularToRegister>): TaskEither<Errors, unknown> =>
-    pipe(regularPersistence, fromEither, taskEitherChain(insertRegularIn(database)));
+  (regularPersistence: Either<Errors, RegularToRegisterPersist>): TaskEither<Errors, unknown> =>
+    pipe(regularPersistence, eitherMap(toPersistence), fromEither, taskEitherChain(insertRegularIn(database)));
 
 const insertRegularIn =
   (database: PostgresDb) =>
-  (regular: RegularToRegister): TaskEither<Errors, unknown> =>
+  (regular: RegularToRegisterPersistReady): TaskEither<Errors, unknown> =>
     pipe(taskEitherTryCatch(insertRegular(database)(regular), onDatabaseError(`insertRegularIn`)), taskEitherMap(toTransfer));
 
 const insertRegular =
   (database: PostgresDb) =>
-  ({ toRegister }: RegularToRegister) =>
+  ({ regularToCreate }: RegularToRegisterPersistReady) =>
   async (): Promise<QueryResult[]> =>
     database.transact(
-      async (client: PoolClient): Promise<QueryResult[]> => Promise.all([insertRegularQuery(client)(toRegister)])
+      async (client: PoolClient): Promise<QueryResult[]> => Promise.all([insertRegularQuery(client)(regularToCreate)])
     );
 
 const insertRegularQuery =
   (client: PoolClient) =>
-  async (regularPg: Regular): Promise<QueryResult> =>
-    client.query(insertRegularQueryString, [regularPg.firstname, regularPg.lastname, regularPg.phone]);
+  async (regularPg: RegularDetailsPersistence): Promise<QueryResult> =>
+    client.query(insertRegularQueryString, [
+      regularPg.civility,
+      regularPg.firstname,
+      regularPg.lastname,
+      regularPg.phones,
+      regularPg.home,
+      regularPg.destinations,
+      regularPg.commentary,
+      regularPg.subcontracted_client
+    ]);
 
 const insertRegularQueryString: string = `
-      INSERT INTO passengers (
+      INSERT INTO regulars (
+          civility,
           firstname,
           lastname,
-          phone
+          phones,
+          home,
+          destinations,
+          commentary,
+          subcontracted_client
       ) VALUES (
-          $1, $2, $3
+          $1, $2, $3, $4::jsonb[], $5::jsonb, $6::jsonb[], $7, $8
       )
       RETURNING *
     `;
 
+const toPersistence = ({ regularToCreate }: RegularToRegisterPersist): RegularToRegisterPersistReady => ({
+  regularToCreate: {
+    ...regularToCreate,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    subcontracted_client: regularToCreate.subcontractedClient
+  }
+});
+
 const toTransfer = (queriesResults: QueryResult[]): unknown => ({
-  regularRegistered: [queriesResults[0]?.rows[0]].map(fromDBtoRegularCandidate)[0]
+  regularRegistered: [queriesResults[0]?.rows[0]].map(fromDBtoRegularDetailsCandidate)[0]
 });

@@ -3,6 +3,8 @@ import {
   Pending,
   PendingPersistence,
   Regular,
+  RegularDetails,
+  RegularDetailsPersistence,
   RegularPersistence,
   Scheduled,
   ScheduledPersistence,
@@ -60,6 +62,18 @@ export const fromDBtoRegularCandidate = (row: Entity & RegularPersistence): unkn
   ({
     id: row.id,
     firstname: row.firstname,
-    lastname: row.lastname,
-    phone: row.phone
+    lastname: row.lastname
   } satisfies Entity & Regular);
+
+export const fromDBtoRegularDetailsCandidate = (row: Entity & RegularDetailsPersistence): unknown =>
+  ({
+    id: row.id,
+    civility: row.civility,
+    firstname: row.firstname,
+    lastname: row.lastname,
+    phones: row.phones == null ? undefined : row.phones,
+    home: row.home == null ? undefined : row.home,
+    destinations: row.destinations == null ? undefined : row.destinations,
+    commentary: row.commentary == null ? undefined : row.commentary,
+    subcontractedClient: row.subcontracted_client == null ? undefined : row.subcontracted_client
+  } satisfies Entity & RegularDetails);
