@@ -62,7 +62,7 @@ const insertRegularQueryString: string = `
           commentary,
           subcontracted_client
       ) VALUES (
-          $1, $2, $3, $4::text[], $5::jsonb, $6::jsonb[], $7, $8
+          $1, $2, $3, $4::jsonb[], $5::jsonb, $6::jsonb[], $7, $8
       )
       RETURNING *
     `;

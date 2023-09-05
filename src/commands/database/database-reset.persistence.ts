@@ -25,7 +25,7 @@ CREATE TABLE regulars (
     civility TEXT NOT NULL,
     firstname TEXT NOT NULL,
     lastname TEXT NOT NULL,
-    phones TEXT[] DEFAULT NULL,
+    phones JSONB[] DEFAULT NULL,
     home JSONB DEFAULT NULL,
     destinations JSONB[] DEFAULT NULL,
     commentary TEXT DEFAULT NULL,

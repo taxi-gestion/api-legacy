@@ -4,7 +4,8 @@ import {
   type as ioType,
   array as ioArray,
   union as ioUnion,
-  undefined as ioUndefined
+  undefined as ioUndefined,
+  string as ioString
 } from 'io-ts';
 import { passengerRulesCodec } from './traits.rules';
 import { regularCodec, regularDetailsCodec } from '../../codecs';
@@ -12,10 +13,16 @@ import { isFrenchPhoneNumber, placeRulesCodec } from '../common';
 
 export const regularRulesCodec = ioIntersection([regularCodec, passengerRulesCodec]);
 
+export const phoneRulesCodec = ioType({
+  // eslint-disable-next-line id-denylist
+  number: isFrenchPhoneNumber,
+  name: ioString
+});
+
 export const regularDetailsRulesCodec = ioIntersection([
   regularDetailsCodec,
   ioType({
-    phones: ioUnion([ioArray(isFrenchPhoneNumber), ioUndefined]),
+    phones: ioUnion([ioArray(phoneRulesCodec), ioUndefined]),
     home: ioUnion([placeRulesCodec, ioUndefined]),
     destinations: ioUnion([ioArray(placeRulesCodec), ioUndefined])
   })
