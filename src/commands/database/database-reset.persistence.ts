@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS regulars;
 CREATE TABLE regulars (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     civility TEXT NOT NULL,
-    firstname TEXT NOT NULL,
+    firstname TEXT,
     lastname TEXT NOT NULL,
     phones JSONB[] DEFAULT NULL,
     home JSONB DEFAULT NULL,
