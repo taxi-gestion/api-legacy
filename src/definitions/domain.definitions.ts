@@ -41,7 +41,7 @@ export type Destination = Kind &
   Nature & {
     place: Place;
     name: string;
-    comment: string;
+    comment: string | undefined;
   };
 
 export type RegularDetails = Regular & {

@@ -28,7 +28,7 @@ export const destinationCodec: Type<Destination> = ioIntersection([
   natureCodec,
   ioType({
     place: placeCodec,
-    comment: ioString,
+    comment: ioUnion([ioString, ioUndefined]),
     name: ioString
   })
 ]);
