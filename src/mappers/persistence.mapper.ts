@@ -69,7 +69,7 @@ export const fromDBtoRegularDetailsCandidate = (row: Entity & RegularDetailsPers
   ({
     id: row.id,
     civility: row.civility,
-    firstname: row.firstname,
+    firstname: row.firstname == null ? undefined : row.firstname,
     lastname: row.lastname,
     phones: row.phones == null ? undefined : row.phones,
     home: row.home == null ? undefined : row.home,
