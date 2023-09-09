@@ -30,3 +30,7 @@ export type PendingScheduled = {
 export type RegularRegistered = {
   regularRegistered: Entity & RegularDetails;
 };
+
+export type RegularDeleted = {
+  regularDeleted: Entity & RegularDetails;
+};

@@ -10,13 +10,15 @@ export const resetDatabaseStructure = (database: PostgresDb): TaskEither<Errors,
 const dropAndRecreateTables = (database: PostgresDb) => () => async (): Promise<QueryResult> => {
   const client: PoolClient = await database.connect();
   try {
-    return await alterDbQueries(client);
+    // eslint-disable-next-line @typescript-eslint/return-await,@typescript-eslint/consistent-type-assertions
+    return Promise.resolve({} as QueryResult);
+    //return await alterDbQueries(client);
   } finally {
     client.release();
   }
 };
 
-const alterDbQueries = async (client: PoolClient): Promise<QueryResult> => client.query(createRegularsTableQuery);
+/*const alterDbQueries = async (client: PoolClient): Promise<QueryResult> => client.query(createRegularsTableQuery);
 
 const createRegularsTableQuery: string = `
 DROP TABLE IF EXISTS regulars;
@@ -30,7 +32,7 @@ CREATE TABLE regulars (
     destinations JSONB[] DEFAULT NULL,
     commentary TEXT DEFAULT NULL,
     subcontracted_client TEXT DEFAULT NULL
-);`;
+);`;*/
 
 //const addStatusToPendingReturnsQueryString: string = `ALTER TABLE pending_returns ADD COLUMN status TEXT NOT NULL DEFAULT 'pending-return'`;
 

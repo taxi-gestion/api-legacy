@@ -8,6 +8,7 @@ import {
   Pending,
   PendingScheduled,
   Regular,
+  RegularDeleted,
   RegularDetails,
   RegularRegistered,
   Scheduled,
@@ -45,6 +46,10 @@ export const faresEditedCodec: Type<FaresEdited> = ioType({
 
 export const regularRegisteredCodec: Type<RegularRegistered> = ioType({
   regularRegistered: regularDetailsEntityCodec
+});
+
+export const regularDeletedCodec: Type<RegularDeleted> = ioType({
+  regularDeleted: regularDetailsEntityCodec
 });
 
 export const pendingScheduledCodec: Type<PendingScheduled> = ioType({
