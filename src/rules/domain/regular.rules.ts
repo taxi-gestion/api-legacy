@@ -10,13 +10,14 @@ import {
 import { passengerRulesCodec } from './traits.rules';
 import { regularCodec, regularDetailsCodec } from '../../codecs';
 import { isFrenchPhoneNumber, placeRulesCodec } from '../common';
+import { destinationRulesCodec } from './destination.rule';
 
 export const regularRulesCodec = ioIntersection([regularCodec, passengerRulesCodec]);
 
 export const phoneRulesCodec = ioType({
   // eslint-disable-next-line id-denylist
   number: isFrenchPhoneNumber,
-  name: ioString
+  type: ioString
 });
 
 export const regularDetailsRulesCodec = ioIntersection([
@@ -24,6 +25,6 @@ export const regularDetailsRulesCodec = ioIntersection([
   ioType({
     phones: ioUnion([ioArray(phoneRulesCodec), ioUndefined]),
     home: ioUnion([placeRulesCodec, ioUndefined]),
-    destinations: ioUnion([ioArray(placeRulesCodec), ioUndefined])
+    destinations: ioUnion([ioArray(destinationRulesCodec), ioUndefined])
   })
 ]);

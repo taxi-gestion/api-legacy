@@ -23,6 +23,8 @@ import { subcontractFareCommand } from './commands/subcontract-fare/subcontract-
 import { subcontractedFaresForTheDateQuery } from './queries/subcontracted-fares-for-date/subcontracted-fares-for-date.route';
 import { schedulePendingCommand } from './commands/schedule-pending/schedule-pending.route';
 import { searchRegularQuery } from './queries/search-regulars/search-regular.route';
+import { deleteRegularCommand } from './commands/delete-regular/delete-regular.route';
+import { editRegularCommand } from './commands/edit-regular/edit-regular.route';
 
 const server: FastifyInstance = fastify();
 
@@ -51,6 +53,8 @@ server.register(editFareCommand);
 server.register(subcontractFareCommand);
 server.register(schedulePendingCommand);
 server.register(registerRegularCommand);
+server.register(deleteRegularCommand);
+server.register(editRegularCommand);
 server.register(deleteFareCommand);
 server.register(subcontractedFaresForTheDateQuery);
 server.register(predictRecurrenceQuery, {

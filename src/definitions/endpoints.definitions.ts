@@ -34,3 +34,7 @@ export type RegularRegistered = {
 export type RegularDeleted = {
   regularDeleted: Entity & RegularDetails;
 };
+
+export type RegularEdited = {
+  regularEdited: Entity & RegularDetails;
+};
