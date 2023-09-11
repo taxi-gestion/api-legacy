@@ -7,12 +7,9 @@ import {
   undefined as ioUndefined,
   string as ioString
 } from 'io-ts';
-import { passengerRulesCodec } from './traits.rules';
-import { regularCodec, regularDetailsCodec } from '../../codecs';
+import { regularDetailsCodec } from '../../codecs';
 import { isFrenchPhoneNumber, placeRulesCodec } from '../common';
 import { destinationRulesCodec } from './destination.rule';
-
-export const regularRulesCodec = ioIntersection([regularCodec, passengerRulesCodec]);
 
 export const phoneRulesCodec = ioType({
   // eslint-disable-next-line id-denylist
