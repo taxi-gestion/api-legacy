@@ -2,10 +2,8 @@ import {
   Entity,
   Pending,
   PendingPersistence,
-  Regular,
   RegularDetails,
   RegularDetailsPersistence,
-  RegularPersistence,
   Scheduled,
   ScheduledPersistence,
   Subcontracted,
@@ -57,13 +55,6 @@ export const fromDBtoPendingCandidate = (row: Entity & PendingPersistence): unkn
     phone: row.phone,
     status: 'pending-return'
   } satisfies Entity & Pending);
-
-export const fromDBtoRegularCandidate = (row: Entity & RegularPersistence): unknown =>
-  ({
-    id: row.id,
-    firstname: row.firstname,
-    lastname: row.lastname
-  } satisfies Entity & Regular);
 
 export const fromDBtoRegularDetailsCandidate = (row: Entity & RegularDetailsPersistence): unknown =>
   ({
