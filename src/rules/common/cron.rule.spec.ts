@@ -13,7 +13,6 @@ describe('cron specification tests', (): void => {
           code: '422',
           failingRule: 'isCronString',
           errorValue: '0 0 * *',
-          inputKey: '',
           humanReadable: `Rules check failed, '0 0 * *' is not an accepted Cron representation: Expected 5 values, but got 4. (Input cron: '0 0 * *')`
         }
       ]
@@ -25,7 +24,6 @@ describe('cron specification tests', (): void => {
           code: '422',
           failingRule: 'isCronString',
           errorValue: '0 0 * * *#1',
-          inputKey: '',
           humanReadable: `Rules check failed, '0 0 * * *#1' is not an accepted Cron representation: Element '* of daysOfWeek field is invalid. (Input cron: '0 0 * * *#1')`
         }
       ]

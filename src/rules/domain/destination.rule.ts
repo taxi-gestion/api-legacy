@@ -3,9 +3,12 @@ import { intersection as ioIntersection, type as ioType } from 'io-ts';
 import { destinationCodec } from '../../codecs';
 import { placeRulesCodec } from '../common';
 
-export const destinationRulesCodec = ioIntersection([
-  destinationCodec,
-  ioType({
-    place: placeRulesCodec
-  })
-]);
+export const destinationRulesCodec = ioIntersection(
+  [
+    destinationCodec,
+    ioType({
+      place: placeRulesCodec
+    })
+  ],
+  'destinationRulesCodec'
+);

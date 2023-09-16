@@ -21,6 +21,9 @@ const fareToScheduleCodec: Type<FareToSchedule> = ioType({
 });
 
 // eslint-disable-next-line @typescript-eslint/typedef
-const fareToScheduleRulesCodec = ioType({
-  toSchedule: toScheduleRulesCodec
-});
+const fareToScheduleRulesCodec = ioType(
+  {
+    toSchedule: toScheduleRulesCodec
+  },
+  'fareToScheduleRulesCodec'
+);

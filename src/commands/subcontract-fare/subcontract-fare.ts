@@ -1,6 +1,6 @@
 import { pipe } from 'fp-ts/lib/function';
 import { map as taskEitherMap, TaskEither } from 'fp-ts/TaskEither';
-import { Entity, Scheduled, Subcontracted } from '../../definitions';
+import { Driver, Entity, Scheduled, Subcontracted } from '../../definitions';
 import { Errors } from '../../reporter';
 import { FaresToSubcontract, SubcontractedToPersist } from './subcontract-fare.route';
 
@@ -21,7 +21,7 @@ const applySubcontract = ({
     ...toCopy
   }: {
     id: string;
-    driver: string;
+    driver: Driver & Entity;
     status: string;
   } = scheduledToCopyAndDelete;
 

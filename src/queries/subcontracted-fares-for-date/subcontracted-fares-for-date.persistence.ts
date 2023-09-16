@@ -59,7 +59,6 @@ const toTransfer = (queryResult: QueryResult): unknown =>
         duration: Number(row.duration),
         kind: row.kind,
         nature: row.nature,
-        phone: row.phone,
         status: 'subcontracted'
       } satisfies Entity & Subcontracted)
   );
