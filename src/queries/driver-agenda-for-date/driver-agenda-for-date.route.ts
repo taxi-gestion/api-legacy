@@ -17,7 +17,7 @@ export type DriverIdAndDate = {
   date: string;
 };
 
-export const scheduledFaresForTheDateQuery = async (
+export const driverAgendaForTheDateQuery = async (
   server: FastifyInstance
   // eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<void> => {

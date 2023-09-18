@@ -25,6 +25,7 @@ import { searchRegularQuery } from './queries/search-regulars/search-regular.rou
 import { deleteRegularCommand } from './commands/delete-regular/delete-regular.route';
 import { editRegularCommand } from './commands/edit-regular/edit-regular.route';
 import { $awsCognitoListUsersInGroupDriver } from './services/aws/cognito/list-drivers.api';
+import { driverAgendaForTheDateQuery } from './queries/driver-agenda-for-date/driver-agenda-for-date.route';
 
 const server: FastifyInstance = fastify();
 
@@ -79,6 +80,7 @@ server.register(listDriversQuery, {
   )
 });
 server.register(searchRegularQuery);
+server.register(driverAgendaForTheDateQuery);
 
 /* eslint-enable @typescript-eslint/no-floating-promises */
 
