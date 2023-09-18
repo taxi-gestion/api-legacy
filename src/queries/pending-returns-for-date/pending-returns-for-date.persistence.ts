@@ -5,14 +5,9 @@ import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, map as taskEitherMap, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors } from '../../reporter';
-import { Entity, Pending } from '../../definitions';
+import { Entity, PendingPersistence } from '../../definitions';
 import { addDays, subHours } from 'date-fns';
 import { onDatabaseError } from '../../errors';
-
-type PendingPersistence = Omit<Entity & Pending, 'departure' | 'destination'> & {
-  departure: string;
-  destination: string;
-};
 
 export const pendingReturnsForTheDateDatabaseQuery =
   (database: PostgresDb) =>
@@ -20,7 +15,7 @@ export const pendingReturnsForTheDateDatabaseQuery =
     pipe(date, fromEither, taskEitherChain(selectPendingReturnsForDate(database)), taskEitherMap(toTransfer));
 
 const toTransfer = (queryResult: QueryResult): unknown =>
-  queryResult.rows.map((row: PendingPersistence): unknown => ({
+  queryResult.rows.map((row: Entity & PendingPersistence): unknown => ({
     id: row.id,
     passenger: row.passenger,
     datetime: row.datetime,
@@ -29,7 +24,6 @@ const toTransfer = (queryResult: QueryResult): unknown =>
     driver: row.driver,
     kind: row.kind,
     nature: row.nature,
-    phone: row.phone,
     status: 'pending-return'
   }));
 

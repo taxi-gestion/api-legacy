@@ -51,7 +51,6 @@ const updateScheduledFareQuery =
       farePg.duration,
       farePg.kind,
       farePg.nature,
-      farePg.phone,
       farePg.status
     ]);
 
@@ -67,8 +66,7 @@ const updateFareQueryString: string = `
           duration = $8,
           kind = $9,
           nature = $10,
-          phone = $11,
-          status = $12
+          status = $11
       WHERE id = $1
       RETURNING *
     `;
@@ -84,7 +82,6 @@ const insertPendingQuery =
       pendingPg.driver,
       pendingPg.kind,
       pendingPg.nature,
-      pendingPg.phone,
       pendingPg.outwardFareId
     ]);
 
@@ -97,10 +94,9 @@ const insertPendingQueryString: string = `
           driver,
           kind,
           nature,
-          phone,
           outward_fare_id
       ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9
+          $1, $2, $3, $4, $5, $6, $7, $8
       )
       RETURNING *
       `;

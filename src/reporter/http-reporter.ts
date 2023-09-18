@@ -54,21 +54,28 @@ const toDevFriendlyError = (error: InfrastructureError | ValidationError): DevFr
     };
   }
 
-  // We are certain to have a validation error with a context.
-  const errorContext: Context = error.context;
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const actualContext: ContextEntry = errorContext[errorContext.length - 1]!;
-
   return {
     errorValue: String(error.value),
     // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-    failingRule: actualContext.type.name,
+    failingRule: toFailingRule(error.context),
     // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-    inputKey: actualContext.key,
     humanReadable: String(error.message),
     code: getCodeFromMessage(error)
   };
 };
+
+const toFailingRule = (errorContext: Context): string => `${toFailingChain(errorContext)}${failingKeyOrEmpty(errorContext)}`;
+
+const toFailingChain = (errorContext: Context): string =>
+  errorContext.map((entry: ContextEntry): string => entry.type.name).join('.');
+
+const failingKeyOrEmpty = (errorContext: Context): string =>
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  isEmptyStringOrUndefined(toFailingKey(errorContext.at(-1)!)) ? '' : `.${toFailingKey(errorContext.at(-1)!)}`;
+
+const toFailingKey = (lastContext: ContextEntry): string | undefined => lastContext.key;
+
+const isEmptyStringOrUndefined = (candidate: string | undefined): boolean => candidate === undefined || candidate === '';
 
 const formatValidationErrors = (errors: Errors): DevFriendlyError[] => errors.map(toDevFriendlyError);
 
@@ -77,7 +84,6 @@ export default httpReporter;
 
 export type DevFriendlyError = {
   errorValue: string;
-  inputKey?: string;
   humanReadable: string;
   failingRule?: string;
   code: string;

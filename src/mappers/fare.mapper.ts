@@ -4,7 +4,6 @@ export const toPending = (fare: ToEdit | ToSchedule): Pending => ({
   passenger: fare.passenger,
   datetime: toZeroedTimeIso8601(fare.datetime),
   nature: fare.nature,
-  phone: fare.phone,
   driver: fare.driver,
   departure: fare.destination,
   destination: fare.departure,

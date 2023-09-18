@@ -18,22 +18,6 @@ const dropAndRecreateTables = (database: PostgresDb) => () => async (): Promise<
   }
 };
 
-/*const alterDbQueries = async (client: PoolClient): Promise<QueryResult> => client.query(createRegularsTableQuery);
-
-const createRegularsTableQuery: string = `
-DROP TABLE IF EXISTS regulars;
-CREATE TABLE regulars (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    civility TEXT NOT NULL,
-    firstname TEXT,
-    lastname TEXT NOT NULL,
-    phones JSONB[] DEFAULT NULL,
-    home JSONB DEFAULT NULL,
-    destinations JSONB[] DEFAULT NULL,
-    commentary TEXT DEFAULT NULL,
-    subcontracted_client TEXT DEFAULT NULL
-);`;*/
-
 //const addStatusToPendingReturnsQueryString: string = `ALTER TABLE pending_returns ADD COLUMN status TEXT NOT NULL DEFAULT 'pending-return'`;
 
 //const dropAndRecreateTablesQueries = async (client: PoolClient): Promise<QueryResult> =>

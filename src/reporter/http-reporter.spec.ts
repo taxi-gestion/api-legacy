@@ -76,18 +76,14 @@ describe('HttpReporter specification tests', (): void => {
   const infrastructureErrors: Either<Errors, unknown> = left<Errors, unknown>([internalServerError]);
 
   it.each([
-    [
-      simpleErrors,
-      [{ humanReadable: 'Type check failed', inputKey: '', errorValue: 'undefined', failingRule: 'string', code: '400' }]
-    ],
+    [simpleErrors, [{ humanReadable: 'Type check failed', errorValue: 'undefined', failingRule: 'string', code: '400' }]],
     [
       singleErrors,
       [
         {
           humanReadable: `Rules check failed, 'Julien' is not included in the registered users list`,
-          inputKey: 'clientIdentity',
           errorValue: 'Julien',
-          failingRule: 'isRegisteredUser',
+          failingRule: 'isRegisteredUser.clientIdentity',
           code: '422'
         }
       ]
@@ -97,12 +93,11 @@ describe('HttpReporter specification tests', (): void => {
       [
         {
           humanReadable: `Rules check failed, 'Julien' is not included in the registered users list`,
-          inputKey: 'clientIdentity',
           errorValue: 'Julien',
-          failingRule: 'isRegisteredUser',
+          failingRule: 'isRegisteredUser.clientIdentity',
           code: '422'
         },
-        { humanReadable: 'Type check failed', inputKey: '', errorValue: 'undefined', failingRule: 'string', code: '400' }
+        { humanReadable: 'Type check failed', errorValue: 'undefined', failingRule: 'string', code: '400' }
       ]
     ],
     [

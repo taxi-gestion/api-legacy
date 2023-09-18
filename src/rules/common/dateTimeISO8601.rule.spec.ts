@@ -14,7 +14,6 @@ describe('isDateTimeISO8601 specification tests', (): void => {
           code: '422',
           failingRule: 'isDateTimeISO8601',
           errorValue: '12-08-1990T00:00:00.000Z',
-          inputKey: '',
           humanReadable:
             "Rules check failed, '12-08-1990T00:00:00.000Z' is not an accepted UTC DateTime ISO8601 string representation (YYYY-MM-DDTHH:mm:ss.000Z)"
         }
@@ -27,7 +26,6 @@ describe('isDateTimeISO8601 specification tests', (): void => {
           code: '422',
           failingRule: 'isDateTimeISO8601',
           errorValue: '2022-13-12T00:00:00.000Z',
-          inputKey: '',
           humanReadable:
             "Rules check failed, '2022-13-12T00:00:00.000Z' is not an accepted UTC DateTime ISO8601 string representation (YYYY-MM-DDTHH:mm:ss.000Z)"
         }
@@ -44,7 +42,6 @@ describe('isDateTimeISO8601 specification tests', (): void => {
           code: '422',
           failingRule: 'isDateTimeISO8601',
           errorValue: '2023-02-29T00:00:00.000Z',
-          inputKey: '',
           humanReadable:
             "Rules check failed, '2023-02-29T00:00:00.000Z' is not an accepted UTC DateTime ISO8601 string representation (YYYY-MM-DDTHH:mm:ss.000Z)"
         }
@@ -57,7 +54,6 @@ describe('isDateTimeISO8601 specification tests', (): void => {
           code: '422',
           failingRule: 'isDateTimeISO8601',
           errorValue: '2023-04-31T00:00:00.000Z',
-          inputKey: '',
           humanReadable:
             "Rules check failed, '2023-04-31T00:00:00.000Z' is not an accepted UTC DateTime ISO8601 string representation (YYYY-MM-DDTHH:mm:ss.000Z)"
         }
@@ -70,7 +66,6 @@ describe('isDateTimeISO8601 specification tests', (): void => {
           code: '422',
           failingRule: 'isDateTimeISO8601',
           errorValue: '2023-06-31T00:00:00.000Z',
-          inputKey: '',
           humanReadable:
             "Rules check failed, '2023-06-31T00:00:00.000Z' is not an accepted UTC DateTime ISO8601 string representation (YYYY-MM-DDTHH:mm:ss.000Z)"
         }
@@ -85,7 +80,6 @@ describe('isDateTimeISO8601 specification tests', (): void => {
           code: '422',
           failingRule: 'isDateTimeISO8601',
           errorValue: '2038-01-20T30:00:00.000Z',
-          inputKey: '',
           humanReadable:
             "Rules check failed, '2038-01-20T30:00:00.000Z' is not an accepted UTC DateTime ISO8601 string representation (YYYY-MM-DDTHH:mm:ss.000Z)"
         }
@@ -98,7 +92,6 @@ describe('isDateTimeISO8601 specification tests', (): void => {
           code: '422',
           failingRule: 'isDateTimeISO8601',
           errorValue: '2038-01-20T30:00:00.000Z',
-          inputKey: '',
           humanReadable:
             "Rules check failed, '2038-01-20T30:00:00.000Z' is not an accepted UTC DateTime ISO8601 string representation (YYYY-MM-DDTHH:mm:ss.000Z)"
         }
@@ -111,7 +104,6 @@ describe('isDateTimeISO8601 specification tests', (): void => {
           code: '422',
           failingRule: 'isDateTimeISO8601',
           errorValue: '2038-01-20T23:60:00.000Z',
-          inputKey: '',
           humanReadable:
             "Rules check failed, '2038-01-20T23:60:00.000Z' is not an accepted UTC DateTime ISO8601 string representation (YYYY-MM-DDTHH:mm:ss.000Z)"
         }
@@ -124,7 +116,6 @@ describe('isDateTimeISO8601 specification tests', (): void => {
           code: '422',
           failingRule: 'isDateTimeISO8601',
           errorValue: '2038-01-20T00:00:00.001Z',
-          inputKey: '',
           humanReadable:
             "Rules check failed, '2038-01-20T00:00:00.001Z' is not an accepted UTC DateTime ISO8601 string representation (YYYY-MM-DDTHH:mm:ss.000Z)"
         }
@@ -138,7 +129,6 @@ describe('isDateTimeISO8601 specification tests', (): void => {
           code: '422',
           failingRule: 'isDateTimeISO8601',
           errorValue: '2038-01-20T24:00:01.000Z',
-          inputKey: '',
           humanReadable:
             "Rules check failed, '2038-01-20T24:00:01.000Z' is not an accepted UTC DateTime ISO8601 string representation (YYYY-MM-DDTHH:mm:ss.000Z)"
         }

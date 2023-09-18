@@ -1,16 +1,12 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
-import { fold as taskEitherFold } from 'fp-ts/TaskEither';
-import { listDrivers, ListDriversAdapter } from './list-drivers';
+import { ApplicativePar, chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
+import { listDrivers, ListDriversAdapter, mergeProperties } from './list-drivers';
 import { Driver, Entity } from '../../definitions';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-
-export type ListDriversRequest = FastifyRequest<{
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  Params: {
-    query: string;
-  };
-}>;
+import { listDriversPersistenceQuery } from './list-drivers.persistence';
+import { listDriversValidation } from './list-drivers.validation';
+import { sequenceT } from 'fp-ts/Apply';
 
 /* eslint-disable @typescript-eslint/require-await */
 export const listDriversQuery = async (
@@ -20,9 +16,13 @@ export const listDriversQuery = async (
   server.route({
     method: 'GET',
     url: '/driver/list',
-    handler: async (_req: ListDriversRequest, reply: FastifyReply): Promise<void> => {
+    handler: async (_req: FastifyRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
-        listDrivers(dependencies.adapter),
+        sequenceT(ApplicativePar)(
+          listDrivers(dependencies.adapter),
+          pipe(listDriversPersistenceQuery(server.pg)(), taskEitherChain(listDriversValidation))
+        ),
+        taskEitherChain(mergeProperties),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<(Driver & Entity)[]>)
       )();
     }

@@ -30,7 +30,7 @@ export const subcontractFareCommand = async (
 ): Promise<void> => {
   server.route({
     method: 'POST',
-    url: '/subcontract-fare',
+    url: '/fare/subcontract',
     handler: async (req: SubcontractFareRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         req.body,

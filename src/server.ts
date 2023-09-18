@@ -15,7 +15,6 @@ import { $googleMapsEstimateJourney } from './services/google/distance-matrix/es
 import { pendingReturnsForTheDateQuery } from './queries/pending-returns-for-date/pending-returns-for-date.route';
 import { scheduledFaresForTheDateQuery } from './queries/scheduled-fares-for-date/scheduled-fares-for-date.route';
 import { listDriversQuery } from './queries/list-drivers/list-drivers.route';
-import { $awsCognitoListUsersInGroupDriver } from './services/aws/cognito/list-drivers.api';
 import { registerRegularCommand } from './commands/register-regular/register-regular.route';
 import { deleteFareCommand } from './commands/delete-fare/delete-fare.route';
 import { editFareCommand } from './commands/edit-fare/edit-fare.route';
@@ -25,6 +24,7 @@ import { schedulePendingCommand } from './commands/schedule-pending/schedule-pen
 import { searchRegularQuery } from './queries/search-regulars/search-regular.route';
 import { deleteRegularCommand } from './commands/delete-regular/delete-regular.route';
 import { editRegularCommand } from './commands/edit-regular/edit-regular.route';
+import { $awsCognitoListUsersInGroupDriver } from './services/aws/cognito/list-drivers.api';
 
 const server: FastifyInstance = fastify();
 

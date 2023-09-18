@@ -22,7 +22,6 @@ export const fromDBtoSubcontractedCandidate = (row: Entity & SubcontractedPersis
     duration: Number(row.duration),
     kind: row.kind,
     nature: row.nature,
-    phone: row.phone,
     status: 'subcontracted'
   } satisfies Entity & Subcontracted);
 
@@ -38,7 +37,6 @@ export const fromDBtoScheduledCandidate = (row: Entity & ScheduledPersistence): 
     duration: Number(row.duration),
     kind: row.kind,
     nature: row.nature,
-    phone: row.phone,
     status: 'scheduled'
   } satisfies Entity & Scheduled);
 
@@ -52,7 +50,6 @@ export const fromDBtoPendingCandidate = (row: Entity & PendingPersistence): unkn
     driver: row.driver,
     kind: row.kind,
     nature: row.nature,
-    phone: row.phone,
     status: 'pending-return'
   } satisfies Entity & Pending);
 

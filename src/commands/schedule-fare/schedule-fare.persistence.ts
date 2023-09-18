@@ -66,7 +66,6 @@ const insertScheduledFareQuery =
       farePg.duration,
       farePg.kind,
       farePg.nature,
-      farePg.phone,
       farePg.status
     ]);
 
@@ -81,10 +80,9 @@ const insertFareQueryString: string = `
           duration,
           kind,
           nature,
-          phone,
           status
       ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
       ) 
       RETURNING *
     `;
@@ -100,7 +98,6 @@ const insertPendingQuery =
       pendingPg.driver,
       pendingPg.kind,
       pendingPg.nature,
-      pendingPg.phone,
       pendingPg.outwardFareId
     ]);
 
@@ -113,10 +110,9 @@ const insertPendingQueryString: string = `
           driver,
           kind,
           nature,
-          phone,
           outward_fare_id
       ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9
+          $1, $2, $3, $4, $5, $6, $7, $8
       )
       RETURNING *
       `;

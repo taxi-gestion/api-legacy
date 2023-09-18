@@ -8,11 +8,12 @@ import { Errors } from '../../reporter';
 import { Entity, ScheduledPersistence } from '../../definitions';
 import { addDays, subHours } from 'date-fns';
 import { onDatabaseError } from '../../errors';
+import { DriverIdAndDate } from './driver-agenda-for-date.route';
 
-export const scheduledFaresForTheDatePersistenceQuery =
+export const driverScheduledFareForTheDatePersistenceQuery =
   (database: PostgresDb) =>
-  (date: Either<Errors, string>): TaskEither<Errors, unknown> =>
-    pipe(date, fromEither, taskEitherChain(selectFaresForDate(database)), taskEitherMap(toTransfer));
+  (parameters: Either<Errors, DriverIdAndDate>): TaskEither<Errors, unknown> =>
+    pipe(parameters, fromEither, taskEitherChain(selectFaresForDriverAndDate(database)), taskEitherMap(toTransfer));
 
 const toTransfer = (queryResult: QueryResult): unknown =>
   queryResult.rows.map((row: Entity & ScheduledPersistence): unknown => ({
@@ -29,15 +30,15 @@ const toTransfer = (queryResult: QueryResult): unknown =>
     status: 'scheduled'
   }));
 
-const selectFaresForDate =
+const selectFaresForDriverAndDate =
   (database: PostgresDb) =>
-  (date: string): TaskEither<Errors, QueryResult> =>
-    taskEitherTryCatch(selectFromFares(database)(date), onDatabaseError(`scheduledFaresForTheDatePersistenceQuery`));
+  (parameters: DriverIdAndDate): TaskEither<Errors, QueryResult> =>
+    taskEitherTryCatch(selectFromFares(database)(parameters), onDatabaseError(`driverScheduledFareForTheDatePersistenceQuery`));
 
-const selectFromFares = (database: PostgresDb) => (date: string) => async (): Promise<QueryResult> => {
+const selectFromFares = (database: PostgresDb) => (parameters: DriverIdAndDate) => async (): Promise<QueryResult> => {
   const client: PoolClient = await database.connect();
   try {
-    return await selectScheduledFaresWhereDateQuery(client)(date);
+    return await selectFaresWhereDateAndDriverQuery(client)(parameters);
   } finally {
     client.release();
   }
@@ -48,14 +49,14 @@ const adjustFrenchDateToUTC = (date: Date): string => {
   return adjustedDate.toISOString();
 };
 
-const selectScheduledFaresWhereDateQuery =
+const selectFaresWhereDateAndDriverQuery =
   (client: PoolClient) =>
-  async (date: string): Promise<QueryResult> => {
-    const startOfDayUTC: string = adjustFrenchDateToUTC(new Date(date));
-    const endOfDayUTC: string = adjustFrenchDateToUTC(addDays(new Date(date), 1));
-    return client.query(selectFaresWhereDateQueryString, [startOfDayUTC, endOfDayUTC]);
+  async (parameters: DriverIdAndDate): Promise<QueryResult> => {
+    const startOfDayUTC: string = adjustFrenchDateToUTC(new Date(parameters.date));
+    const endOfDayUTC: string = adjustFrenchDateToUTC(addDays(new Date(parameters.date), 1));
+    return client.query(selectFaresWhereDriverAndDateQueryString, [parameters.driverId, startOfDayUTC, endOfDayUTC]);
   };
 
-const selectFaresWhereDateQueryString: string = `
-      SELECT * FROM scheduled_fares WHERE datetime >= $1 AND datetime < $2
+const selectFaresWhereDriverAndDateQueryString: string = `
+      SELECT * FROM scheduled_fares WHERE (driver->>'id') = $1 AND datetime >= $2 AND datetime < $3
     `;
