@@ -101,8 +101,7 @@ module.exports = {
     'obj',
     'object',
     'val',
-    'value',
-    'number'
+    'value'
   ],
   'id-length': ['error', { min: 2, exceptions: ['i', 'j', 'x', 'y', 'z', '_'] }],
   'init-declarations': 'off',
