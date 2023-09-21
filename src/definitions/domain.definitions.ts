@@ -19,10 +19,11 @@ export type DurationDistance = {
 };
 
 export type Passenger = {
-  identity: string;
+  firstname: string | undefined;
+  lastname: string;
+  civility: Civility;
   phone: {
     type: string;
-    // eslint-disable-next-line id-denylist
     number: string;
   };
 };
@@ -31,7 +32,6 @@ export type Civility = 'Child' | 'Company' | 'Couple' | 'Mr' | 'Mrs' | 'Other';
 
 export type Phone = {
   type: string;
-  // eslint-disable-next-line id-denylist
   number: string;
 };
 
