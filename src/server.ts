@@ -4,7 +4,6 @@ import formbody from '@fastify/formbody';
 import postgres from '@fastify/postgres';
 import { closeGracefullyOnSignalInterrupt, start } from './server.utils';
 import { databaseStatusQuery } from './queries/database-status/database-status.route';
-import { resetDatabaseCommand } from './commands/database/database-reset.route';
 import { scheduleFareCommand } from './commands/schedule-fare/schedule-fare.route';
 import { predictRecurrenceQuery } from './queries/predict-recurrence/predict-recurrence.route';
 import { $openAIPredictRecurrence } from './services/openai/predict-recurrence/predict-recurrence';
@@ -24,9 +23,10 @@ import { schedulePendingCommand } from './commands/schedule-pending/schedule-pen
 import { searchRegularQuery } from './queries/search-regulars/search-regular.route';
 import { deleteRegularCommand } from './commands/delete-regular/delete-regular.route';
 import { editRegularCommand } from './commands/edit-regular/edit-regular.route';
-import { $awsCognitoListUsersInGroupDriver } from './services/aws/cognito/list-drivers.api';
 import { driverAgendaForTheDateQuery } from './queries/driver-agenda-for-date/driver-agenda-for-date.route';
 import { regularByIdQuery } from './queries/regular-by-id/regular-by-id.route';
+import { $awsCognitoListUsersInGroupDriver } from './services/aws/cognito/list-drivers.api';
+import { listDriversWithDisplayOrderQuery } from './queries/list-drivers-with-order/list-drivers-with-order.route';
 
 const server: FastifyInstance = fastify();
 
@@ -49,7 +49,6 @@ server.get('/health', async (_request: FastifyRequest, _reply: FastifyReply): Pr
 server.register(databaseStatusQuery);
 server.register(pendingReturnsForTheDateQuery);
 server.register(scheduledFaresForTheDateQuery);
-server.register(resetDatabaseCommand);
 server.register(scheduleFareCommand);
 server.register(editFareCommand);
 server.register(subcontractFareCommand);
@@ -83,6 +82,7 @@ server.register(listDriversQuery, {
 server.register(searchRegularQuery);
 server.register(driverAgendaForTheDateQuery);
 server.register(regularByIdQuery);
+server.register(listDriversWithDisplayOrderQuery);
 
 /* eslint-enable @typescript-eslint/no-floating-promises */
 
