@@ -14,7 +14,8 @@ const toTransfer = (queryResult: QueryResult): unknown =>
   queryResult.rows.map((row: DriverPersistence & Entity): unknown => ({
     id: row.id,
     username: row.username,
-    identifier: row.identifier
+    identifier: row.identifier,
+    displayOrder: row.display_order
   }));
 
 const listDrivers = (database: PostgresDb) => (): TaskEither<Errors, QueryResult> =>
@@ -32,5 +33,5 @@ const selectFromDrivers = (database: PostgresDb) => async (): Promise<QueryResul
 const selectFaresWhereDateQuery = async (client: PoolClient): Promise<QueryResult> => client.query(selectDriversQueryString);
 
 const selectDriversQueryString: string = `
-      SELECT id, username, identifier FROM drivers
+      SELECT * FROM drivers
     `;
