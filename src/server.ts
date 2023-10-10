@@ -27,6 +27,9 @@ import { driverAgendaForTheDateQuery } from './queries/driver-agenda-for-date/dr
 import { regularByIdQuery } from './queries/regular-by-id/regular-by-id.route';
 import { $awsCognitoListUsersInGroupDriver } from './services/aws/cognito/list-drivers.api';
 import { listDriversWithDisplayOrderQuery } from './queries/list-drivers-with-order/list-drivers-with-order.route';
+import { TaskEither } from 'fp-ts/lib/TaskEither';
+import { Errors } from './reporter';
+import { Driver, Entity } from './definitions';
 
 const server: FastifyInstance = fastify();
 
@@ -67,22 +70,28 @@ server.register(searchPlaceQuery, {
 server.register(estimateJourneyQuery, {
   adapter: $googleMapsEstimateJourney(process.env['API_KEY_GOOGLE_MAPS'] ?? '')
 });
-server.register(listDriversQuery, {
-  adapter: $awsCognitoListUsersInGroupDriver(
-    {
-      accessKeyId: process.env['AWS_ACCESS_KEY_ID'] ?? '',
-      secretAccessKey: process.env['AWS_SECRET_ACCESS_KEY'] ?? ''
-    },
-    {
-      region: process.env['AWS_REGION'] ?? '',
-      userPoolId: process.env['AWS_COGNITO_USER_POOL_ID'] ?? ''
-    }
-  )
-});
 server.register(searchRegularQuery);
 server.register(driverAgendaForTheDateQuery);
 server.register(regularByIdQuery);
-server.register(listDriversWithDisplayOrderQuery);
+
+const awsCognitoListUsersInGroupDriver: () => TaskEither<Errors, (Driver & Entity)[]> = $awsCognitoListUsersInGroupDriver(
+  {
+    accessKeyId: process.env['AWS_ACCESS_KEY_ID'] ?? '',
+    secretAccessKey: process.env['AWS_SECRET_ACCESS_KEY'] ?? ''
+  },
+  {
+    region: process.env['AWS_REGION'] ?? '',
+    userPoolId: process.env['AWS_COGNITO_USER_POOL_ID'] ?? ''
+  }
+);
+
+server.register(listDriversQuery, {
+  adapter: awsCognitoListUsersInGroupDriver
+});
+
+server.register(listDriversWithDisplayOrderQuery, {
+  adapter: awsCognitoListUsersInGroupDriver
+});
 
 /* eslint-enable @typescript-eslint/no-floating-promises */
 
