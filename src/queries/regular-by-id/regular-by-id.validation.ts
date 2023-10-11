@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/lib/function';
 import { fromEither, TaskEither } from 'fp-ts/TaskEither';
 import { Entity, RegularDetails } from '../../definitions';
 import { externalTypeCheckFor, regularDetailsEntityCodec } from '../../codecs';
-import { uuidRule } from '../../rules/common/uuid.rule';
+import { uuidRule } from '../../rules';
 
 export const regularByIdValidation = (transfer: unknown): TaskEither<Errors, string> =>
   pipe(transfer, uuidRule.decode, fromEither);

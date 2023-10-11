@@ -23,7 +23,6 @@ export const searchRegularQuery = async (server: FastifyInstance): Promise<void>
         req.params.query,
         searchRegularValidation,
         taskEitherChain(searchRegularsDatabaseQuery(server.pg)),
-        //searchRegularsDatabaseQuery(server.pg)(),
         taskEitherChain(regularsValidation),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<(Entity & RegularDetails)[]>)
       )();

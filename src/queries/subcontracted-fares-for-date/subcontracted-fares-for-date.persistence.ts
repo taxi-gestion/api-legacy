@@ -53,7 +53,7 @@ const toTransfer = (queryResult: QueryResult): unknown =>
         passenger: row.passenger,
         datetime: row.datetime,
         departure: row.departure,
-        destination: row.destination,
+        arrival: row.arrival,
         distance: Number(row.distance),
         subcontractor: row.subcontractor,
         duration: Number(row.duration),

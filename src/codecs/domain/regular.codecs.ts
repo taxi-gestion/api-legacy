@@ -9,8 +9,7 @@ import {
 } from 'io-ts';
 import { Entity, RegularDetails } from '../../definitions';
 import { civilityCodec, entityCodec, phoneCodec } from './traits.codecs';
-import { placeCodec } from '../common';
-import { destinationCodec } from './destination.codec';
+import { waypointCodec } from './waypointCodec';
 
 export const regularDetailsCodec: Type<RegularDetails> = ioType(
   {
@@ -18,9 +17,8 @@ export const regularDetailsCodec: Type<RegularDetails> = ioType(
     firstname: ioUnion([ioString, ioUndefined]),
     lastname: ioString,
     phones: ioUnion([ioArray(phoneCodec), ioUndefined]),
-    home: ioUnion([placeCodec, ioUndefined]),
-    destinations: ioUnion([ioArray(destinationCodec), ioUndefined]),
-    commentary: ioUnion([ioString, ioUndefined]),
+    destinations: ioUnion([ioArray(waypointCodec), ioUndefined]),
+    comment: ioUnion([ioString, ioUndefined]),
     subcontractedClient: ioUnion([ioString, ioUndefined])
   },
   'regularDetailsCodec'

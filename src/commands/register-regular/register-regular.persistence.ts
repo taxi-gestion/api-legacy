@@ -45,9 +45,8 @@ const insertRegularQuery =
       regularPg.firstname,
       regularPg.lastname,
       regularPg.phones,
-      regularPg.home,
       regularPg.destinations,
-      regularPg.commentary,
+      regularPg.comment,
       regularPg.subcontracted_client
     ]);
 
@@ -57,12 +56,11 @@ const insertRegularQueryString: string = `
           firstname,
           lastname,
           phones,
-          home,
           destinations,
-          commentary,
+          comment,
           subcontracted_client
       ) VALUES (
-          $1, $2, $3, $4::jsonb[], $5::jsonb, $6::jsonb[], $7, $8
+          $1, $2, $3, $4::jsonb[], $5::jsonb[], $6, $7
       )
       RETURNING *
     `;

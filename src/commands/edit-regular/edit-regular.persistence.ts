@@ -37,9 +37,8 @@ const updateRegularQuery =
       regularPg.firstname,
       regularPg.lastname,
       regularPg.phones,
-      regularPg.home,
       regularPg.destinations,
-      regularPg.commentary,
+      regularPg.comment,
       regularPg.subcontracted_client
     ]);
 
@@ -50,10 +49,9 @@ const updateFareQueryString: string = `
         firstname = $3, 
         lastname = $4, 
         phones = $5::jsonb[], 
-        home = $6::jsonb, 
-        destinations = $7::jsonb[], 
-        commentary = $8, 
-        subcontracted_client = $9       
+        destinations = $6::jsonb[], 
+        comment = $7, 
+        subcontracted_client = $8       
       WHERE id = $1
       RETURNING *
     `;

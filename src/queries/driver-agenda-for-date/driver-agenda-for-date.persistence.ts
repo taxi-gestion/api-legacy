@@ -21,7 +21,7 @@ const toTransfer = (queryResult: QueryResult): unknown =>
     passenger: row.passenger,
     datetime: row.datetime,
     departure: row.departure,
-    destination: row.destination,
+    arrival: row.arrival,
     distance: Number(row.distance),
     driver: row.driver,
     duration: Number(row.duration),
