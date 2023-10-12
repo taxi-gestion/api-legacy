@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { fold as taskEitherFold, chain as taskEitherChain } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { Entity, RegularDetails } from '../../definitions';
+import { Entity, Regular } from '../../definitions';
 import { regularByIdDatabaseQuery } from './regular-by-id.persistence';
 import { regularByIdValidation, regularValidation } from './regular-by-id.validation';
 
@@ -24,7 +24,7 @@ export const regularByIdQuery = async (server: FastifyInstance): Promise<void> =
         regularByIdValidation,
         taskEitherChain(regularByIdDatabaseQuery(server.pg)),
         taskEitherChain(regularValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<Entity & RegularDetails>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<Entity & Regular>)
       )();
     }
   });

@@ -7,7 +7,7 @@ import {
   undefined as ioUndefined,
   string as ioString
 } from 'io-ts';
-import { regularDetailsCodec } from '../../codecs';
+import { regularCodec } from '../../codecs';
 import { isFrenchPhoneNumber } from '../common';
 import { waypointRulesCodec } from './waypoint.rule';
 
@@ -20,13 +20,13 @@ export const phoneRulesCodec = ioType(
   'phoneRulesCodec'
 );
 
-export const regularDetailsRulesCodec = ioIntersection(
+export const regularRulesCodec = ioIntersection(
   [
-    regularDetailsCodec,
+    regularCodec,
     ioType({
       phones: ioUnion([ioArray(phoneRulesCodec), ioUndefined]),
-      destinations: ioUnion([ioArray(waypointRulesCodec), ioUndefined])
+      waypoints: ioUnion([ioArray(waypointRulesCodec), ioUndefined])
     })
   ],
-  'regularDetailsRulesCodec'
+  'regularRulesCodec'
 );

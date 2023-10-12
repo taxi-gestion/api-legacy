@@ -5,7 +5,7 @@ import { map as taskEitherMap, tryCatch as taskEitherTryCatch } from 'fp-ts/Task
 import { PoolClient, QueryResult } from 'pg';
 import { Errors } from '../../reporter';
 import { onDatabaseError } from '../../errors';
-import { fromDBtoRegularDetailsCandidate } from '../../mappers';
+import { fromDBtoRegularCandidate } from '../../mappers';
 
 export const regularByIdDatabaseQuery =
   (database: PostgresDb) =>
@@ -36,4 +36,4 @@ const selectRegularsQueryString: string = `
       WHERE id = $1
     `;
 
-const toTransfer = (queryResult: QueryResult): unknown => queryResult.rows.map(fromDBtoRegularDetailsCandidate)[0];
+const toTransfer = (queryResult: QueryResult): unknown => queryResult.rows.map(fromDBtoRegularCandidate)[0];

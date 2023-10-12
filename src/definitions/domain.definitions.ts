@@ -38,12 +38,12 @@ export type Waypoint = {
   comment: string | undefined;
 } & { kind: Kind | undefined } & { nature: Nature | undefined };
 
-export type RegularDetails = {
+export type Regular = {
   firstname: string | undefined;
   lastname: string;
   civility: Civility;
   phones: Phone[] | undefined;
-  destinations: Waypoint[] | undefined;
+  waypoints: Waypoint[] | undefined;
   comment: string | undefined;
   subcontractedClient: string | undefined;
 };
