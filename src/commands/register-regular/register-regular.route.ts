@@ -3,21 +3,21 @@ import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { registeredRegularValidation, registerRegularValidation } from './register-regular.validation';
-import { RegularDetails, RegularRegistered } from '../../definitions';
+import { Regular, RegularRegistered } from '../../definitions';
 import { persistRegisterRegular } from './register-regular.persistence';
 import { registerRegular } from './register-regular';
 
 type RegularRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  Body: RegularDetails;
+  Body: Regular;
 }>;
 
 export type RegularToRegister = {
-  toRegister: RegularDetails;
+  toRegister: Regular;
 };
 
 export type RegularToRegisterPersist = {
-  regularToCreate: RegularDetails;
+  regularToCreate: Regular;
 };
 
 export const registerRegularCommand = async (

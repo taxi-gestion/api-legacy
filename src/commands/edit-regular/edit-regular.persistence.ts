@@ -2,14 +2,14 @@ import { map as taskEitherMap, TaskEither, tryCatch as taskEitherTryCatch } from
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
 import { Errors } from '../../reporter';
-import { Entity, RegularDetailsPersistence } from '../../definitions';
+import { Entity, RegularPersistence } from '../../definitions';
 import { pipe } from 'fp-ts/lib/function';
 import { RegularToEditPersist } from './edit-regular.route';
-import { fromDBtoRegularDetailsCandidate } from '../../mappers';
+import { fromDBtoRegularCandidate } from '../../mappers';
 import { onDatabaseError } from '../../errors';
 
 type RegularToEditPersistReady = {
-  regularToEdit: Entity & RegularDetailsPersistence;
+  regularToEdit: Entity & RegularPersistence;
 };
 
 export const persistEditedRegular =
@@ -30,16 +30,15 @@ const applyQueries =
 
 const updateRegularQuery =
   (client: PoolClient) =>
-  async (regularPg: Entity & RegularDetailsPersistence): Promise<QueryResult> =>
+  async (regularPg: Entity & RegularPersistence): Promise<QueryResult> =>
     client.query(updateFareQueryString, [
       regularPg.id,
       regularPg.civility,
       regularPg.firstname,
       regularPg.lastname,
       regularPg.phones,
-      regularPg.home,
-      regularPg.destinations,
-      regularPg.commentary,
+      regularPg.waypoints,
+      regularPg.comment,
       regularPg.subcontracted_client
     ]);
 
@@ -50,10 +49,9 @@ const updateFareQueryString: string = `
         firstname = $3, 
         lastname = $4, 
         phones = $5::jsonb[], 
-        home = $6::jsonb, 
-        destinations = $7::jsonb[], 
-        commentary = $8, 
-        subcontracted_client = $9       
+        waypoints = $6::jsonb[], 
+        comment = $7, 
+        subcontracted_client = $8       
       WHERE id = $1
       RETURNING *
     `;
@@ -67,5 +65,5 @@ const toPersistence = ({ regularToEdit }: RegularToEditPersist): RegularToEditPe
 });
 
 const toTransfer = (queriesResults: QueryResult[]): unknown => ({
-  regularEdited: [queriesResults[0]?.rows[0]].map(fromDBtoRegularDetailsCandidate)[0]
+  regularEdited: [queriesResults[0]?.rows[0]].map(fromDBtoRegularCandidate)[0]
 });

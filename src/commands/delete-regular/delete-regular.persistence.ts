@@ -6,7 +6,7 @@ import { Entity } from '../../definitions';
 import { RegularToDelete } from './delete-regular.route';
 import { onDatabaseError } from '../../errors';
 import { pipe } from 'fp-ts/lib/function';
-import { fromDBtoRegularDetailsCandidate } from '../../mappers';
+import { fromDBtoRegularCandidate } from '../../mappers';
 
 export const persistDeleteRegular =
   (database: PostgresDb) =>
@@ -31,5 +31,5 @@ const deleteScheduledRegularQueryString: string = `
       `;
 
 const toTransfer = (queriesResults: QueryResult[]): unknown => ({
-  regularDeleted: [queriesResults[0]?.rows[0]].map(fromDBtoRegularDetailsCandidate)[0]
+  regularDeleted: [queriesResults[0]?.rows[0]].map(fromDBtoRegularCandidate)[0]
 });

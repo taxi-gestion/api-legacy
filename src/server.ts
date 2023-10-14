@@ -44,35 +44,40 @@ server.register(postgres, {
   connectionString: process.env['DATABASE_URL'] ?? ''
 });
 
+const prefix: string = process.env['API_PREFIX'] ?? '';
+
 server.get('/', async (_request: FastifyRequest, _reply: FastifyReply): Promise<string> => 'OK\n');
 
 server.get('/health', async (_request: FastifyRequest, _reply: FastifyReply): Promise<string> => 'OK\n');
 
 /* eslint-disable @typescript-eslint/no-floating-promises */
-server.register(databaseStatusQuery);
-server.register(pendingReturnsForTheDateQuery);
-server.register(scheduledFaresForTheDateQuery);
-server.register(scheduleFareCommand);
-server.register(editFareCommand);
-server.register(subcontractFareCommand);
-server.register(schedulePendingCommand);
-server.register(registerRegularCommand);
-server.register(deleteRegularCommand);
-server.register(editRegularCommand);
-server.register(deleteFareCommand);
-server.register(subcontractedFaresForTheDateQuery);
+server.register(databaseStatusQuery, { prefix });
+server.register(pendingReturnsForTheDateQuery, { prefix });
+server.register(scheduledFaresForTheDateQuery, { prefix });
+server.register(scheduleFareCommand, { prefix });
+server.register(editFareCommand, { prefix });
+server.register(subcontractFareCommand, { prefix });
+server.register(schedulePendingCommand, { prefix });
+server.register(registerRegularCommand, { prefix });
+server.register(deleteRegularCommand, { prefix });
+server.register(editRegularCommand, { prefix });
+server.register(deleteFareCommand, { prefix });
+server.register(subcontractedFaresForTheDateQuery, { prefix });
 server.register(predictRecurrenceQuery, {
-  adapter: $openAIPredictRecurrence(process.env['API_KEY_OPENAI'] ?? '')
+  adapter: $openAIPredictRecurrence(process.env['API_KEY_OPENAI'] ?? ''),
+  prefix
 });
 server.register(searchPlaceQuery, {
-  adapter: $googleMapsSearchPlace(process.env['API_KEY_GOOGLE_MAPS'] ?? '')
+  adapter: $googleMapsSearchPlace(process.env['API_KEY_GOOGLE_MAPS'] ?? ''),
+  prefix
 });
 server.register(estimateJourneyQuery, {
-  adapter: $googleMapsEstimateJourney(process.env['API_KEY_GOOGLE_MAPS'] ?? '')
+  adapter: $googleMapsEstimateJourney(process.env['API_KEY_GOOGLE_MAPS'] ?? ''),
+  prefix
 });
-server.register(searchRegularQuery);
-server.register(driverAgendaForTheDateQuery);
-server.register(regularByIdQuery);
+server.register(searchRegularQuery, { prefix });
+server.register(driverAgendaForTheDateQuery, { prefix });
+server.register(regularByIdQuery, { prefix });
 
 const awsCognitoListUsersInGroupDriver: () => TaskEither<Errors, (Driver & Entity)[]> = $awsCognitoListUsersInGroupDriver(
   {
@@ -86,11 +91,13 @@ const awsCognitoListUsersInGroupDriver: () => TaskEither<Errors, (Driver & Entit
 );
 
 server.register(listDriversQuery, {
-  adapter: awsCognitoListUsersInGroupDriver
+  adapter: awsCognitoListUsersInGroupDriver,
+  prefix
 });
 
 server.register(listDriversWithDisplayOrderQuery, {
-  adapter: awsCognitoListUsersInGroupDriver
+  adapter: awsCognitoListUsersInGroupDriver,
+  prefix
 });
 
 /* eslint-enable @typescript-eslint/no-floating-promises */

@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/typedef */
 import { type as ioType } from 'io-ts';
-import { isDateTimeISO8601String, isPositive, placeRulesCodec } from '../common';
+import { isDateTimeISO8601String, isPositive } from '../common';
 import { phoneRulesCodec } from './regular.rules';
+import { waypointRulesCodec } from './waypoint.rule';
 
 export const driveRulesCodec = ioType(
   {
     datetime: isDateTimeISO8601String,
-    departure: placeRulesCodec,
-    destination: placeRulesCodec
+    departure: waypointRulesCodec,
+    arrival: waypointRulesCodec
   },
   'driveRulesCodec'
 );

@@ -2,8 +2,8 @@ import {
   Entity,
   Pending,
   PendingPersistence,
-  RegularDetails,
-  RegularDetailsPersistence,
+  Regular,
+  RegularPersistence,
   Scheduled,
   ScheduledPersistence,
   Subcontracted,
@@ -17,7 +17,7 @@ export const fromDBtoSubcontractedCandidate = (row: Entity & SubcontractedPersis
     passenger: row.passenger,
     datetime: row.datetime,
     departure: row.departure,
-    destination: row.destination,
+    arrival: row.arrival,
     distance: Number(row.distance),
     duration: Number(row.duration),
     kind: row.kind,
@@ -31,7 +31,7 @@ export const fromDBtoScheduledCandidate = (row: Entity & ScheduledPersistence): 
     passenger: row.passenger,
     datetime: row.datetime,
     departure: row.departure,
-    destination: row.destination,
+    arrival: row.arrival,
     driver: row.driver,
     distance: Number(row.distance),
     duration: Number(row.duration),
@@ -46,22 +46,21 @@ export const fromDBtoPendingCandidate = (row: Entity & PendingPersistence): unkn
     passenger: row.passenger,
     datetime: row.datetime,
     departure: row.departure,
-    destination: row.destination,
+    arrival: row.arrival,
     driver: row.driver,
     kind: row.kind,
     nature: row.nature,
     status: 'pending-return'
   } satisfies Entity & Pending);
 
-export const fromDBtoRegularDetailsCandidate = (row: Entity & RegularDetailsPersistence): unknown =>
+export const fromDBtoRegularCandidate = (row: Entity & RegularPersistence): unknown =>
   ({
     id: row.id,
     civility: row.civility,
     firstname: row.firstname == null ? undefined : row.firstname,
     lastname: row.lastname,
     phones: row.phones == null ? undefined : row.phones,
-    home: row.home == null ? undefined : row.home,
-    destinations: row.destinations == null ? undefined : row.destinations,
-    commentary: row.commentary == null ? undefined : row.commentary,
+    waypoints: row.waypoints == null ? undefined : row.waypoints,
+    comment: row.comment == null ? undefined : row.comment,
     subcontractedClient: row.subcontracted_client == null ? undefined : row.subcontracted_client
-  } satisfies Entity & RegularDetails);
+  } satisfies Entity & Regular);

@@ -5,8 +5,8 @@ export const toPending = (fare: ToEdit | ToSchedule): Pending => ({
   datetime: toZeroedTimeIso8601(fare.datetime),
   nature: fare.nature,
   driver: fare.driver,
-  departure: fare.destination,
-  destination: fare.departure,
+  departure: fare.arrival,
+  arrival: fare.departure,
   status: 'pending-return',
   kind: 'two-way'
 });

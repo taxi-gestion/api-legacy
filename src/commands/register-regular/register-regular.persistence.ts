@@ -12,11 +12,11 @@ import type { PostgresDb } from '@fastify/postgres';
 import { Errors } from '../../reporter';
 import { RegularToRegisterPersist } from './register-regular.route';
 import { onDatabaseError } from '../../errors';
-import { fromDBtoRegularDetailsCandidate } from '../../mappers';
-import { RegularDetailsPersistence } from '../../definitions';
+import { fromDBtoRegularCandidate } from '../../mappers';
+import { RegularPersistence } from '../../definitions';
 
 type RegularToRegisterPersistReady = {
-  regularToCreate: RegularDetailsPersistence;
+  regularToCreate: RegularPersistence;
 };
 
 export const persistRegisterRegular =
@@ -39,15 +39,14 @@ const insertRegular =
 
 const insertRegularQuery =
   (client: PoolClient) =>
-  async (regularPg: RegularDetailsPersistence): Promise<QueryResult> =>
+  async (regularPg: RegularPersistence): Promise<QueryResult> =>
     client.query(insertRegularQueryString, [
       regularPg.civility,
       regularPg.firstname,
       regularPg.lastname,
       regularPg.phones,
-      regularPg.home,
-      regularPg.destinations,
-      regularPg.commentary,
+      regularPg.waypoints,
+      regularPg.comment,
       regularPg.subcontracted_client
     ]);
 
@@ -57,12 +56,11 @@ const insertRegularQueryString: string = `
           firstname,
           lastname,
           phones,
-          home,
-          destinations,
-          commentary,
+          waypoints,
+          comment,
           subcontracted_client
       ) VALUES (
-          $1, $2, $3, $4::jsonb[], $5::jsonb, $6::jsonb[], $7, $8
+          $1, $2, $3, $4::jsonb[], $5::jsonb[], $6, $7
       )
       RETURNING *
     `;
@@ -76,5 +74,5 @@ const toPersistence = ({ regularToCreate }: RegularToRegisterPersist): RegularTo
 });
 
 const toTransfer = (queriesResults: QueryResult[]): unknown => ({
-  regularRegistered: [queriesResults[0]?.rows[0]].map(fromDBtoRegularDetailsCandidate)[0]
+  regularRegistered: [queriesResults[0]?.rows[0]].map(fromDBtoRegularCandidate)[0]
 });
