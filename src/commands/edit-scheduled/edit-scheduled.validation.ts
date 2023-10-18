@@ -2,15 +2,15 @@ import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { Entity, FaresEdited, ScheduledPersistence, ToEdit } from '../../definitions';
+import { EditScheduled, Entity, ScheduledPersistence, ToScheduledEdited } from '../../definitions';
 import { type as ioType, Type, union as ioUnion, undefined as ioUndefined } from 'io-ts';
-import { FaresToEdit } from './edit-fare.route';
+import { FaresToEdit } from './edit-scheduled.route';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
 import {
   entityCodec,
   externalTypeCheckFor,
-  faresEditedCodec,
-  fareToEditCodec,
+  scheduledEditedCodec,
+  scheduledToEditCodec,
   scheduledFareCodec,
   toEditCodec
 } from '../../codecs';
@@ -23,19 +23,19 @@ export const $faresToEditValidation =
   (transfer: unknown): TaskEither<Errors, FaresToEdit> =>
     pipe(
       transfer,
-      externalTypeCheckFor<Entity & ToEdit>(fareToEditCodec),
+      externalTypeCheckFor<Entity & ToScheduledEdited>(scheduledToEditCodec),
       fromEither,
-      taskEitherChain($checkFareToEditExist(db)),
+      taskEitherChain($checkScheduledToEditExist(db)),
       taskEitherChain(typeCheck),
       taskEitherChain(rulesCheck)
     );
 
-export const editedFaresValidation = (transfer: unknown): TaskEither<Errors, FaresEdited> =>
-  pipe(transfer, externalTypeCheckFor<FaresEdited>(faresEditedCodec), fromEither);
+export const editedFaresValidation = (transfer: unknown): TaskEither<Errors, EditScheduled> =>
+  pipe(transfer, externalTypeCheckFor<EditScheduled>(scheduledEditedCodec), fromEither);
 
-const $checkFareToEditExist =
+const $checkScheduledToEditExist =
   (db: PostgresDb) =>
-  (transfer: Entity & ToEdit): TaskEither<Errors, unknown> =>
+  (transfer: Entity & ToScheduledEdited): TaskEither<Errors, unknown> =>
     taskEitherTryCatch(async (): Promise<unknown> => {
       const {
         id: scheduledId,
@@ -55,16 +55,16 @@ const $checkFareToEditExist =
       ).rows;
 
       return {
-        toEdit: toEdit as ToEdit,
+        toEdit: toEdit as ToScheduledEdited,
         scheduledToEdit: fromDBtoScheduledCandidate(scheduledToEdit),
         pendingToDelete
       };
-    }, $onInfrastructureOrValidationError(`$checkFareToEditExist`));
+    }, $onInfrastructureOrValidationError(`$checkScheduledToEditExist`));
 
 const typeCheck = (fromDB: unknown): TaskEither<Errors, FaresToEdit> => fromEither(faresToEditCodec.decode(fromDB));
 
-const rulesCheck = (fareToEdit: FaresToEdit): TaskEither<Errors, FaresToEdit> =>
-  fromEither(faresToEditRulesCodec.decode(fareToEdit));
+const rulesCheck = (scheduledToEdit: FaresToEdit): TaskEither<Errors, FaresToEdit> =>
+  fromEither(faresToEditRulesCodec.decode(scheduledToEdit));
 
 const faresToEditCodec: Type<FaresToEdit> = ioType({
   toEdit: toEditCodec,

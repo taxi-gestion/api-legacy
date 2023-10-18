@@ -3,8 +3,8 @@ import { map as taskEitherMap, TaskEither } from 'fp-ts/TaskEither';
 import { Errors } from '../../reporter';
 import { RegularToEdit, RegularToEditPersist } from './edit-regular.route';
 
-export const editRegular = (fareToEdit: TaskEither<Errors, RegularToEdit>): TaskEither<Errors, RegularToEditPersist> =>
-  pipe(fareToEdit, taskEitherMap(applyEdit));
+export const editRegular = (scheduledToEdit: TaskEither<Errors, RegularToEdit>): TaskEither<Errors, RegularToEditPersist> =>
+  pipe(scheduledToEdit, taskEitherMap(applyEdit));
 
 const applyEdit = ({ toEdit, regularToEdit }: RegularToEdit): RegularToEditPersist => ({
   regularToEdit: {

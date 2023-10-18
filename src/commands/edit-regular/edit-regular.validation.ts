@@ -2,7 +2,7 @@ import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { Entity, Regular, RegularPersistence, RegularEdited } from '../../definitions';
+import { EditRegular, Entity, Regular, RegularPersistence } from '../../definitions';
 import { intersection as ioIntersection, Type, type as ioType } from 'io-ts';
 import { RegularToEdit } from './edit-regular.route';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
@@ -23,8 +23,8 @@ export const $regularToEditValidation =
       taskEitherChain(rulesCheck)
     );
 
-export const editedRegularValidation = (transfer: unknown): TaskEither<Errors, RegularEdited> =>
-  pipe(transfer, externalTypeCheckFor<RegularEdited>(regularEditedCodec), fromEither);
+export const editedRegularValidation = (transfer: unknown): TaskEither<Errors, EditRegular> =>
+  pipe(transfer, externalTypeCheckFor<EditRegular>(regularEditedCodec), fromEither);
 
 const $checkRegularToEditExist =
   (db: PostgresDb) =>

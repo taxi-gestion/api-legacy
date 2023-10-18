@@ -6,34 +6,35 @@ import { chain as taskEitherChain, fromEither, map as taskEitherMap, tryCatch as
 import { PoolClient, QueryResult } from 'pg';
 import { Errors } from '../../reporter';
 import { onDatabaseError } from '../../errors';
-import { fromDBtoSubcontractedCandidate } from '../../mappers';
+import { fromDBtoUnassignedCandidate } from '../../mappers';
 
-export const subcontractedFaresForTheDatePersistenceQuery =
+export const unassignedFaresForTheDatePersistenceQuery =
   (database: PostgresDb) =>
   (date: Either<Errors, string>): TaskEither<Errors, unknown> =>
     pipe(date, fromEither, taskEitherChain(selectFaresForDate(database)), taskEitherMap(toTransfer));
 
+const toTransfer = (queryResult: QueryResult): unknown => queryResult.rows.map(fromDBtoUnassignedCandidate);
+
 const selectFaresForDate =
   (database: PostgresDb) =>
   (date: string): TaskEither<Errors, QueryResult> =>
-    taskEitherTryCatch(selectFromFares(database)(date), onDatabaseError(`subcontractedFaresForTheDatePersistenceQuery`));
+    taskEitherTryCatch(selectFromFares(database)(date), onDatabaseError(`unassignedFaresForTheDatePersistenceQuery`));
 
 const selectFromFares = (database: PostgresDb) => (date: string) => async (): Promise<QueryResult> => {
   const client: PoolClient = await database.connect();
   try {
-    return await selectSubcontractedFaresWhereDateQuery(client)(date);
+    return await selectUnassignedFaresWhereDateQuery(client)(date);
   } finally {
     client.release();
   }
 };
 
-const selectSubcontractedFaresWhereDateQuery =
+const selectUnassignedFaresWhereDateQuery =
   (client: PoolClient) =>
   async (date: string): Promise<QueryResult> =>
-    client.query(selectSubcontractedFaresWhereDateQueryString, [date]);
+    client.query(selectFaresWhereDateQueryString, [date]);
 
-const selectSubcontractedFaresWhereDateQueryString: string = `
-      SELECT * FROM subcontracted_fares WHERE datetime >= $1::DATE AND datetime < ($1::DATE + INTERVAL '1 day')
-    `;
-
-const toTransfer = (queryResult: QueryResult): unknown => queryResult.rows.map(fromDBtoSubcontractedCandidate);
+const selectFaresWhereDateQueryString: string = `
+  SELECT * FROM unassigned_fares 
+  WHERE datetime >= $1::DATE AND datetime < ($1::DATE + INTERVAL '1 day')
+`;

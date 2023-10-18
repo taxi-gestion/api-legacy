@@ -5,29 +5,15 @@ import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, map as taskEitherMap, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors } from '../../reporter';
-import { Entity, ScheduledPersistence } from '../../definitions';
-import { addDays, subHours } from 'date-fns';
 import { onDatabaseError } from '../../errors';
+import { fromDBtoScheduledCandidate } from '../../mappers';
 
 export const scheduledFaresForTheDatePersistenceQuery =
   (database: PostgresDb) =>
   (date: Either<Errors, string>): TaskEither<Errors, unknown> =>
     pipe(date, fromEither, taskEitherChain(selectFaresForDate(database)), taskEitherMap(toTransfer));
 
-const toTransfer = (queryResult: QueryResult): unknown =>
-  queryResult.rows.map((row: Entity & ScheduledPersistence): unknown => ({
-    id: row.id,
-    passenger: row.passenger,
-    datetime: row.datetime,
-    departure: row.departure,
-    arrival: row.arrival,
-    distance: Number(row.distance),
-    driver: row.driver,
-    duration: Number(row.duration),
-    kind: row.kind,
-    nature: row.nature,
-    status: 'scheduled'
-  }));
+const toTransfer = (queryResult: QueryResult): unknown => queryResult.rows.map(fromDBtoScheduledCandidate);
 
 const selectFaresForDate =
   (database: PostgresDb) =>
@@ -43,19 +29,11 @@ const selectFromFares = (database: PostgresDb) => (date: string) => async (): Pr
   }
 };
 
-const adjustFrenchDateToUTC = (date: Date): string => {
-  const adjustedDate: Date = subHours(date, 2);
-  return adjustedDate.toISOString();
-};
-
 const selectScheduledFaresWhereDateQuery =
   (client: PoolClient) =>
-  async (date: string): Promise<QueryResult> => {
-    const startOfDayUTC: string = adjustFrenchDateToUTC(new Date(date));
-    const endOfDayUTC: string = adjustFrenchDateToUTC(addDays(new Date(date), 1));
-    return client.query(selectFaresWhereDateQueryString, [startOfDayUTC, endOfDayUTC]);
-  };
+  async (date: string): Promise<QueryResult> =>
+    client.query(selectFaresWhereDateQueryString, [date]);
 
 const selectFaresWhereDateQueryString: string = `
-      SELECT * FROM scheduled_fares WHERE datetime >= $1 AND datetime < $2
+      SELECT * FROM scheduled_fares WHERE datetime >= $1::DATE AND datetime < ($1::DATE + INTERVAL '1 day')
     `;

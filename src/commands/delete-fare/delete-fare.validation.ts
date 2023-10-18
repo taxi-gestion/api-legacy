@@ -3,11 +3,11 @@ import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { FaresToDelete } from './delete-fare.route';
-import { type as ioType, Type, union as ioUnion, undefined as ioUndefined } from 'io-ts';
+import { type as ioType, Type, undefined as ioUndefined, union as ioUnion } from 'io-ts';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
 import { entityCodec, externalTypeCheckFor, faresDeletedCodec, stringCodec } from '../../codecs';
-import { Entity, FaresDeleted } from '../../definitions';
-import { isDefinedGuard } from '../../domain';
+import { DeleteFare, Entity } from '../../definitions';
+import { QueryResult } from 'pg';
 
 export const $fareToDeleteValidation =
   (db: PostgresDb) =>
@@ -20,8 +20,8 @@ export const $fareToDeleteValidation =
       taskEitherChain(typeCheck)
     );
 
-export const deletedValidation = (transfer: unknown): TaskEither<Errors, FaresDeleted> =>
-  pipe(transfer, externalTypeCheckFor<FaresDeleted>(faresDeletedCodec), fromEither);
+export const deletedValidation = (transfer: unknown): TaskEither<Errors, DeleteFare> =>
+  pipe(transfer, externalTypeCheckFor<DeleteFare>(faresDeletedCodec), fromEither);
 
 const $checkEntitiesToDeleteExist =
   (db: PostgresDb) =>
@@ -31,23 +31,49 @@ const $checkEntitiesToDeleteExist =
 const typeCheck = (fromDB: unknown): TaskEither<Errors, FaresToDelete> => fromEither(toDeleteTransferCodec.decode(fromDB));
 
 const toDeleteTransferCodec: Type<FaresToDelete> = ioType({
-  scheduledToDelete: entityCodec,
+  scheduledToDelete: ioUnion([entityCodec, ioUndefined]),
+  unassignedToDelete: ioUnion([entityCodec, ioUndefined]),
   pendingToDelete: ioUnion([entityCodec, ioUndefined])
 });
 
-const toDeleteCandidate = (db: PostgresDb, scheduledId: string) => async (): Promise<unknown> => {
-  const [scheduledToDelete]: (Entity | undefined)[] = (
-    await db.query<Entity>('SELECT id FROM scheduled_fares WHERE id = $1 LIMIT 1', [scheduledId])
-  ).rows;
+const fetchSingleEntity = async (
+  db: PostgresDb,
+  table: string,
+  conditionColumn: string,
+  id: string
+): Promise<Entity | undefined> => {
+  const query: string = `SELECT id FROM ${table} WHERE ${conditionColumn} = $1 LIMIT 1`;
+  const results: QueryResult<Entity> = await db.query<Entity>(query, [id]);
+  return results.rows[0];
+};
 
-  if (!isDefinedGuard(scheduledToDelete)) return throwEntityNotFoundValidationError(scheduledId);
+const fetchFaresToDelete = async (db: PostgresDb, fareToDeleteId: string): Promise<(Entity | undefined)[]> =>
+  Promise.all([
+    fetchSingleEntity(db, 'pending_returns', 'id', fareToDeleteId),
+    fetchSingleEntity(db, 'unassigned_fares', 'id', fareToDeleteId),
+    fetchSingleEntity(db, 'scheduled_fares', 'id', fareToDeleteId)
+  ]);
 
-  const [pendingToDelete]: (Entity | undefined)[] = (
-    await db.query<Entity>('SELECT id FROM pending_returns WHERE outward_fare_id = $1 LIMIT 1', [scheduledId])
-  ).rows;
+const fetchRelatedPendingReturns = async (db: PostgresDb, fareToDeleteId: string): Promise<Entity | undefined> =>
+  fetchSingleEntity(db, 'pending_returns', 'outward_fare_id', fareToDeleteId);
 
+const toDeleteCandidate = (db: PostgresDb, fareToDeleteId: string) => async (): Promise<unknown> => {
+  const [pendingToDelete, unassignedToDelete, scheduledToDelete]: (Entity | undefined)[] = await fetchFaresToDelete(
+    db,
+    fareToDeleteId
+  );
+
+  if (pendingToDelete !== undefined) return { pendingToDelete };
+
+  if (noValidEntities(scheduledToDelete, unassignedToDelete)) return throwEntityNotFoundValidationError(fareToDeleteId);
+
+  const relatedPendingToDelete: Entity | undefined = await fetchRelatedPendingReturns(db, fareToDeleteId);
   return {
     scheduledToDelete,
-    pendingToDelete
+    unassignedToDelete,
+    pendingToDelete: relatedPendingToDelete
   };
 };
+
+const noValidEntities = (scheduled: Entity | undefined, unassigned: Entity | undefined): boolean =>
+  unassigned === undefined && scheduled === undefined;

@@ -4,8 +4,13 @@ import type { PostgresDb } from '@fastify/postgres';
 import { Errors } from '../../reporter';
 import { Entity, Pending, PendingPersistence, ScheduledPersistence } from '../../definitions';
 import { pipe } from 'fp-ts/lib/function';
-import { EditedToPersist } from './edit-fare.route';
-import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate } from '../../mappers';
+import { EditedToPersist } from './edit-scheduled.route';
+import {
+  fromDBtoPendingCandidate,
+  fromDBtoScheduledCandidate,
+  toPendingPersistence,
+  toScheduledEntityPersistence
+} from '../../mappers';
 import { onDatabaseError } from '../../errors';
 
 export const persistEditedFares =
@@ -19,7 +24,7 @@ const applyQueries =
   async (): Promise<QueryResult[]> =>
     database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
       const promises: Promise<QueryResult>[] = [
-        updateScheduledFareQuery(client)(scheduledToEdit),
+        updateScheduledFareQuery(client)(toScheduledEntityPersistence(scheduledToEdit)),
         ...insertPendingToCreateQueryOrEmpty(client)(pendingToCreate, scheduledToEdit.id),
         ...insertPendingToDeleteQueryOrEmpty(client)(pendingToDelete)
       ];
@@ -30,7 +35,9 @@ const applyQueries =
 const insertPendingToCreateQueryOrEmpty =
   (client: PoolClient) =>
   (pendingToCreate: Pending | undefined, outwardFareId: string): [] | [Promise<QueryResult>] =>
-    pendingToCreate === undefined ? [] : [insertPendingQuery(client)({ ...pendingToCreate, outwardFareId })];
+    pendingToCreate === undefined
+      ? []
+      : [insertPendingQuery(client)(toPendingPersistence({ ...pendingToCreate, outwardFareId }))];
 
 const insertPendingToDeleteQueryOrEmpty =
   (client: PoolClient) =>
@@ -50,8 +57,7 @@ const updateScheduledFareQuery =
       farePg.driver,
       farePg.duration,
       farePg.kind,
-      farePg.nature,
-      farePg.status
+      farePg.nature
     ]);
 
 const updateFareQueryString: string = `
@@ -65,8 +71,7 @@ const updateFareQueryString: string = `
           driver = $7,
           duration = $8,
           kind = $9,
-          nature = $10,
-          status = $11
+          nature = $10
       WHERE id = $1
       RETURNING *
     `;

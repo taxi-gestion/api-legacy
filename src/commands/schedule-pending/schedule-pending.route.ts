@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
-import { Entity, Pending, PendingScheduled, ReturnDrive, Scheduled } from '../../definitions';
+import { Entity, Pending, PendingToScheduled, Scheduled, CommandResult } from '../../definitions';
 import { $schedulePendingValidation, scheduledPendingValidation } from './schedule-pending.validation';
 import { schedulePending } from './schedule-pending';
 import { persistPendingScheduled } from './schedule-pending.persistence';
@@ -9,11 +9,11 @@ import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 
 export type ReturnToScheduleRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  Body: Entity & ReturnDrive;
+  Body: Entity & PendingToScheduled;
 }>;
 
 export type PendingToSchedule = {
-  driveToSchedule: ReturnDrive;
+  driveToSchedule: PendingToScheduled;
   pendingToDelete: Entity & Pending;
 };
 
@@ -36,7 +36,7 @@ export const schedulePendingCommand = async (
         schedulePending,
         taskEitherChain(persistPendingScheduled(server.pg)),
         taskEitherChain(scheduledPendingValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<PendingScheduled>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandResult<'schedule-pending'>>)
       )();
     }
   });

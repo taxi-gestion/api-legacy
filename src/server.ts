@@ -16,7 +16,7 @@ import { scheduledFaresForTheDateQuery } from './queries/scheduled-fares-for-dat
 import { listDriversQuery } from './queries/list-drivers/list-drivers.route';
 import { registerRegularCommand } from './commands/register-regular/register-regular.route';
 import { deleteFareCommand } from './commands/delete-fare/delete-fare.route';
-import { editFareCommand } from './commands/edit-fare/edit-fare.route';
+import { editScheduledCommand } from './commands/edit-scheduled/edit-scheduled.route';
 import { subcontractFareCommand } from './commands/subcontract-fare/subcontract-fare.route';
 import { subcontractedFaresForTheDateQuery } from './queries/subcontracted-fares-for-date/subcontracted-fares-for-date.route';
 import { schedulePendingCommand } from './commands/schedule-pending/schedule-pending.route';
@@ -30,6 +30,11 @@ import { listDriversWithDisplayOrderQuery } from './queries/list-drivers-with-or
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 import { Errors } from './reporter';
 import { Driver, Entity } from './definitions';
+import { validateTableQuery } from './queries/validate-data/validate-data.route';
+import { faresCountForTheDateQuery } from './queries/fares-count-for-date/fares-count-for-date.route';
+import { allocateUnassignedCommand } from './commands/allocate-unassigned/allocate-unassigned.route';
+import { scheduleUnassignedCommand } from './commands/schedule-unassigned/schedule-unassigned.route';
+import { unassignedFaresForTheDateQuery } from './queries/unassigned-fares-for-date/unassigned-fares-for-date.route';
 
 const server: FastifyInstance = fastify();
 
@@ -51,33 +56,16 @@ server.get('/', async (_request: FastifyRequest, _reply: FastifyReply): Promise<
 server.get('/health', async (_request: FastifyRequest, _reply: FastifyReply): Promise<string> => 'OK\n');
 
 /* eslint-disable @typescript-eslint/no-floating-promises */
+//Queries
 server.register(databaseStatusQuery, { prefix });
-server.register(pendingReturnsForTheDateQuery, { prefix });
-server.register(scheduledFaresForTheDateQuery, { prefix });
-server.register(scheduleFareCommand, { prefix });
-server.register(editFareCommand, { prefix });
-server.register(subcontractFareCommand, { prefix });
-server.register(schedulePendingCommand, { prefix });
-server.register(registerRegularCommand, { prefix });
-server.register(deleteRegularCommand, { prefix });
-server.register(editRegularCommand, { prefix });
-server.register(deleteFareCommand, { prefix });
-server.register(subcontractedFaresForTheDateQuery, { prefix });
-server.register(predictRecurrenceQuery, {
-  adapter: $openAIPredictRecurrence(process.env['API_KEY_OPENAI'] ?? ''),
-  prefix
-});
-server.register(searchPlaceQuery, {
-  adapter: $googleMapsSearchPlace(process.env['API_KEY_GOOGLE_MAPS'] ?? ''),
-  prefix
-});
+server.register(driverAgendaForTheDateQuery, { prefix });
+
 server.register(estimateJourneyQuery, {
   adapter: $googleMapsEstimateJourney(process.env['API_KEY_GOOGLE_MAPS'] ?? ''),
   prefix
 });
-server.register(searchRegularQuery, { prefix });
-server.register(driverAgendaForTheDateQuery, { prefix });
-server.register(regularByIdQuery, { prefix });
+
+server.register(faresCountForTheDateQuery, { prefix });
 
 const awsCognitoListUsersInGroupDriver: () => TaskEither<Errors, (Driver & Entity)[]> = $awsCognitoListUsersInGroupDriver(
   {
@@ -100,6 +88,37 @@ server.register(listDriversWithDisplayOrderQuery, {
   prefix
 });
 
+server.register(pendingReturnsForTheDateQuery, { prefix });
+
+server.register(predictRecurrenceQuery, {
+  adapter: $openAIPredictRecurrence(process.env['API_KEY_OPENAI'] ?? ''),
+  prefix
+});
+
+server.register(regularByIdQuery, { prefix });
+server.register(scheduledFaresForTheDateQuery, { prefix });
+
+server.register(searchPlaceQuery, {
+  adapter: $googleMapsSearchPlace(process.env['API_KEY_GOOGLE_MAPS'] ?? ''),
+  prefix
+});
+
+server.register(searchRegularQuery, { prefix });
+server.register(subcontractedFaresForTheDateQuery, { prefix });
+server.register(unassignedFaresForTheDateQuery, { prefix });
+server.register(validateTableQuery, { prefix });
+
+//Commands
+server.register(allocateUnassignedCommand, { prefix });
+server.register(deleteFareCommand, { prefix });
+server.register(deleteRegularCommand, { prefix });
+server.register(editRegularCommand, { prefix });
+server.register(editScheduledCommand, { prefix });
+server.register(registerRegularCommand, { prefix });
+server.register(scheduleFareCommand, { prefix });
+server.register(schedulePendingCommand, { prefix });
+server.register(scheduleUnassignedCommand, { prefix });
+server.register(subcontractFareCommand, { prefix });
 /* eslint-enable @typescript-eslint/no-floating-promises */
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

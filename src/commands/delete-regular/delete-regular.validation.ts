@@ -6,7 +6,7 @@ import { RegularToDelete } from './delete-regular.route';
 import { type as ioType, Type } from 'io-ts';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
 import { entityCodec, externalTypeCheckFor, regularDeletedCodec, stringCodec } from '../../codecs';
-import { Entity, RegularDeleted } from '../../definitions';
+import { DeleteRegular, Entity } from '../../definitions';
 import { isDefinedGuard } from '../../domain';
 
 export const $regularToDeleteValidation =
@@ -20,8 +20,8 @@ export const $regularToDeleteValidation =
       taskEitherChain(typeCheck)
     );
 
-export const deletedValidation = (transfer: unknown): TaskEither<Errors, RegularDeleted> =>
-  pipe(transfer, externalTypeCheckFor<RegularDeleted>(regularDeletedCodec), fromEither);
+export const deletedValidation = (transfer: unknown): TaskEither<Errors, DeleteRegular> =>
+  pipe(transfer, externalTypeCheckFor<DeleteRegular>(regularDeletedCodec), fromEither);
 
 const $checkEntitiesToDeleteExist =
   (db: PostgresDb) =>

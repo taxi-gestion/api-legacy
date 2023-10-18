@@ -2,7 +2,7 @@ import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
-import { Entity, PendingPersistence, PendingScheduled, ReturnDrive } from '../../definitions';
+import { Entity, PendingPersistence, PendingToScheduled, SchedulePending } from '../../definitions';
 import { entityCodec, externalTypeCheckFor, pendingReturnCodec, pendingScheduledCodec, returnDriveCodec } from '../../codecs';
 import { PendingToSchedule } from './schedule-pending.route';
 import { intersection as ioIntersection, Type, type as ioType } from 'io-ts';
@@ -16,19 +16,19 @@ export const $schedulePendingValidation =
   (transfer: unknown): TaskEither<Errors, PendingToSchedule> =>
     pipe(
       transfer,
-      externalTypeCheckFor<Entity & ReturnDrive>(returnDriveAndPendingEntityCodec),
+      externalTypeCheckFor<Entity & PendingToScheduled>(returnDriveAndPendingEntityCodec),
       fromEither,
       taskEitherChain($checkPendingToScheduleExist(db)),
       taskEitherChain(typeCheck),
       taskEitherChain(rulesCheck)
     );
 
-export const scheduledPendingValidation = (transfer: unknown): TaskEither<Errors, PendingScheduled> =>
-  pipe(transfer, externalTypeCheckFor<PendingScheduled>(pendingScheduledCodec), fromEither);
+export const scheduledPendingValidation = (transfer: unknown): TaskEither<Errors, SchedulePending> =>
+  pipe(transfer, externalTypeCheckFor<SchedulePending>(pendingScheduledCodec), fromEither);
 
 const $checkPendingToScheduleExist =
   (db: PostgresDb) =>
-  (transfer: Entity & ReturnDrive): TaskEither<Errors, unknown> =>
+  (transfer: Entity & PendingToScheduled): TaskEither<Errors, unknown> =>
     taskEitherTryCatch(async (): Promise<unknown> => {
       const {
         id: pendingId,
@@ -55,7 +55,7 @@ const typeCheck = (transfer: unknown): TaskEither<Errors, PendingToSchedule> =>
 const rulesCheck = (pendingToSchedule: PendingToSchedule): TaskEither<Errors, PendingToSchedule> =>
   fromEither(pendingToScheduleRulesCodec.decode(pendingToSchedule));
 
-const returnDriveAndPendingEntityCodec: Type<Entity & ReturnDrive> = ioIntersection([entityCodec, returnDriveCodec]);
+const returnDriveAndPendingEntityCodec: Type<Entity & PendingToScheduled> = ioIntersection([entityCodec, returnDriveCodec]);
 
 const pendingToScheduleCodec: Type<PendingToSchedule> = ioType({
   driveToSchedule: returnDriveCodec,

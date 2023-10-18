@@ -4,9 +4,9 @@ import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEith
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { persistDeleteFares } from './delete-fare.persistence';
 import { $fareToDeleteValidation, deletedValidation } from './delete-fare.validation';
-import { Entity, FaresDeleted } from '../../definitions';
+import { CommandResult, Entity } from '../../definitions';
 
-export type ScheduledToDeleteRequest = FastifyRequest<{
+export type FareToDeleteRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Params: {
     id: string;
@@ -14,8 +14,9 @@ export type ScheduledToDeleteRequest = FastifyRequest<{
 }>;
 
 export type FaresToDelete = {
-  scheduledToDelete: Entity;
+  scheduledToDelete: Entity | undefined;
   pendingToDelete: Entity | undefined;
+  unassignedToDelete: Entity | undefined;
 };
 
 export const deleteFareCommand = async (
@@ -25,13 +26,13 @@ export const deleteFareCommand = async (
   server.route({
     method: 'DELETE',
     url: '/fare/delete/:id',
-    handler: async (req: ScheduledToDeleteRequest, reply: FastifyReply): Promise<void> => {
+    handler: async (req: FareToDeleteRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         req.params.id,
         $fareToDeleteValidation(server.pg),
         taskEitherChain(persistDeleteFares(server.pg)),
         taskEitherChain(deletedValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<FaresDeleted>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandResult<'delete-fare'>>)
       )();
     }
   });
