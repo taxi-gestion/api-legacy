@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { registeredRegularValidation, registerRegularValidation } from './register-regular.validation';
-import { Regular, RegularRegistered } from '../../definitions';
+import { CommandResult, Regular } from '../../definitions';
 import { persistRegisterRegular } from './register-regular.persistence';
 import { registerRegular } from './register-regular';
 
@@ -34,7 +34,7 @@ export const registerRegularCommand = async (
         registerRegular,
         persistRegisterRegular(server.pg),
         taskEitherChain(registeredRegularValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<RegularRegistered>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandResult<'register-regular'>>)
       )();
     }
   });

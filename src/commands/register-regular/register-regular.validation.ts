@@ -5,14 +5,14 @@ import { externalTypeCheckFor, regularCodec, regularRegisteredCodec } from '../.
 import { RegularToRegister } from './register-regular.route';
 import { fromEither, TaskEither } from 'fp-ts/TaskEither';
 import { Errors } from '../../reporter';
-import { RegularRegistered } from '../../definitions';
+import { RegisterRegular } from '../../definitions';
 import { regularRulesCodec } from '../../rules';
 
 export const registerRegularValidation = (transfer: unknown): Either<Errors, RegularToRegister> =>
   pipe({ toRegister: transfer }, externalTypeCheckFor<RegularToRegister>(regularToRegisterCodec), eitherChain(rulesCheck));
 
-export const registeredRegularValidation = (transfer: unknown): TaskEither<Errors, RegularRegistered> =>
-  pipe(transfer, externalTypeCheckFor<RegularRegistered>(regularRegisteredCodec), fromEither);
+export const registeredRegularValidation = (transfer: unknown): TaskEither<Errors, RegisterRegular> =>
+  pipe(transfer, externalTypeCheckFor<RegisterRegular>(regularRegisteredCodec), fromEither);
 
 const rulesCheck = (regular: RegularToRegister): Either<Errors, RegularToRegister> =>
   regularToRegisterRulesCodec.decode(regular);

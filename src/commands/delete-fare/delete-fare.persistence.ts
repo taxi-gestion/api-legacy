@@ -6,7 +6,8 @@ import { Entity } from '../../definitions';
 import { FaresToDelete } from './delete-fare.route';
 import { onDatabaseError } from '../../errors';
 import { pipe } from 'fp-ts/lib/function';
-import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate } from '../../mappers';
+import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate, fromDBtoUnassignedCandidate } from '../../mappers';
+import { deleteFareEntityQuery } from '../_common/shared-queries.persistence';
 
 export const persistDeleteFares =
   (database: PostgresDb) =>
@@ -15,40 +16,26 @@ export const persistDeleteFares =
 
 const applyQueries =
   (database: PostgresDb) =>
-  ({ scheduledToDelete, pendingToDelete }: FaresToDelete) =>
-  async (): Promise<QueryResult[]> =>
+  ({ scheduledToDelete, pendingToDelete, unassignedToDelete }: FaresToDelete) =>
+  async (): Promise<(QueryResult | undefined)[]> =>
     database.transact(
-      async (client: PoolClient): Promise<QueryResult[]> =>
+      async (client: PoolClient): Promise<(QueryResult | undefined)[]> =>
         Promise.all([
-          deleteScheduledFareQuery(client)(scheduledToDelete),
-          ...removePendingReturnQueryOrEmpty(client)(pendingToDelete)
+          queryOrEmpty(client, 'scheduled_fares')(scheduledToDelete),
+          queryOrEmpty(client, 'pending_returns')(pendingToDelete),
+          queryOrEmpty(client, 'unassigned_fares')(unassignedToDelete)
         ])
     );
 
-const removePendingReturnQueryOrEmpty =
-  (client: PoolClient) =>
-  (returnToDelete: Entity | undefined): [] | [Promise<QueryResult>] =>
-    returnToDelete === undefined ? [] : [removePendingReturnQuery(client)(returnToDelete)];
+const queryOrEmpty =
+  (client: PoolClient, tableName: string) =>
+  async (entity: Entity | undefined): Promise<QueryResult | undefined> =>
+    entity === undefined ? undefined : deleteFareEntityQuery(client, tableName)(entity);
 
-const deleteScheduledFareQuery =
-  (client: PoolClient) =>
-  async (farePg: Entity): Promise<QueryResult> =>
-    client.query(deleteScheduledFareQueryString, [farePg.id]);
-
-const deleteScheduledFareQueryString: string = `
-      DELETE FROM scheduled_fares WHERE id = $1 RETURNING *
-      `;
-
-const removePendingReturnQuery =
-  (client: PoolClient) =>
-  async (returnToDelete: Entity): Promise<QueryResult> =>
-    client.query(removePendingReturnQueryString, [returnToDelete.id]);
-
-const removePendingReturnQueryString: string = `
-  DELETE FROM pending_returns WHERE id = $1 RETURNING *
-`;
-
-const toTransfer = (queriesResults: QueryResult[]): unknown => ({
-  scheduledDeleted: [queriesResults[0]?.rows[0]].map(fromDBtoScheduledCandidate)[0],
-  pendingDeleted: queriesResults[1] === undefined ? undefined : [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0]
+const toTransfer = (queriesResults: (QueryResult | undefined)[]): unknown => ({
+  scheduledDeleted:
+    queriesResults[0] === undefined ? undefined : [queriesResults[0].rows[0]].map(fromDBtoScheduledCandidate)[0],
+  pendingDeleted: queriesResults[1] === undefined ? undefined : [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0],
+  unassignedDeleted:
+    queriesResults[2] === undefined ? undefined : [queriesResults[2].rows[0]].map(fromDBtoUnassignedCandidate)[0]
 });

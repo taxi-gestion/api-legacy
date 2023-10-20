@@ -5,27 +5,15 @@ import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, map as taskEitherMap, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors } from '../../reporter';
-import { Entity, PendingPersistence } from '../../definitions';
-import { addDays, subHours } from 'date-fns';
 import { onDatabaseError } from '../../errors';
+import { fromDBtoPendingCandidate } from '../../mappers';
 
 export const pendingReturnsForTheDateDatabaseQuery =
   (database: PostgresDb) =>
   (date: Either<Errors, string>): TaskEither<Errors, unknown> =>
     pipe(date, fromEither, taskEitherChain(selectPendingReturnsForDate(database)), taskEitherMap(toTransfer));
 
-const toTransfer = (queryResult: QueryResult): unknown =>
-  queryResult.rows.map((row: Entity & PendingPersistence): unknown => ({
-    id: row.id,
-    passenger: row.passenger,
-    datetime: row.datetime,
-    departure: row.departure,
-    arrival: row.arrival,
-    driver: row.driver,
-    kind: row.kind,
-    nature: row.nature,
-    status: 'pending-return'
-  }));
+const toTransfer = (queryResult: QueryResult): unknown => queryResult.rows.map(fromDBtoPendingCandidate);
 
 const selectPendingReturnsForDate =
   (database: PostgresDb) =>
@@ -41,19 +29,11 @@ const selectFromPendingReturns = (database: PostgresDb) => (date: string) => asy
   }
 };
 
-const adjustFrenchDateToUTC = (date: Date): string => {
-  const adjustedDate: Date = subHours(date, 2);
-  return adjustedDate.toISOString();
-};
-
 const selectPendingReturnsWhereDateQuery =
   (client: PoolClient) =>
-  async (date: string): Promise<QueryResult> => {
-    const startOfDayUTC: string = adjustFrenchDateToUTC(new Date(date));
-    const endOfDayUTC: string = adjustFrenchDateToUTC(addDays(new Date(date), 1));
-    return client.query(selectPendingReturnsWhereDateQueryString, [startOfDayUTC, endOfDayUTC]);
-  };
+  async (date: string): Promise<QueryResult> =>
+    client.query(selectPendingReturnsWhereDateQueryString, [date]);
 
 const selectPendingReturnsWhereDateQueryString: string = `
-      SELECT * FROM pending_returns WHERE datetime >= $1 AND datetime < $2
+      SELECT * FROM pending_returns WHERE datetime >= $1::DATE AND datetime < ($1::DATE + INTERVAL '1 day')
     `;

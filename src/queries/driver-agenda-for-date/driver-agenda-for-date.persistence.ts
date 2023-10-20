@@ -6,7 +6,6 @@ import { chain as taskEitherChain, fromEither, map as taskEitherMap, tryCatch as
 import { PoolClient, QueryResult } from 'pg';
 import { Errors } from '../../reporter';
 import { Entity, ScheduledPersistence } from '../../definitions';
-import { addDays, subHours } from 'date-fns';
 import { onDatabaseError } from '../../errors';
 import { DriverIdAndDate } from './driver-agenda-for-date.route';
 
@@ -44,19 +43,11 @@ const selectFromFares = (database: PostgresDb) => (parameters: DriverIdAndDate) 
   }
 };
 
-const adjustFrenchDateToUTC = (date: Date): string => {
-  const adjustedDate: Date = subHours(date, 2);
-  return adjustedDate.toISOString();
-};
-
 const selectFaresWhereDateAndDriverQuery =
   (client: PoolClient) =>
-  async (parameters: DriverIdAndDate): Promise<QueryResult> => {
-    const startOfDayUTC: string = adjustFrenchDateToUTC(new Date(parameters.date));
-    const endOfDayUTC: string = adjustFrenchDateToUTC(addDays(new Date(parameters.date), 1));
-    return client.query(selectFaresWhereDriverAndDateQueryString, [parameters.driverId, startOfDayUTC, endOfDayUTC]);
-  };
+  async (parameters: DriverIdAndDate): Promise<QueryResult> =>
+    client.query(selectFaresWhereDriverAndDateQueryString, [parameters.driverId, parameters.date]);
 
 const selectFaresWhereDriverAndDateQueryString: string = `
-      SELECT * FROM scheduled_fares WHERE (driver->>'id') = $1 AND datetime >= $2 AND datetime < $3
+      SELECT * FROM scheduled_fares WHERE (driver->>'id') = $1 AND datetime >= $2::DATE AND datetime < ($2::DATE + INTERVAL '1 day')
     `;

@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { Entity, RegularEdited, Regular } from '../../definitions';
+import { Entity, Regular, CommandResult } from '../../definitions';
 import { persistEditedRegular } from './edit-regular.persistence';
 import { $regularToEditValidation, editedRegularValidation } from './edit-regular.validation';
 import { editRegular } from './edit-regular';
@@ -35,7 +35,7 @@ export const editRegularCommand = async (
         editRegular,
         taskEitherChain(persistEditedRegular(server.pg)),
         taskEitherChain(editedRegularValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<RegularEdited>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandResult<'edit-regular'>>)
       )();
     }
   });

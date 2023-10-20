@@ -3,17 +3,17 @@ import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { fareToScheduleValidation, scheduledFaresValidation } from './schedule-fare.validation';
 import { scheduleFare } from './schedule-fare';
-import { FaresScheduled, Pending, Scheduled, ToSchedule } from '../../definitions';
+import { CommandResult, Pending, Scheduled, ToScheduled } from '../../definitions';
 import { persistScheduledFares } from './schedule-fare.persistence';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 
 type FareToScheduleRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  Body: ToSchedule;
+  Body: ToScheduled;
 }>;
 
 export type FareToSchedule = {
-  toSchedule: ToSchedule;
+  toSchedule: ToScheduled;
 };
 
 export type FaresToSchedulePersist = {
@@ -33,7 +33,7 @@ export const scheduleFareCommand = async (server: FastifyInstance): Promise<void
         scheduleFare,
         persistScheduledFares(server.pg),
         taskEitherChain(scheduledFaresValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<FaresScheduled>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandResult<'schedule-scheduled'>>)
       )();
     }
   });

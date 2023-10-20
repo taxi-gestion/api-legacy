@@ -12,9 +12,9 @@ type ServerAndProcess = {
 
 export const onSuccessfulTaskWith =
   (reply: FastifyReply) =>
-  <T>(recurrence: T): Task<void> =>
+  <T>(payload: T): Task<void> =>
   async (): Promise<void> =>
-    reply.code(200).send(recurrence);
+    reply.code(200).send(payload);
 
 export const onErroredTask =
   (reply: FastifyReply) =>

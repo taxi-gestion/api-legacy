@@ -5,7 +5,12 @@ import { Errors } from '../../reporter';
 import { Entity, SubcontractedPersistence } from '../../definitions';
 import { pipe } from 'fp-ts/lib/function';
 import { SubcontractedToPersist } from './subcontract-fare.route';
-import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate, fromDBtoSubcontractedCandidate } from '../../mappers';
+import {
+  fromDBtoPendingCandidate,
+  fromDBtoScheduledCandidate,
+  fromDBtoSubcontractedCandidate,
+  toSubcontractedPersistence
+} from '../../mappers';
 import { onDatabaseError } from '../../errors';
 
 export const persistSubcontractedFares =
@@ -22,7 +27,7 @@ const applyQueries =
   async (): Promise<QueryResult[]> =>
     database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
       const promises: Promise<QueryResult>[] = [
-        insertSubcontractedQuery(client)(subcontractedToPersist),
+        insertSubcontractedQuery(client)(toSubcontractedPersistence(subcontractedToPersist)),
         deleteScheduledQuery(client)(scheduledToDelete),
         ...insertPendingToDeleteQueryOrEmpty(client)(pendingToDelete)
       ];
@@ -47,8 +52,7 @@ const insertSubcontractedQuery =
       farePg.distance,
       farePg.duration,
       farePg.kind,
-      farePg.nature,
-      farePg.status
+      farePg.nature
     ]);
 
 const insertSubcontractedFareQueryString: string = `
@@ -61,10 +65,9 @@ const insertSubcontractedFareQueryString: string = `
           distance,
           duration,
           kind,
-          nature,
-          status
+          nature
       ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+          $1, $2, $3, $4, $5, $6, $7, $8, $9
       ) 
       RETURNING *
     `;

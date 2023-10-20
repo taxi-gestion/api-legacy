@@ -4,7 +4,7 @@ import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEith
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { persistDeleteRegular } from './delete-regular.persistence';
 import { $regularToDeleteValidation, deletedValidation } from './delete-regular.validation';
-import { Entity, RegularDeleted } from '../../definitions';
+import { CommandResult, Entity } from '../../definitions';
 
 export type RegularToDeleteRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -30,7 +30,7 @@ export const deleteRegularCommand = async (
         $regularToDeleteValidation(server.pg),
         taskEitherChain(persistDeleteRegular(server.pg)),
         taskEitherChain(deletedValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<RegularDeleted>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandResult<'delete-regular'>>)
       )();
     }
   });

@@ -2,18 +2,18 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { Entity, FaresEdited, Pending, Scheduled, ToEdit } from '../../definitions';
-import { persistEditedFares } from './edit-fare.persistence';
-import { $faresToEditValidation, editedFaresValidation } from './edit-fare.validation';
-import { editFare } from './edit-fare';
+import { CommandResult, Entity, Pending, Scheduled, ToScheduledEdited } from '../../definitions';
+import { persistEditedFares } from './edit-scheduled.persistence';
+import { $faresToEditValidation, editedFaresValidation } from './edit-scheduled.validation';
+import { editScheduled } from './edit-scheduled';
 
-export type EditFareRequest = FastifyRequest<{
+export type EditScheduledRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  Body: Entity & ToEdit;
+  Body: Entity & ToScheduledEdited;
 }>;
 
 export type FaresToEdit = {
-  toEdit: ToEdit;
+  toEdit: ToScheduledEdited;
   scheduledToEdit: Entity & Scheduled;
   pendingToDelete: Entity | undefined;
 };
@@ -24,21 +24,21 @@ export type EditedToPersist = {
   pendingToDelete: Entity | undefined;
 };
 
-export const editFareCommand = async (
+export const editScheduledCommand = async (
   server: FastifyInstance
   // eslint-disable-next-line @typescript-eslint/require-await
 ): Promise<void> => {
   server.route({
     method: 'POST',
     url: '/fare/edit',
-    handler: async (req: EditFareRequest, reply: FastifyReply): Promise<void> => {
+    handler: async (req: EditScheduledRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
         req.body,
         $faresToEditValidation(server.pg),
-        editFare,
+        editScheduled,
         taskEitherChain(persistEditedFares(server.pg)),
         taskEitherChain(editedFaresValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<FaresEdited>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandResult<'edit-scheduled'>>)
       )();
     }
   });
