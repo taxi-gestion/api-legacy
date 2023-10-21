@@ -58,6 +58,7 @@ server.get('/health', async (_request: FastifyRequest, _reply: FastifyReply): Pr
 /* eslint-disable @typescript-eslint/no-floating-promises */
 //Queries
 server.register(databaseStatusQuery, { prefix });
+
 server.register(driverAgendaForTheDateQuery, { prefix });
 
 server.register(estimateJourneyQuery, {
@@ -96,6 +97,7 @@ server.register(predictRecurrenceQuery, {
 });
 
 server.register(regularByIdQuery, { prefix });
+
 server.register(scheduledFaresForTheDateQuery, { prefix });
 
 server.register(searchPlaceQuery, {
