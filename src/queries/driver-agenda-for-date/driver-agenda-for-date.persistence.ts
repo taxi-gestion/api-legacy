@@ -5,29 +5,16 @@ import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, map as taskEitherMap, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
 import { Errors } from '../../reporter';
-import { Entity, ScheduledPersistence } from '../../definitions';
 import { onDatabaseError } from '../../errors';
 import { DriverIdAndDate } from './driver-agenda-for-date.route';
+import { fromDBtoScheduledCandidate } from '../../mappers';
 
 export const driverScheduledFareForTheDatePersistenceQuery =
   (database: PostgresDb) =>
   (parameters: Either<Errors, DriverIdAndDate>): TaskEither<Errors, unknown> =>
     pipe(parameters, fromEither, taskEitherChain(selectFaresForDriverAndDate(database)), taskEitherMap(toTransfer));
 
-const toTransfer = (queryResult: QueryResult): unknown =>
-  queryResult.rows.map((row: Entity & ScheduledPersistence): unknown => ({
-    id: row.id,
-    passenger: row.passenger,
-    datetime: row.datetime,
-    departure: row.departure,
-    arrival: row.arrival,
-    distance: Number(row.distance),
-    driver: row.driver,
-    duration: Number(row.duration),
-    kind: row.kind,
-    nature: row.nature,
-    status: 'scheduled'
-  }));
+const toTransfer = (queryResult: QueryResult): unknown => queryResult.rows.map(fromDBtoScheduledCandidate);
 
 const selectFaresForDriverAndDate =
   (database: PostgresDb) =>
