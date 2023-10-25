@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { fareToScheduleValidation, scheduledFaresValidation } from './schedule-fare.validation';
 import { scheduleFare } from './schedule-fare';
-import { CommandResult, Pending, Scheduled, ToScheduled } from '../../definitions';
+import { CommandsResult, Pending, Scheduled, ToScheduled } from '../../definitions';
 import { persistScheduledFares } from './schedule-fare.persistence';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 
@@ -33,7 +33,7 @@ export const scheduleFareCommand = async (server: FastifyInstance): Promise<void
         scheduleFare,
         persistScheduledFares(server.pg),
         taskEitherChain(scheduledFaresValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandResult<'schedule-scheduled'>>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandsResult<'schedule-scheduled'>>)
       )();
     }
   });

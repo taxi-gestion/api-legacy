@@ -13,8 +13,6 @@ export const faresCountForTheDatePersistenceQuery =
   (date: Either<Errors, string>): TaskEither<Errors, unknown> =>
     pipe(date, fromEither, taskEitherChain(faresCountsForDate(database)), taskEitherMap(toTransfer));
 
-const toTransfer = (queryResult: QueryResult): unknown => queryResult.rows.map(fromDBtoFaresCountForDateCandidate)[0];
-
 const faresCountsForDate =
   (database: PostgresDb) =>
   (date: string): TaskEither<Errors, QueryResult> =>
@@ -40,3 +38,5 @@ const selectFaresWhereDateQueryString: string = `
   (SELECT COUNT(*) FROM subcontracted_fares WHERE DATE(datetime AT TIME ZONE 'Europe/Paris') = $1) as subcontracted,
   (SELECT COUNT(*) FROM unassigned_fares WHERE DATE(datetime AT TIME ZONE 'Europe/Paris') = $1) as unassigned
 `;
+
+const toTransfer = (queryResult: QueryResult): unknown => queryResult.rows.map(fromDBtoFaresCountForDateCandidate)[0];

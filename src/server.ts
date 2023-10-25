@@ -35,6 +35,7 @@ import { faresCountForTheDateQuery } from './queries/fares-count-for-date/fares-
 import { allocateUnassignedCommand } from './commands/allocate-unassigned/allocate-unassigned.route';
 import { scheduleUnassignedCommand } from './commands/schedule-unassigned/schedule-unassigned.route';
 import { unassignedFaresForTheDateQuery } from './queries/unassigned-fares-for-date/unassigned-fares-for-date.route';
+import { regularHistoryQuery } from './queries/regular-history/regular-history.route';
 
 const server: FastifyInstance = fastify();
 
@@ -97,6 +98,7 @@ server.register(predictRecurrenceQuery, {
 });
 
 server.register(regularByIdQuery, { prefix });
+server.register(regularHistoryQuery, { prefix });
 
 server.register(scheduledFaresForTheDateQuery, { prefix });
 

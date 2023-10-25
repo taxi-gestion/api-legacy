@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
-import { Entity, Pending, PendingToScheduled, Scheduled, CommandResult } from '../../definitions';
+import { Entity, Pending, PendingToScheduled, Scheduled, CommandsResult } from '../../definitions';
 import { $schedulePendingValidation, scheduledPendingValidation } from './schedule-pending.validation';
 import { schedulePending } from './schedule-pending';
 import { persistPendingScheduled } from './schedule-pending.persistence';
@@ -36,7 +36,7 @@ export const schedulePendingCommand = async (
         schedulePending,
         taskEitherChain(persistPendingScheduled(server.pg)),
         taskEitherChain(scheduledPendingValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandResult<'schedule-pending'>>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandsResult<'schedule-pending'>>)
       )();
     }
   });
