@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { Entity, ToSubcontracted, Scheduled, Subcontracted, CommandResult } from '../../definitions';
+import { Entity, ToSubcontracted, Scheduled, Subcontracted, CommandsResult } from '../../definitions';
 import { persistSubcontractedFares } from './subcontract-fare.persistence';
 import { $subcontractFareValidation, subcontractedValidation } from './subcontract-fare.validation';
 import { subcontractFare } from './subcontract-fare';
@@ -38,7 +38,7 @@ export const subcontractFareCommand = async (
         subcontractFare,
         taskEitherChain(persistSubcontractedFares(server.pg)),
         taskEitherChain(subcontractedValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandResult<'subcontract-fare'>>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandsResult<'subcontract-fare'>>)
       )();
     }
   });

@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
-import { Entity, Scheduled, CommandResult, ToScheduled, Pending } from '../../definitions';
+import { Entity, Scheduled, CommandsResult, ToScheduled, Pending } from '../../definitions';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { $scheduleUnassignedValidation, scheduledUnassignedValidation } from './schedule-unassigned.validation';
 import { scheduleUnassigned } from './schedule-unassigned';
@@ -37,7 +37,7 @@ export const scheduleUnassignedCommand = async (
         scheduleUnassigned,
         taskEitherChain(persistUnassignedScheduled(server.pg)),
         taskEitherChain(scheduledUnassignedValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandResult<'schedule-unassigned'>>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandsResult<'schedule-unassigned'>>)
       )();
     }
   });

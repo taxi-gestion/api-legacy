@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { pipe } from 'fp-ts/function';
 import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEither';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
-import { CommandResult, ToUnassigned, Unassigned } from '../../definitions';
+import { CommandsResult, ToUnassigned, Unassigned } from '../../definitions';
 import { unassignedAllocatedValidation, unassignedToAllocateValidation } from './allocate-unassigned.validation';
 import { allocateUnassigned } from './allocate-unassigned';
 import { persistUnassigned } from './allocate-unassigned.persistence';
@@ -28,7 +28,7 @@ export const allocateUnassignedCommand = async (server: FastifyInstance): Promis
         allocateUnassigned,
         persistUnassigned(server.pg),
         taskEitherChain(unassignedAllocatedValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandResult<'allocate-unassigned'>>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandsResult<'allocate-unassigned'>>)
       )();
     }
   });

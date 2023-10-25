@@ -4,7 +4,7 @@ import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEith
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { persistDeleteFares } from './delete-fare.persistence';
 import { $fareToDeleteValidation, deletedValidation } from './delete-fare.validation';
-import { CommandResult, Entity } from '../../definitions';
+import { CommandsResult, Entity } from '../../definitions';
 
 export type FareToDeleteRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -32,7 +32,7 @@ export const deleteFareCommand = async (
         $fareToDeleteValidation(server.pg),
         taskEitherChain(persistDeleteFares(server.pg)),
         taskEitherChain(deletedValidation),
-        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandResult<'delete-fare'>>)
+        taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandsResult<'delete-fare'>>)
       )();
     }
   });
