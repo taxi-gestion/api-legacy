@@ -38,7 +38,7 @@ export const faresWherePassengerQuery =
   (client: PoolClient, tableName: string) =>
   async (regularId: string): Promise<QueryResult> => {
     const queryString: string = `
-    SELECT * FROM ${tableName} WHERE passenger->>'id' = $1
+    SELECT * FROM ${tableName} WHERE passenger->>'id' = $1 ORDER BY datetime DESC
   `;
     return client.query(queryString, [regularId]);
   };
