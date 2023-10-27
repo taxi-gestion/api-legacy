@@ -36,6 +36,7 @@ import { allocateUnassignedCommand } from './commands/allocate-unassigned/alloca
 import { scheduleUnassignedCommand } from './commands/schedule-unassigned/schedule-unassigned.route';
 import { unassignedFaresForTheDateQuery } from './queries/unassigned-fares-for-date/unassigned-fares-for-date.route';
 import { regularHistoryQuery } from './queries/regular-history/regular-history.route';
+import { allRegularsQuery } from './queries/regular-all/regular-all.route';
 
 const server: FastifyInstance = fastify();
 
@@ -97,6 +98,7 @@ server.register(predictRecurrenceQuery, {
   prefix
 });
 
+server.register(allRegularsQuery, { prefix });
 server.register(regularByIdQuery, { prefix });
 server.register(regularHistoryQuery, { prefix });
 
