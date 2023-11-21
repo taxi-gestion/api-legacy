@@ -1,8 +1,7 @@
-import { Errors } from '../../reporter';
+import { Errors, externalTypeCheckFor, scheduledFaresCodec } from '../../codecs';
 import { pipe } from 'fp-ts/lib/function';
 import { fromEither, TaskEither } from 'fp-ts/TaskEither';
 import { Entity, Scheduled } from '../../definitions';
-import { externalTypeCheckFor, scheduledFaresCodec } from '../../codecs';
 import { string as ioString, type as ioType, Type } from 'io-ts';
 import { Either } from 'fp-ts/Either';
 import { DriverIdAndDate } from './driver-agenda-for-date.route';

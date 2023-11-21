@@ -8,9 +8,8 @@ import {
   googleMapsDistanceMatrixTransferCodec
 } from './distance-matrix.codec';
 import { JourneyEstimate } from '../../../definitions';
-import { Errors } from '../../../reporter';
-import { externalTypeCheckFor, journeyEstimateCodec } from '../../../codecs';
-import { journeyEstimateRulesCodec } from '../../../rules';
+import { Errors, externalTypeCheckFor, journeyEstimateCodec } from '../../../codecs';
+import { journeyEstimateRules } from '../../../codecs/domain-rules/journey-estimate.rules';
 
 export const journeyEstimateValidation = (transfer: unknown): TaskEither<Errors, JourneyEstimate> =>
   pipe(
@@ -26,7 +25,7 @@ const internalTypeCheckForJourneyEstimate = (response: GoogleMapsDistanceMatrixR
   journeyEstimateCodec.decode(toJourneyEstimate(response.rows[0]!.elements[0]!));
 
 const rulesCheckForJourneyEstimate = (estimate: JourneyEstimate): Either<Errors, JourneyEstimate> =>
-  journeyEstimateRulesCodec.decode(estimate);
+  journeyEstimateRules.decode(estimate);
 
 const toJourneyEstimate = (element: GoogleMapsDistanceMatrixElement): JourneyEstimate => ({
   distanceInMeters: element.distance.value,

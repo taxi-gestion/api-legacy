@@ -1,13 +1,13 @@
 import { pipe } from 'fp-ts/lib/function';
 import { Either, map as eitherMap } from 'fp-ts/Either';
-import { Errors } from '../../reporter';
+import { Errors } from '../../codecs';
 import { ToUnassigned } from '../../definitions';
-import { UnassignedToAllocatePersist } from './allocate-unassigned.route';
+import { UnassignedPersist } from './allocate-unassigned.route';
 
-export const allocateUnassigned = (fareToSchedule: Either<Errors, ToUnassigned>): Either<Errors, UnassignedToAllocatePersist> =>
+export const allocateUnassigned = (fareToSchedule: Either<Errors, ToUnassigned>): Either<Errors, UnassignedPersist> =>
   pipe(fareToSchedule, eitherMap(applyUnassigned));
 
-const applyUnassigned = (toUnassigned: ToUnassigned): UnassignedToAllocatePersist => ({
+const applyUnassigned = (toUnassigned: ToUnassigned): UnassignedPersist => ({
   unassignedToCreate: {
     ...toUnassigned,
     status: 'unassigned'

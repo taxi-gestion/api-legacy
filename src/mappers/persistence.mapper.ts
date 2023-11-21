@@ -4,6 +4,8 @@ import {
   FaresCountForDatePersistence,
   Pending,
   PendingPersistence,
+  Recurring,
+  RecurringPersistence,
   Regular,
   RegularPersistence,
   Scheduled,
@@ -43,7 +45,8 @@ export const fromDBtoScheduledCandidate = (row: Entity & ScheduledPersistence): 
     duration: Number(row.duration),
     kind: row.kind,
     nature: row.nature,
-    status: 'scheduled'
+    status: 'scheduled',
+    creator: row.creator
   } satisfies Entity & Scheduled);
 
 export const fromDBtoPendingCandidate = (row: Entity & PendingPersistence): unknown =>
@@ -57,7 +60,8 @@ export const fromDBtoPendingCandidate = (row: Entity & PendingPersistence): unkn
     driver: row.driver,
     kind: row.kind,
     nature: row.nature,
-    status: 'pending'
+    status: 'pending',
+    creator: row.creator
   } satisfies Entity & Pending);
 
 export const fromDBtoUnassignedCandidate = (row: Entity & UnassignedPersistence): unknown =>
@@ -72,8 +76,26 @@ export const fromDBtoUnassignedCandidate = (row: Entity & UnassignedPersistence)
     duration: Number(row.duration),
     kind: row.kind,
     nature: row.nature,
-    status: 'unassigned'
+    status: 'unassigned',
+    creator: row.creator
   } satisfies Entity & Unassigned);
+
+export const fromDBtoRecurringCandidate = (row: Entity & RecurringPersistence): unknown =>
+  ({
+    id: row.id,
+    passenger: row.passenger,
+    departureTime: row.departure_time,
+    returnTime: row.return_time == null ? undefined : row.return_time,
+    departure: row.departure,
+    arrival: row.arrival,
+    distance: Number(row.distance),
+    duration: Number(row.duration),
+    driver: row.driver == null ? undefined : row.driver,
+    kind: row.kind,
+    nature: row.nature,
+    recurrence: row.recurrence,
+    status: 'recurring'
+  } satisfies Entity & Recurring);
 
 export const fromDBtoRegularCandidate = (row: Entity & RegularPersistence): unknown =>
   ({
@@ -104,7 +126,8 @@ export const toScheduledPersistence = (scheduled: Scheduled): ScheduledPersisten
   distance: scheduled.distance,
   duration: scheduled.duration,
   kind: scheduled.kind,
-  nature: scheduled.nature
+  nature: scheduled.nature,
+  creator: scheduled.creator
 });
 
 export const toScheduledEntityPersistence = (scheduled: Entity & Scheduled): Entity & ScheduledPersistence => ({
@@ -121,7 +144,8 @@ export const toPendingPersistence = (pending: Pending & { outwardFareId: string 
   driver: pending.driver,
   kind: pending.kind,
   nature: pending.nature,
-  outwardFareId: pending.outwardFareId
+  outwardFareId: pending.outwardFareId,
+  creator: pending.creator
 });
 
 export const toSubcontractedPersistence = (subcontracted: Subcontracted): SubcontractedPersistence => ({
@@ -146,5 +170,22 @@ export const toUnassignedPersistence = (unassigned: Unassigned): UnassignedPersi
   distance: unassigned.distance,
   duration: unassigned.duration,
   kind: unassigned.kind,
-  nature: unassigned.nature
+  nature: unassigned.nature,
+  creator: unassigned.creator
 });
+
+/* eslint-disable @typescript-eslint/naming-convention */
+export const toRecurringPersistence = (recurring: Recurring): RecurringPersistence => ({
+  passenger: recurring.passenger,
+  departure_time: recurring.departureTime,
+  return_time: recurring.returnTime,
+  driver: recurring.driver,
+  departure: recurring.departure,
+  arrival: recurring.arrival,
+  distance: recurring.distance,
+  duration: recurring.duration,
+  kind: recurring.kind,
+  nature: recurring.nature,
+  recurrence: recurring.recurrence
+});
+/* eslint-enable @typescript-eslint/naming-convention */

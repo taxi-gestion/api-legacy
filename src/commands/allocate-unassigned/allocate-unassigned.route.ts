@@ -5,14 +5,14 @@ import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { CommandsResult, ToUnassigned, Unassigned } from '../../definitions';
 import { unassignedAllocatedValidation, unassignedToAllocateValidation } from './allocate-unassigned.validation';
 import { allocateUnassigned } from './allocate-unassigned';
-import { persistUnassigned } from './allocate-unassigned.persistence';
+import { persistUnassignedFP } from './allocate-unassigned.persistence';
 
 type UnassignedToAllocateRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Body: ToUnassigned;
 }>;
 
-export type UnassignedToAllocatePersist = {
+export type UnassignedPersist = {
   unassignedToCreate: Unassigned;
 };
 
@@ -26,7 +26,7 @@ export const allocateUnassignedCommand = async (server: FastifyInstance): Promis
         req.body,
         unassignedToAllocateValidation,
         allocateUnassigned,
-        persistUnassigned(server.pg),
+        persistUnassignedFP(server.pg),
         taskEitherChain(unassignedAllocatedValidation),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandsResult<'allocate-unassigned'>>)
       )();

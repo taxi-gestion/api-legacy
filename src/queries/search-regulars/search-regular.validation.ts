@@ -1,8 +1,7 @@
-import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { fromEither, TaskEither } from 'fp-ts/TaskEither';
 import { Entity, Regular } from '../../definitions';
-import { externalTypeCheckFor, regularsEntitiesCodec, stringCodec } from '../../codecs';
+import { Errors, externalTypeCheckFor, regularsEntitiesCodec, stringCodec } from '../../codecs';
 
 export const searchRegularValidation = (transfer: unknown): TaskEither<Errors, string> =>
   pipe(transfer, stringCodec.decode, fromEither);

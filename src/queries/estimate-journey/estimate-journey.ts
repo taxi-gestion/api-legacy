@@ -1,5 +1,5 @@
 import { TaskEither } from 'fp-ts/TaskEither';
-import { Errors } from '../../reporter';
+import { Errors } from '../../codecs';
 import { Journey, JourneyEstimate } from '../../definitions';
 
 export type EstimateJourneyAdapter = (journey: Journey) => TaskEither<Errors, JourneyEstimate>;

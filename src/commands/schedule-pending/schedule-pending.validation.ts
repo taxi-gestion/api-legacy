@@ -1,15 +1,21 @@
-import { Errors } from '../../reporter';
+import {
+  entityCodec,
+  Errors,
+  externalTypeCheckFor,
+  pendingReturnCodec,
+  pendingScheduledCodec,
+  returnDriveCodec
+} from '../../codecs';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { Entity, PendingPersistence, PendingToScheduled, SchedulePending } from '../../definitions';
-import { entityCodec, externalTypeCheckFor, pendingReturnCodec, pendingScheduledCodec, returnDriveCodec } from '../../codecs';
 import { PendingToSchedule } from './schedule-pending.route';
 import { intersection as ioIntersection, Type, type as ioType } from 'io-ts';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
 import { fromDBtoPendingCandidate } from '../../mappers';
 import { isDefinedGuard } from '../../domain';
-import { returnDriveRulesCodec } from '../../rules';
+import { returnDriveRules } from '../../codecs/domain-rules/fares.rules';
 
 export const $schedulePendingValidation =
   (db: PostgresDb) =>
@@ -64,6 +70,6 @@ const pendingToScheduleCodec: Type<PendingToSchedule> = ioType({
 
 // eslint-disable-next-line @typescript-eslint/typedef
 const pendingToScheduleRulesCodec = ioType({
-  driveToSchedule: returnDriveRulesCodec,
+  driveToSchedule: returnDriveRules,
   pendingToDelete: pendingReturnCodec
 });

@@ -1,7 +1,7 @@
 import { map as taskEitherMap, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors } from '../../reporter';
+import { Errors } from '../../codecs';
 import { Entity, SubcontractedPersistence } from '../../definitions';
 import { pipe } from 'fp-ts/lib/function';
 import { SubcontractedToPersist } from './subcontract-fare.route';

@@ -1,7 +1,7 @@
-import { Errors } from '../../reporter';
 import { pipe } from 'fp-ts/lib/function';
 import { of as taskEitherOf, TaskEither } from 'fp-ts/TaskEither';
 import {
+  Errors,
   externalTypeCheckFor,
   pendingReturnCodec,
   pendingReturnsCodec,

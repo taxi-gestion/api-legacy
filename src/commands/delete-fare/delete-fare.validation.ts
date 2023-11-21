@@ -1,11 +1,10 @@
-import { Errors } from '../../reporter';
+import { entityCodec, Errors, externalTypeCheckFor, faresDeletedCodec, stringCodec } from '../../codecs';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { FaresToDelete } from './delete-fare.route';
 import { type as ioType, Type, undefined as ioUndefined, union as ioUnion } from 'io-ts';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
-import { entityCodec, externalTypeCheckFor, faresDeletedCodec, stringCodec } from '../../codecs';
 import { DeleteFare, Entity } from '../../definitions';
 import { QueryResult } from 'pg';
 
@@ -33,7 +32,8 @@ const typeCheck = (fromDB: unknown): TaskEither<Errors, FaresToDelete> => fromEi
 const toDeleteTransferCodec: Type<FaresToDelete> = ioType({
   scheduledToDelete: ioUnion([entityCodec, ioUndefined]),
   unassignedToDelete: ioUnion([entityCodec, ioUndefined]),
-  pendingToDelete: ioUnion([entityCodec, ioUndefined])
+  pendingToDelete: ioUnion([entityCodec, ioUndefined]),
+  recurringToDelete: ioUnion([entityCodec, ioUndefined])
 });
 
 const fetchSingleEntity = async (
@@ -51,29 +51,33 @@ const fetchFaresToDelete = async (db: PostgresDb, fareToDeleteId: string): Promi
   Promise.all([
     fetchSingleEntity(db, 'pending_returns', 'id', fareToDeleteId),
     fetchSingleEntity(db, 'unassigned_fares', 'id', fareToDeleteId),
-    fetchSingleEntity(db, 'scheduled_fares', 'id', fareToDeleteId)
+    fetchSingleEntity(db, 'scheduled_fares', 'id', fareToDeleteId),
+    fetchSingleEntity(db, 'recurring_fares', 'id', fareToDeleteId)
   ]);
 
 const fetchRelatedPendingReturns = async (db: PostgresDb, fareToDeleteId: string): Promise<Entity | undefined> =>
   fetchSingleEntity(db, 'pending_returns', 'outward_fare_id', fareToDeleteId);
 
 const toDeleteCandidate = (db: PostgresDb, fareToDeleteId: string) => async (): Promise<unknown> => {
-  const [pendingToDelete, unassignedToDelete, scheduledToDelete]: (Entity | undefined)[] = await fetchFaresToDelete(
-    db,
-    fareToDeleteId
-  );
+  const [pendingToDelete, unassignedToDelete, scheduledToDelete, recurringToDelete]: (Entity | undefined)[] =
+    await fetchFaresToDelete(db, fareToDeleteId);
 
   if (pendingToDelete !== undefined) return { pendingToDelete };
 
-  if (noValidEntities(scheduledToDelete, unassignedToDelete)) return throwEntityNotFoundValidationError(fareToDeleteId);
+  if (noValidEntities(scheduledToDelete, unassignedToDelete, recurringToDelete))
+    return throwEntityNotFoundValidationError(fareToDeleteId);
 
   const relatedPendingToDelete: Entity | undefined = await fetchRelatedPendingReturns(db, fareToDeleteId);
   return {
     scheduledToDelete,
     unassignedToDelete,
-    pendingToDelete: relatedPendingToDelete
+    pendingToDelete: relatedPendingToDelete,
+    recurringToDelete
   };
 };
 
-const noValidEntities = (scheduled: Entity | undefined, unassigned: Entity | undefined): boolean =>
-  unassigned === undefined && scheduled === undefined;
+const noValidEntities = (
+  scheduled: Entity | undefined,
+  unassigned: Entity | undefined,
+  recurring: Entity | undefined
+): boolean => unassigned === undefined && scheduled === undefined && recurring === undefined;

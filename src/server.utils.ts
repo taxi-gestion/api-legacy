@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { FastifyReply } from 'fastify';
 import { Task } from 'fp-ts/Task';
-import HttpReporter, { Errors } from './reporter/http-reporter';
 import { left as eitherLeft } from 'fp-ts/Either';
+import { errorReporter, Errors } from './codecs';
 
 type ServerAndProcess = {
   // eslint-disable-next-line no-undef
@@ -20,7 +20,7 @@ export const onErroredTask =
   (reply: FastifyReply) =>
   (errors: Errors): Task<void> =>
   async (): Promise<void> =>
-    reply.code(500).send(HttpReporter.report(eitherLeft(errors)));
+    reply.code(500).send(errorReporter.report(eitherLeft(errors)));
 
 export const closeGracefullyOnSignalInterrupt = ({ nodeProcess, server }: ServerAndProcess): void => {
   // eslint-disable-next-line @typescript-eslint/no-misused-promises

@@ -1,4 +1,4 @@
-import { Errors } from '../../reporter';
+import { entityCodec, Errors, externalTypeCheckFor, regularCodec, regularEditedCodec, regularEntityCodec } from '../../codecs';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
@@ -6,10 +6,9 @@ import { EditRegular, Entity, Regular, RegularPersistence } from '../../definiti
 import { intersection as ioIntersection, Type, type as ioType } from 'io-ts';
 import { RegularToEdit } from './edit-regular.route';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
-import { entityCodec, externalTypeCheckFor, regularCodec, regularEntityCodec, regularEditedCodec } from '../../codecs';
 import { isDefinedGuard } from '../../domain';
 import { fromDBtoRegularCandidate } from '../../mappers';
-import { regularRulesCodec } from '../../rules';
+import { regularRules } from '../../codecs/domain-rules/regular.rules';
 
 export const $regularToEditValidation =
   (db: PostgresDb) =>
@@ -61,6 +60,6 @@ const regularToEditCodec: Type<RegularToEdit> = ioType({
 
 // eslint-disable-next-line @typescript-eslint/typedef
 const regularToEditRulesCodec = ioType({
-  toEdit: regularRulesCodec,
-  regularToEdit: ioIntersection([entityCodec, regularRulesCodec])
+  toEdit: regularRules,
+  regularToEdit: ioIntersection([entityCodec, regularRules])
 });

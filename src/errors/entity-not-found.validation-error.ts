@@ -1,5 +1,5 @@
-import { ValidationError } from '../reporter';
 import { Decoder } from 'io-ts';
+import { ValidationError } from '../codecs';
 
 export const entityNotFoundValidationError = (id: string): ValidationError => ({
   context: [

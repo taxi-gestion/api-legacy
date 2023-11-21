@@ -1,14 +1,15 @@
 import { pipe } from 'fp-ts/lib/function';
 import { Either, map as eitherMap } from 'fp-ts/Either';
-import { FaresToSchedulePersist, FareToSchedule } from './schedule-fare.route';
+import { FareToSchedule, ScheduledPersist, ScheduledAndPendingPersist } from './schedule-fare.route';
 import { isOneWay } from '../../domain';
 import { toPending } from '../../mappers';
-import { Errors } from '../../reporter';
+import { Errors } from '../../codecs';
 
-export const scheduleFare = (fareToSchedule: Either<Errors, FareToSchedule>): Either<Errors, FaresToSchedulePersist> =>
-  pipe(fareToSchedule, eitherMap(applySchedule));
+export const scheduleFare = (
+  fareToSchedule: Either<Errors, FareToSchedule>
+): Either<Errors, ScheduledAndPendingPersist | ScheduledPersist> => pipe(fareToSchedule, eitherMap(applySchedule));
 
-const applySchedule = ({ toSchedule }: FareToSchedule): FaresToSchedulePersist => ({
+const applySchedule = ({ toSchedule }: FareToSchedule): ScheduledAndPendingPersist | ScheduledPersist => ({
   scheduledToCreate: {
     ...toSchedule,
     status: 'scheduled'

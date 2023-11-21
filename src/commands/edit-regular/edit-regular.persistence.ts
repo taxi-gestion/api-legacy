@@ -1,7 +1,7 @@
 import { map as taskEitherMap, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors } from '../../reporter';
+import { Errors } from '../../codecs';
 import { Entity, RegularPersistence } from '../../definitions';
 import { pipe } from 'fp-ts/lib/function';
 import { RegularToEditPersist } from './edit-regular.route';
@@ -31,7 +31,7 @@ const applyQueries =
 const updateRegularQuery =
   (client: PoolClient) =>
   async (regularPg: Entity & RegularPersistence): Promise<QueryResult> =>
-    client.query(updateFareQueryString, [
+    client.query(updateRegularQueryString, [
       regularPg.id,
       regularPg.civility,
       regularPg.firstname,
@@ -42,7 +42,7 @@ const updateRegularQuery =
       regularPg.subcontracted_client
     ]);
 
-const updateFareQueryString: string = `
+const updateRegularQueryString: string = `
       UPDATE regulars
       SET 
         civility = $2, 

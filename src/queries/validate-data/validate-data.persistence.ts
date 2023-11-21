@@ -4,7 +4,6 @@ import { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, map as taskEitherMap, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
-import { Errors } from '../../reporter';
 import { onDatabaseError } from '../../errors';
 import {
   fromDBtoPendingCandidate,
@@ -14,6 +13,7 @@ import {
   fromDBtoUnassignedCandidate
 } from '../../mappers';
 import { ValidableTables } from './validate-data.route';
+import { Errors } from '../../codecs';
 
 export const tablePersistenceQuery =
   (database: PostgresDb, tableParam: string) =>

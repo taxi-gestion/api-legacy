@@ -41,5 +41,6 @@ module.exports = {
     {
       allow: ['beforeEach', 'afterEach']
     }
-  ]
+  ],
+  'jest/valid-title': 'off'
 };

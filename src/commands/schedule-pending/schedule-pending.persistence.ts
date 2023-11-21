@@ -1,12 +1,13 @@
 import { map as taskEitherMap, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors } from '../../reporter';
+import { Errors } from '../../codecs';
 import { PendingToSchedulePersist } from './schedule-pending.route';
 import { pipe } from 'fp-ts/function';
 import { onDatabaseError } from '../../errors';
 import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate, toScheduledPersistence } from '../../mappers';
-import { deletePendingReturnQuery, insertScheduledFareQuery } from '../_common/shared-queries.persistence';
+import { deletePendingReturnQuery } from '../_common/delete-pending-return.persistence';
+import { insertScheduledFareQuery } from '../_common/insert-scheduled-fare.persistence';
 
 export const persistPendingScheduled =
   (database: PostgresDb) =>

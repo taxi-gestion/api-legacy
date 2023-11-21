@@ -92,7 +92,6 @@ module.exports = {
     'e',
     'cb',
     'callback',
-    'manager',
     'result',
     'event',
     'evt',

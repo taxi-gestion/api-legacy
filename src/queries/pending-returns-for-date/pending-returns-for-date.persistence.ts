@@ -4,9 +4,9 @@ import { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, map as taskEitherMap, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
-import { Errors } from '../../reporter';
 import { onDatabaseError } from '../../errors';
 import { fromDBtoPendingCandidate } from '../../mappers';
+import { Errors } from '../../codecs';
 
 export const pendingReturnsForTheDateDatabaseQuery =
   (database: PostgresDb) =>

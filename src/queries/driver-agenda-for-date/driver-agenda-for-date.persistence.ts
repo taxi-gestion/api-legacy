@@ -4,7 +4,7 @@ import { Either } from 'fp-ts/Either';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, map as taskEitherMap, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
-import { Errors } from '../../reporter';
+import { Errors } from '../../codecs';
 import { onDatabaseError } from '../../errors';
 import { DriverIdAndDate } from './driver-agenda-for-date.route';
 import { fromDBtoScheduledCandidate } from '../../mappers';

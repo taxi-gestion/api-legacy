@@ -9,7 +9,7 @@ import type { PoolClient, QueryResult } from 'pg';
 import { pipe } from 'fp-ts/lib/function';
 import { Either, map as eitherMap } from 'fp-ts/Either';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors } from '../../reporter';
+import { Errors } from '../../codecs';
 import { RegularToRegisterPersist } from './register-regular.route';
 import { onDatabaseError } from '../../errors';
 import { fromDBtoRegularCandidate } from '../../mappers';

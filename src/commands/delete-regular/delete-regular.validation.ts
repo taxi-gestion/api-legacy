@@ -1,11 +1,10 @@
-import { Errors } from '../../reporter';
+import { entityCodec, Errors, externalTypeCheckFor, regularDeletedCodec, stringCodec } from '../../codecs';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { RegularToDelete } from './delete-regular.route';
 import { type as ioType, Type } from 'io-ts';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
-import { entityCodec, externalTypeCheckFor, regularDeletedCodec, stringCodec } from '../../codecs';
 import { DeleteRegular, Entity } from '../../definitions';
 import { isDefinedGuard } from '../../domain';
 
