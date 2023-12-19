@@ -1,5 +1,5 @@
 import { chain as taskEitherChain, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
-import { Errors } from '../../../reporter';
+import { Errors } from '../../../codecs';
 import { pipe } from 'fp-ts/function';
 import { onDependencyError } from '../../../errors';
 import { Driver, Entity } from '../../../definitions';

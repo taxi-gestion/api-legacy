@@ -1,7 +1,7 @@
 import { pipe } from 'fp-ts/lib/function';
 import { map as taskEitherMap, TaskEither } from 'fp-ts/TaskEither';
 import { Driver, Entity, Scheduled, Subcontracted } from '../../definitions';
-import { Errors } from '../../reporter';
+import { Errors } from '../../codecs';
 import { FaresToSubcontract, SubcontractedToPersist } from './subcontract-fare.route';
 
 export const subcontractFare = (

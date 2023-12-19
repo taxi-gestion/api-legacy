@@ -1,22 +1,22 @@
-import { Errors } from '../../reporter';
+import {
+  entityCodec,
+  Errors,
+  externalTypeCheckFor,
+  scheduledEditedCodec,
+  scheduledFareCodec,
+  scheduledToEditCodec,
+  toEditCodec
+} from '../../codecs';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { EditScheduled, Entity, ScheduledPersistence, ToScheduledEdited } from '../../definitions';
-import { type as ioType, Type, union as ioUnion, undefined as ioUndefined } from 'io-ts';
+import { type as ioType, Type, undefined as ioUndefined, union as ioUnion } from 'io-ts';
 import { FaresToEdit } from './edit-scheduled.route';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
-import {
-  entityCodec,
-  externalTypeCheckFor,
-  scheduledEditedCodec,
-  scheduledToEditCodec,
-  scheduledFareCodec,
-  toEditCodec
-} from '../../codecs';
 import { isDefinedGuard } from '../../domain';
 import { fromDBtoScheduledCandidate } from '../../mappers';
-import { toEditRulesCodec } from '../../rules';
+import { toScheduledEditedRules } from '../../codecs/domain-rules/fares.rules';
 
 export const $faresToEditValidation =
   (db: PostgresDb) =>
@@ -64,7 +64,7 @@ const $checkScheduledToEditExist =
 const typeCheck = (fromDB: unknown): TaskEither<Errors, FaresToEdit> => fromEither(faresToEditCodec.decode(fromDB));
 
 const rulesCheck = (scheduledToEdit: FaresToEdit): TaskEither<Errors, FaresToEdit> =>
-  fromEither(faresToEditRulesCodec.decode(scheduledToEdit));
+  fromEither(faresToEditRules.decode(scheduledToEdit));
 
 const faresToEditCodec: Type<FaresToEdit> = ioType({
   toEdit: toEditCodec,
@@ -73,8 +73,8 @@ const faresToEditCodec: Type<FaresToEdit> = ioType({
 });
 
 // eslint-disable-next-line @typescript-eslint/typedef
-const faresToEditRulesCodec = ioType({
-  toEdit: toEditRulesCodec,
+const faresToEditRules = ioType({
+  toEdit: toScheduledEditedRules,
   scheduledToEdit: scheduledFareCodec,
   pendingToDelete: ioUnion([entityCodec, ioUndefined])
 });

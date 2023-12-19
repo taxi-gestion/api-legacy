@@ -5,7 +5,7 @@ import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { Entity, Pending } from '../../definitions';
 import { pendingReturnsForTheDateDatabaseQuery } from './pending-returns-for-date.persistence';
 import { pendingReturnsValidation } from './pending-returns-for-date.validation';
-import { isDateString } from '../../rules';
+import { isYYYYMMDDDate } from '../../codecs';
 
 export type PendingReturnsForDateRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -21,7 +21,7 @@ export const pendingReturnsForTheDateQuery = async (server: FastifyInstance): Pr
     url: '/pending/:date',
     handler: async (req: PendingReturnsForDateRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
-        isDateString.decode(req.params.date),
+        isYYYYMMDDDate.decode(req.params.date),
         pendingReturnsForTheDateDatabaseQuery(server.pg),
         taskEitherChain(pendingReturnsValidation),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<(Entity & Pending)[]>)

@@ -10,8 +10,7 @@ import {
   driverEntitiesCodec
 } from './cognito.codec';
 import { Driver, Entity } from '../../../definitions';
-import { Errors } from '../../../reporter';
-import { externalTypeCheckFor } from '../../../codecs';
+import { Errors, externalTypeCheckFor } from '../../../codecs';
 
 export const listUsersInGroupDriverValidation = (transfer: unknown): TaskEither<Errors, (Driver & Entity)[]> =>
   pipe(

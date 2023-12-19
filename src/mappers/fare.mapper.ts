@@ -8,7 +8,8 @@ export const toPending = (fare: ToScheduled | ToScheduledEdited): Pending => ({
   departure: fare.arrival,
   arrival: fare.departure,
   status: 'pending',
-  kind: 'two-way'
+  kind: 'two-way',
+  creator: fare.creator
 });
 
 const toZeroedTimeIso8601 = (datetime: string): string => {

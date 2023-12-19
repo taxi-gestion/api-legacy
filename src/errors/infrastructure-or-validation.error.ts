@@ -1,5 +1,5 @@
-import { Errors, InfrastructureError, isInfrastructureError, ValidationError } from '../reporter';
 import { onDatabaseError } from './database.error';
+import { Errors, InfrastructureError, isInfrastructureError, ValidationError } from '../codecs';
 
 export const $onInfrastructureOrValidationError =
   (message: string) =>

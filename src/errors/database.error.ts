@@ -1,4 +1,4 @@
-import { Errors, InfrastructureError } from '../reporter';
+import { Errors, InfrastructureError } from '../codecs';
 
 export const onDatabaseError =
   (messagePrefix: string) =>

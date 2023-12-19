@@ -9,7 +9,7 @@ import {
 } from 'io-ts';
 import { Place } from '../../../definitions';
 import { placeCodec } from '../../../codecs';
-import { placeRulesCodec } from '../../../rules';
+import { placeRules } from '../../../codecs/domain-rules/place.rules';
 
 export type GoogleMapsPlacesResponseTransfer = {
   results: PlaceResultTransfer[];
@@ -48,4 +48,4 @@ export const googleMapsPlacesTransferCodec: Type<GoogleMapsPlacesResponseTransfe
 export const placesCodec: Type<Place[]> = ioArray(placeCodec);
 
 // eslint-disable-next-line @typescript-eslint/typedef
-export const placesRulesCodec = ioArray(placeRulesCodec);
+export const placesRulesCodec = ioArray(placeRules);

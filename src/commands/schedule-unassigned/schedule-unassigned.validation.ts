@@ -1,14 +1,13 @@
-import { Errors } from '../../reporter';
+import { entityCodec, Errors, externalTypeCheckFor, toScheduledCodec, unassignedScheduledCodec } from '../../codecs';
 import { pipe } from 'fp-ts/lib/function';
 import { chain as taskEitherChain, fromEither, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PostgresDb } from '@fastify/postgres';
 import { Entity, ScheduleUnassigned, ToScheduled } from '../../definitions';
-import { entityCodec, externalTypeCheckFor, toScheduleCodec, unassignedScheduledCodec } from '../../codecs';
 import { UnassignedToSchedule } from './schedule-unassigned.route';
 import { intersection as ioIntersection, Type, type as ioType } from 'io-ts';
 import { $onInfrastructureOrValidationError, throwEntityNotFoundValidationError } from '../../errors';
 import { isDefinedGuard } from '../../domain';
-import { toScheduleRulesCodec } from '../../rules';
+import { toScheduledRules } from '../../codecs/domain-rules/fares.rules';
 
 export const $scheduleUnassignedValidation =
   (db: PostgresDb) =>
@@ -52,17 +51,17 @@ const typeCheck = (transfer: unknown): TaskEither<Errors, UnassignedToSchedule> 
   fromEither(unassignedToSchedule.decode(transfer));
 
 const rulesCheck = (transfer: UnassignedToSchedule): TaskEither<Errors, UnassignedToSchedule> =>
-  fromEither(unassignedToScheduleRulesCodec.decode(transfer));
+  fromEither(unassignedToScheduledRules.decode(transfer));
 
-const unassignedToScheduleCodec: Type<Entity & ToScheduled> = ioIntersection([entityCodec, toScheduleCodec]);
+const unassignedToScheduleCodec: Type<Entity & ToScheduled> = ioIntersection([entityCodec, toScheduledCodec]);
 
 const unassignedToSchedule: Type<UnassignedToSchedule> = ioType({
-  toSchedule: toScheduleCodec,
+  toSchedule: toScheduledCodec,
   unassignedToDelete: entityCodec
 });
 
 // eslint-disable-next-line @typescript-eslint/typedef
-const unassignedToScheduleRulesCodec = ioType({
-  toSchedule: toScheduleRulesCodec,
+const unassignedToScheduledRules = ioType({
+  toSchedule: toScheduledRules,
   unassignedToDelete: entityCodec
 });

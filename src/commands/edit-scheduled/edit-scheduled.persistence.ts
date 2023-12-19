@@ -1,7 +1,7 @@
 import { map as taskEitherMap, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors } from '../../reporter';
+import { Errors } from '../../codecs';
 import { Entity, Pending, PendingPersistence, ScheduledPersistence } from '../../definitions';
 import { pipe } from 'fp-ts/lib/function';
 import { EditedToPersist } from './edit-scheduled.route';
@@ -57,7 +57,8 @@ const updateScheduledFareQuery =
       farePg.driver,
       farePg.duration,
       farePg.kind,
-      farePg.nature
+      farePg.nature,
+      farePg.creator
     ]);
 
 const updateFareQueryString: string = `
@@ -71,7 +72,8 @@ const updateFareQueryString: string = `
           driver = $7,
           duration = $8,
           kind = $9,
-          nature = $10
+          nature = $10,
+          creator = $11
       WHERE id = $1
       RETURNING *
     `;
@@ -87,7 +89,8 @@ const insertPendingQuery =
       pendingPg.driver,
       pendingPg.kind,
       pendingPg.nature,
-      pendingPg.outwardFareId
+      pendingPg.outwardFareId,
+      pendingPg.creator
     ]);
 
 const insertPendingQueryString: string = `
@@ -99,9 +102,10 @@ const insertPendingQueryString: string = `
           driver,
           kind,
           nature,
-          outward_fare_id
+          outward_fare_id,
+          creator
       ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8
+          $1, $2, $3, $4, $5, $6, $7, $8, $9
       )
       RETURNING *
       `;

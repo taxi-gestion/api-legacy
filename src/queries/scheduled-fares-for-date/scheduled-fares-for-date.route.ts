@@ -5,7 +5,7 @@ import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 import { Entity, Scheduled } from '../../definitions';
 import { scheduledFaresForTheDatePersistenceQuery } from './scheduled-fares-for-date.persistence';
 import { scheduledFaresForDateValidation } from './scheduled-fares-for-date.validation';
-import { isDateString } from '../../rules';
+import { isYYYYMMDDDate } from '../../codecs';
 
 export type FareForDateRequest = FastifyRequest<{
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -23,7 +23,7 @@ export const scheduledFaresForTheDateQuery = async (
     url: '/scheduled/:date',
     handler: async (req: FareForDateRequest, reply: FastifyReply): Promise<void> => {
       await pipe(
-        isDateString.decode(req.params.date),
+        isYYYYMMDDDate.decode(req.params.date),
         scheduledFaresForTheDatePersistenceQuery(server.pg),
         taskEitherChain(scheduledFaresForDateValidation),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<(Entity & Scheduled)[]>)

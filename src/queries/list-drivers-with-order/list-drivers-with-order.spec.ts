@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/no-shadow
+import { describe, it, expect } from 'vitest';
 import { mergeDriversProperties } from './list-drivers-with-order';
 import { Driver, DriverWithOrder, Entity } from '../../definitions';
 

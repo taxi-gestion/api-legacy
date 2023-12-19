@@ -5,8 +5,6 @@ import postgres from '@fastify/postgres';
 import { closeGracefullyOnSignalInterrupt, start } from './server.utils';
 import { databaseStatusQuery } from './queries/database-status/database-status.route';
 import { scheduleFareCommand } from './commands/schedule-fare/schedule-fare.route';
-import { predictRecurrenceQuery } from './queries/predict-recurrence/predict-recurrence.route';
-import { $openAIPredictRecurrence } from './services/openai/predict-recurrence/predict-recurrence';
 import { searchPlaceQuery } from './queries/search-place/search-place.route';
 import { $googleMapsSearchPlace } from './services/google/places/search-place.api';
 import { estimateJourneyQuery } from './queries/estimate-journey/estimate-journey.route';
@@ -28,7 +26,6 @@ import { regularByIdQuery } from './queries/regular-by-id/regular-by-id.route';
 import { $awsCognitoListUsersInGroupDriver } from './services/aws/cognito/list-drivers.api';
 import { listDriversWithDisplayOrderQuery } from './queries/list-drivers-with-order/list-drivers-with-order.route';
 import { TaskEither } from 'fp-ts/lib/TaskEither';
-import { Errors } from './reporter';
 import { Driver, Entity } from './definitions';
 import { validateTableQuery } from './queries/validate-data/validate-data.route';
 import { faresCountForTheDateQuery } from './queries/fares-count-for-date/fares-count-for-date.route';
@@ -37,6 +34,10 @@ import { scheduleUnassignedCommand } from './commands/schedule-unassigned/schedu
 import { unassignedFaresForTheDateQuery } from './queries/unassigned-fares-for-date/unassigned-fares-for-date.route';
 import { regularHistoryQuery } from './queries/regular-history/regular-history.route';
 import { allRegularsQuery } from './queries/regular-all/regular-all.route';
+import { addRecurringCommand } from './commands/add-recurring/add-recurring.route';
+import { recurringFaresQuery } from './queries/recurring-fares/recurring-fares.route';
+import { applyRecurringForDateCommand } from './commands/apply-recurring-for-date/apply-recurring-for-date.route';
+import { Errors } from './codecs';
 
 const server: FastifyInstance = fastify();
 
@@ -93,11 +94,6 @@ server.register(listDriversWithDisplayOrderQuery, {
 
 server.register(pendingReturnsForTheDateQuery, { prefix });
 
-server.register(predictRecurrenceQuery, {
-  adapter: $openAIPredictRecurrence(process.env['API_KEY_OPENAI'] ?? ''),
-  prefix
-});
-
 server.register(allRegularsQuery, { prefix });
 server.register(regularByIdQuery, { prefix });
 server.register(regularHistoryQuery, { prefix });
@@ -109,13 +105,16 @@ server.register(searchPlaceQuery, {
   prefix
 });
 
+server.register(recurringFaresQuery, { prefix });
 server.register(searchRegularQuery, { prefix });
 server.register(subcontractedFaresForTheDateQuery, { prefix });
 server.register(unassignedFaresForTheDateQuery, { prefix });
 server.register(validateTableQuery, { prefix });
 
 //Commands
+server.register(addRecurringCommand, { prefix });
 server.register(allocateUnassignedCommand, { prefix });
+server.register(applyRecurringForDateCommand, { prefix });
 server.register(deleteFareCommand, { prefix });
 server.register(deleteRegularCommand, { prefix });
 server.register(editRegularCommand, { prefix });
@@ -125,6 +124,9 @@ server.register(scheduleFareCommand, { prefix });
 server.register(schedulePendingCommand, { prefix });
 server.register(scheduleUnassignedCommand, { prefix });
 server.register(subcontractFareCommand, { prefix });
+
+//Tests
+//server.register(applyRecurringForDateCommandLoadTest, { prefix });
 /* eslint-enable @typescript-eslint/no-floating-promises */
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

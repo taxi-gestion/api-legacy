@@ -4,7 +4,7 @@ import { chain as taskEitherChain, fold as taskEitherFold } from 'fp-ts/TaskEith
 import { fareToScheduleValidation, scheduledFaresValidation } from './schedule-fare.validation';
 import { scheduleFare } from './schedule-fare';
 import { CommandsResult, Pending, Scheduled, ToScheduled } from '../../definitions';
-import { persistScheduledFares } from './schedule-fare.persistence';
+import { persistScheduledFaresFP } from './schedule-fare.persistence';
 import { onErroredTask, onSuccessfulTaskWith } from '../../server.utils';
 
 type FareToScheduleRequest = FastifyRequest<{
@@ -16,9 +16,16 @@ export type FareToSchedule = {
   toSchedule: ToScheduled;
 };
 
-export type FaresToSchedulePersist = {
+//export type ScheduledAndOptionalPendingPersist = ScheduledAndPendingPersist & ScheduledPersist
+
+export type ScheduledAndPendingPersist = {
   scheduledToCreate: Scheduled;
-  pendingToCreate: Pending | undefined;
+  pendingToCreate: Pending;
+};
+
+export type ScheduledPersist = {
+  scheduledToCreate: Scheduled;
+  pendingToCreate: undefined;
 };
 
 // eslint-disable-next-line @typescript-eslint/require-await
@@ -31,7 +38,7 @@ export const scheduleFareCommand = async (server: FastifyInstance): Promise<void
         req.body,
         fareToScheduleValidation,
         scheduleFare,
-        persistScheduledFares(server.pg),
+        persistScheduledFaresFP(server.pg),
         taskEitherChain(scheduledFaresValidation),
         taskEitherFold(onErroredTask(reply), onSuccessfulTaskWith(reply)<CommandsResult<'schedule-scheduled'>>)
       )();

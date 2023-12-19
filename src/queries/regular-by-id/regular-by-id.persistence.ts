@@ -3,9 +3,9 @@ import { PostgresDb } from '@fastify/postgres';
 import { pipe } from 'fp-ts/lib/function';
 import { map as taskEitherMap, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import { PoolClient, QueryResult } from 'pg';
-import { Errors } from '../../reporter';
 import { onDatabaseError } from '../../errors';
 import { fromDBtoRegularCandidate } from '../../mappers';
+import { Errors } from '../../codecs';
 
 export const regularByIdDatabaseQuery =
   (database: PostgresDb) =>

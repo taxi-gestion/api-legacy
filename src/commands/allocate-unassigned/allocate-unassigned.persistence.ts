@@ -8,26 +8,26 @@ import {
 import type { PoolClient, QueryResult } from 'pg';
 import { pipe } from 'fp-ts/lib/function';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors } from '../../reporter';
+import { Errors } from '../../codecs';
 import { UnassignedPersistence } from '../../definitions';
 import { onDatabaseError } from '../../errors';
 import { fromDBtoUnassignedCandidate, toUnassignedPersistence } from '../../mappers';
 import { Either } from 'fp-ts/Either';
-import { UnassignedToAllocatePersist } from './allocate-unassigned.route';
+import { UnassignedPersist } from './allocate-unassigned.route';
 
-export const persistUnassigned =
+export const persistUnassignedFP =
   (database: PostgresDb) =>
-  (fares: Either<Errors, UnassignedToAllocatePersist>): TaskEither<Errors, unknown> =>
-    pipe(fares, fromEither, taskEitherChain(insertIn(database)));
+  (fares: Either<Errors, UnassignedPersist>): TaskEither<Errors, unknown> =>
+    pipe(fares, fromEither, taskEitherChain(insertUnassignedIn(database)));
 
-const insertIn =
+export const insertUnassignedIn =
   (database: PostgresDb) =>
-  (fare: UnassignedToAllocatePersist): TaskEither<Errors, unknown> =>
+  (fare: UnassignedPersist): TaskEither<Errors, unknown> =>
     pipe(taskEitherTryCatch(insertUnassigned(database)(fare), onDatabaseError(`persistUnassigned`)), taskEitherMap(toTransfer));
 
 const insertUnassigned =
   (database: PostgresDb) =>
-  ({ unassignedToCreate }: UnassignedToAllocatePersist) =>
+  ({ unassignedToCreate }: UnassignedPersist) =>
   async (): Promise<QueryResult[]> =>
     database.transact(
       async (client: PoolClient): Promise<QueryResult[]> =>
@@ -45,7 +45,8 @@ const insertUnassignedFareQuery =
       farePg.distance,
       farePg.duration,
       farePg.kind,
-      farePg.nature
+      farePg.nature,
+      farePg.creator
     ]);
 
 const insertUnassignedFareQueryString: string = `
@@ -57,9 +58,10 @@ const insertUnassignedFareQueryString: string = `
           distance,
           duration,
           kind,
-          nature
+          nature,
+          creator
       ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8
+          $1, $2, $3, $4, $5, $6, $7, $8, $9
       )
       RETURNING *
     `;

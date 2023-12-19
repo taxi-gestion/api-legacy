@@ -1,7 +1,7 @@
 import { map as taskEitherMap, TaskEither, tryCatch as taskEitherTryCatch } from 'fp-ts/TaskEither';
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
-import { Errors } from '../../reporter';
+import { Errors } from '../../codecs';
 import { UnassignedToSchedulePersist } from './schedule-unassigned.route';
 import { pipe } from 'fp-ts/function';
 import { onDatabaseError, throwEntityNotFoundValidationError } from '../../errors';
@@ -11,11 +11,9 @@ import {
   fromDBtoPendingCandidate,
   toScheduledPersistence
 } from '../../mappers';
-import {
-  deleteFareEntityQuery,
-  insertPendingReturnRelatedToScheduled,
-  insertScheduledFareQuery
-} from '../_common/shared-queries.persistence';
+import { deleteFareEntityPersistence } from '../_common/delete-fare-entity.persistence';
+import { insertPendingReturnRelatedToScheduled } from '../_common/insert-pending-return-related-to-scheduled.persistence';
+import { insertScheduledFareQuery } from '../_common/insert-scheduled-fare.persistence';
 
 export const persistUnassignedScheduled =
   (database: PostgresDb) =>
@@ -32,7 +30,7 @@ const applyQueries =
     database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
       const [scheduledCreatedQueryResult, deleteUnassignedQueryResult]: QueryResult[] = await Promise.all([
         insertScheduledFareQuery(client)(toScheduledPersistence(scheduledToCreate)),
-        deleteFareEntityQuery(client, 'unassigned_fares')(unassignedToDelete)
+        deleteFareEntityPersistence(client, 'unassigned_fares')(unassignedToDelete)
       ]);
 
       if (!isQueryResult(scheduledCreatedQueryResult) || !isQueryResult(deleteUnassignedQueryResult))

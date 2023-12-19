@@ -1,6 +1,6 @@
 import { pipe } from 'fp-ts/lib/function';
 import { map as taskEitherMap, TaskEither } from 'fp-ts/TaskEither';
-import { Errors } from '../../reporter';
+import { Errors } from '../../codecs';
 import { EditedToPersist, FaresToEdit } from './edit-scheduled.route';
 import { isOneWay } from '../../domain';
 import { toPending } from '../../mappers';
