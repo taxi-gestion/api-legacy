@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/typedef */
 import { keyof as ioKeyOf, literal as ioLiteral, type as ioType, undefined as ioUndefined, union as ioUnion } from 'io-ts';
-import { isNotEmptyString, isPositive, isRRULEString, isTimeISO8601String} from '../rules';
+import { isNotEmptyString, isPositive, isRRULEString, isTimeISO8601String } from '../rules';
 import { driverEntityRules } from './driver.rules';
 import { waypointRules } from './waypoint.rules';
 import { kindCodec, natureCodec } from '../domain';
