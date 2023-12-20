@@ -24,6 +24,7 @@ export const $scheduleUnassignedValidation =
 export const scheduledUnassignedValidation = (transfer: unknown): TaskEither<Errors, ScheduleUnassigned> =>
   pipe(transfer, externalTypeCheckFor<ScheduleUnassigned>(unassignedScheduledCodec), fromEither);
 
+
 const $checkUnassignedToScheduleExist =
   (db: PostgresDb) =>
   (transfer: Entity & ToScheduled): TaskEither<Errors, unknown> =>
@@ -47,11 +48,11 @@ const $checkUnassignedToScheduleExist =
       };
     }, $onInfrastructureOrValidationError(`$unassignedToScheduleExist`));
 
-const typeCheck = (transfer: unknown): TaskEither<Errors, UnassignedToSchedule> =>
-  fromEither(unassignedToSchedule.decode(transfer));
+const typeCheck = (transfer: unknown): TaskEither<Errors, UnassignedToSchedule> => fromEither(unassignedToSchedule.decode(transfer));
 
-const rulesCheck = (transfer: UnassignedToSchedule): TaskEither<Errors, UnassignedToSchedule> =>
-  fromEither(unassignedToScheduledRules.decode(transfer));
+
+const rulesCheck = (transfer: UnassignedToSchedule): TaskEither<Errors, UnassignedToSchedule> => fromEither(unassignedToScheduledRules.decode(transfer));
+
 
 const unassignedToScheduleCodec: Type<Entity & ToScheduled> = ioIntersection([entityCodec, toScheduledCodec]);
 

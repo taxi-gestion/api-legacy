@@ -7,7 +7,8 @@ import { toPending } from '../../mappers';
 
 export const scheduleUnassigned = (
   payload: TaskEither<Errors, UnassignedToSchedule>
-): TaskEither<Errors, UnassignedToSchedulePersist> => pipe(payload, taskEitherMap(applySchedule));
+): TaskEither<Errors, UnassignedToSchedulePersist> =>
+  pipe(payload, taskEitherMap(applySchedule));
 
 const applySchedule = ({ toSchedule, unassignedToDelete }: UnassignedToSchedule): UnassignedToSchedulePersist => ({
   scheduledToCreate: {
