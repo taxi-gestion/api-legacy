@@ -1,8 +1,9 @@
+// TODO Must migrate front to vitest before colocalisation with code
 // eslint-disable-next-line @typescript-eslint/no-shadow
 import { describe, it, expect } from 'vitest';
 import { Decoder, ValidationError } from 'io-ts';
 import { Either, left } from 'fp-ts/Either';
-import { DevFriendlyError, Errors, InfrastructureError, errorReporter } from './error-reporter';
+import { DevFriendlyError, Errors, InfrastructureError, errorReporter } from './codecs';
 
 describe('ErrorReporter specification tests', (): void => {
   // Define the error message and context
