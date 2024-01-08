@@ -13,6 +13,7 @@ import { Errors } from '../../../codecs';
 import { pipe } from 'fp-ts/function';
 import { insertScheduledAndReturnPersistIn } from '../../schedule-fare/schedule-fare.persistence';
 import { Encode } from 'io-ts';
+import { toUTCDateString } from '../to-utc-date';
 
 export type Return = Scheduled;
 
@@ -52,7 +53,7 @@ const encodeScheduledReturnTrip: (date: string) => Encode<RecurringForScheduledA
     passenger: recurring.passenger,
     kind: recurring.kind,
     driver: recurring.driver,
-    datetime: `${date}T${recurring.returnTime}`,
+    datetime: toUTCDateString(`${date}T${recurring.returnTime}`, 'Europe/Paris'),
     status: 'scheduled',
     creator: 'recurrence'
   });

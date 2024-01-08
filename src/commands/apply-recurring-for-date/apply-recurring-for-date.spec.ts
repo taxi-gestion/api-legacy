@@ -18,6 +18,7 @@ import { expect, it, describe } from 'vitest';
 import { applyStrategyPipeline } from '../../_common/strategy.pattern';
 import { ScheduledAndReturnPersist } from './apply-recurring-for-date.route';
 import { UnassignedPersist } from '../allocate-unassigned/allocate-unassigned.route';
+import { toUTCDateString } from './to-utc-date';
 
 describe('apply recurring for date strategies', (): void => {
   describe('assert', (): void => {
@@ -105,7 +106,7 @@ describe('apply recurring for date strategies', (): void => {
     driver: validDriver,
     kind: 'one-way',
     status: 'scheduled',
-    datetime: `${date}T${departureTime}`,
+    datetime: toUTCDateString(`${date}T${departureTime}`, 'Europe/Paris'),
     arrival,
     departure,
     distance,
@@ -137,7 +138,7 @@ describe('apply recurring for date strategies', (): void => {
     driver: validDriver,
     kind: twoWayKind,
     status: 'scheduled',
-    datetime: `${date}T${departureTime}`,
+    datetime: toUTCDateString(`${date}T${departureTime}`, 'Europe/Paris'),
     arrival,
     departure,
     distance,
@@ -153,7 +154,7 @@ describe('apply recurring for date strategies', (): void => {
     departure: arrival,
     arrival: departure,
     status: 'pending',
-    datetime: `${date}T${departureTime}`,
+    datetime: toUTCDateString(`${date}T${departureTime}`, 'Europe/Paris'),
     nature,
     passenger,
     creator: 'recurrence'
@@ -184,7 +185,7 @@ describe('apply recurring for date strategies', (): void => {
     departure: arrival,
     arrival: departure,
     status: 'scheduled',
-    datetime: `${date}T${returnTime}`,
+    datetime: toUTCDateString(`${date}T${returnTime}`, 'Europe/Paris'),
     distance,
     duration,
     nature,
@@ -213,7 +214,7 @@ describe('apply recurring for date strategies', (): void => {
   const expectedUnassignedOneWay: Unassigned = {
     kind: oneWayKind,
     status: 'unassigned',
-    datetime: `${date}T${departureTime}`,
+    datetime: toUTCDateString(`${date}T${departureTime}`, 'Europe/Paris'),
     arrival,
     departure,
     distance,
@@ -243,7 +244,7 @@ describe('apply recurring for date strategies', (): void => {
   const expectedUnassignedTwoWay: Unassigned = {
     kind: twoWayKind,
     status: 'unassigned',
-    datetime: `${date}T${departureTime}`,
+    datetime: toUTCDateString(`${date}T${departureTime}`, 'Europe/Paris'),
     arrival,
     departure,
     distance,

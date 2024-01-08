@@ -1,6 +1,7 @@
 import { Encode } from 'io-ts';
 import { Driver, Entity, Recurring, Scheduled } from '../../../definitions';
 import { RecurringForScheduled } from './scheduled-only.strategy';
+import { toUTCDateString } from '../to-utc-date';
 
 export const encodeScheduled: (date: string) => Encode<RecurringForScheduled, Scheduled> =
   (date: string) =>
@@ -13,7 +14,7 @@ export const encodeScheduled: (date: string) => Encode<RecurringForScheduled, Sc
     passenger: recurring.passenger,
     kind: recurring.kind,
     driver: recurring.driver,
-    datetime: `${date}T${recurring.departureTime}`,
+    datetime: toUTCDateString(`${date}T${recurring.departureTime}`, 'Europe/Paris'),
     status: 'scheduled',
     creator: 'recurrence'
   });
