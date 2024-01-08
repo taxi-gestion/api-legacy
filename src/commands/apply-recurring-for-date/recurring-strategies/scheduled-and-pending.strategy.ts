@@ -13,6 +13,7 @@ import { Errors } from '../../../codecs';
 import { pipe } from 'fp-ts/function';
 import { insertScheduledAndOptionalPersistIn } from '../../schedule-fare/schedule-fare.persistence';
 import { Encode } from 'io-ts';
+import { toUTCDateString } from '../to-utc-date';
 
 export type RecurringForScheduledAndPending = Recurring & {
   driver: Driver & Entity;
@@ -48,7 +49,7 @@ const encodePending: (date: string) => Encode<RecurringForScheduledAndPending, P
     passenger: recurring.passenger,
     kind: 'two-way',
     driver: recurring.driver,
-    datetime: `${date}T${recurring.departureTime}`,
+    datetime: toUTCDateString(`${date}T${recurring.departureTime}`, 'Europe/Paris'),
     status: 'pending',
     creator: 'recurrence'
   });

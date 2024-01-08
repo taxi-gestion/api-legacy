@@ -12,6 +12,7 @@ import { Errors } from '../../../codecs';
 import { pipe } from 'fp-ts/function';
 import { insertUnassignedIn } from '../../allocate-unassigned/allocate-unassigned.persistence';
 import { Encode } from 'io-ts';
+import { toUTCDateString } from '../to-utc-date';
 
 export type RecurringForUnassigned = Recurring & { driver: undefined };
 export const hasUnassigned: ConditionOnDomain<Recurring, RecurringForUnassigned> = (
@@ -42,7 +43,7 @@ const encodeUnassigned: (date: string) => Encode<RecurringForUnassigned, Unassig
     nature: recurring.nature,
     passenger: recurring.passenger,
     kind: recurring.kind,
-    datetime: `${date}T${recurring.departureTime}`,
+    datetime: toUTCDateString(`${date}T${recurring.departureTime}`, 'Europe/Paris'),
     status: 'unassigned',
     creator: 'recurrence'
   });
