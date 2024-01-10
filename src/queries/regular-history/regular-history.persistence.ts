@@ -7,6 +7,7 @@ import { PoolClient, QueryResult } from 'pg';
 import { onDatabaseError } from '../../errors';
 import {
   fromDBtoPendingCandidate,
+  fromDBtoRecurringCandidate,
   fromDBtoScheduledCandidate,
   fromDBtoSubcontractedCandidate,
   fromDBtoUnassignedCandidate
@@ -30,7 +31,8 @@ const historyFromFaresQueries = (database: PostgresDb) => (regularId: string) =>
         faresWherePassengerQuery(client, 'scheduled_fares')(regularId),
         faresWherePassengerQuery(client, 'pending_returns')(regularId),
         faresWherePassengerQuery(client, 'subcontracted_fares')(regularId),
-        faresWherePassengerQuery(client, 'unassigned_fares')(regularId)
+        faresWherePassengerQuery(client, 'unassigned_fares')(regularId),
+        recurringFaresWherePassengerQuery(client)(regularId)
       ])
   );
 
@@ -43,9 +45,19 @@ export const faresWherePassengerQuery =
     return client.query(queryString, [regularId]);
   };
 
+export const recurringFaresWherePassengerQuery =
+  (client: PoolClient) =>
+  async (regularId: string): Promise<QueryResult> => {
+    const queryString: string = `
+    SELECT * FROM recurring_fares WHERE passenger->>'id' = $1
+  `;
+    return client.query(queryString, [regularId]);
+  };
+
 const toTransfer = (queriesResult: QueryResult[]): unknown => ({
   scheduled: queriesResult[0]?.rows.map(fromDBtoScheduledCandidate),
   pending: queriesResult[1]?.rows.map(fromDBtoPendingCandidate),
   subcontracted: queriesResult[2]?.rows.map(fromDBtoSubcontractedCandidate),
-  unassigned: queriesResult[3]?.rows.map(fromDBtoUnassignedCandidate)
+  unassigned: queriesResult[3]?.rows.map(fromDBtoUnassignedCandidate),
+  recurring: queriesResult[4]?.rows.map(fromDBtoRecurringCandidate)
 });
