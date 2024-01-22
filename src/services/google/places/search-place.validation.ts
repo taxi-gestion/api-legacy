@@ -2,38 +2,26 @@ import { pipe } from 'fp-ts/function';
 import { TaskEither } from 'fp-ts/lib/TaskEither';
 import { fromEither } from 'fp-ts/TaskEither';
 import { chain as eitherChain, Either } from 'fp-ts/Either';
-import {
-  GoogleMapsPlacesResponseTransfer,
-  googleMapsPlacesTransferCodec,
-  PlaceResultTransfer,
-  placesCodec,
-  placesRulesCodec
-} from './places.codec';
+import { placesCodec, placesRulesCodec } from './places.codec';
 import { Place } from '../../../definitions';
-import { Errors, externalTypeCheckFor } from '../../../codecs';
+import { Errors } from '../../../codecs';
 
 export const searchPlaceValidation = (transfer: unknown): TaskEither<Errors, Place[]> =>
-  pipe(
-    transfer,
-    externalTypeCheckFor<GoogleMapsPlacesResponseTransfer>(googleMapsPlacesTransferCodec),
-    eitherChain(internalTypeCheckForPlaces),
-    eitherChain(rulesCheckForPlaces),
-    fromEither
-  );
+  pipe(transfer, toPlacesCandidate, internalTypeCheckForPlaces, eitherChain(rulesCheckForPlaces), fromEither);
 
-const toPlaces = (places: PlaceResultTransfer[]): Place[] =>
-  places.map(
-    (place: PlaceResultTransfer): Place => ({
-      context: place.formatted_address,
-      label: place.name ?? place.formatted_address,
-      location: {
-        latitude: place.geometry.location.lat,
-        longitude: place.geometry.location.lng
-      }
+/* eslint-disable @typescript-eslint/naming-convention */
+type AutoCompletePrediction = { description: string; structured_formatting?: { main_text: string; secondary_text: string } };
+
+const toPlacesCandidate = (transfer: unknown): unknown[] =>
+  (transfer as { predictions: AutoCompletePrediction[] }).predictions.map(
+    (place: AutoCompletePrediction): Place => ({
+      context: place.description,
+      label: place.structured_formatting?.main_text ?? place.description,
+      location: undefined
     })
   );
+/* eslint-enable @typescript-eslint/naming-convention */
 
-const internalTypeCheckForPlaces = (placeTransfer: GoogleMapsPlacesResponseTransfer): Either<Errors, Place[]> =>
-  placesCodec.decode(toPlaces(placeTransfer.results));
+const internalTypeCheckForPlaces = (places: unknown): Either<Errors, Place[]> => placesCodec.decode(places);
 
 const rulesCheckForPlaces = (recurrence: Place[]): Either<Errors, Place[]> => placesRulesCodec.decode(recurrence);

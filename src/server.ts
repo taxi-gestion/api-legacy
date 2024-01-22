@@ -6,7 +6,6 @@ import { closeGracefullyOnSignalInterrupt, start } from './server.utils';
 import { databaseStatusQuery } from './queries/database-status/database-status.route';
 import { scheduleFareCommand } from './commands/schedule-fare/schedule-fare.route';
 import { searchPlaceQuery } from './queries/search-place/search-place.route';
-import { $googleMapsSearchPlace } from './services/google/places/search-place.api';
 import { estimateJourneyQuery } from './queries/estimate-journey/estimate-journey.route';
 import { $googleMapsEstimateJourney } from './services/google/distance-matrix/estimate-journey.api';
 import { pendingReturnsForTheDateQuery } from './queries/pending-returns-for-date/pending-returns-for-date.route';
@@ -38,6 +37,8 @@ import { addRecurringCommand } from './commands/add-recurring/add-recurring.rout
 import { recurringFaresQuery } from './queries/recurring-fares/recurring-fares.route';
 import { applyRecurringForDateCommand } from './commands/apply-recurring-for-date/apply-recurring-for-date.route';
 import { Errors } from './codecs';
+import { patchRegularCommand } from './commands/patch-regular/patch-regular.route';
+import { $googleMapsSearchPlace } from './services/google/places/search-place.api';
 
 const server: FastifyInstance = fastify();
 
@@ -101,6 +102,7 @@ server.register(regularHistoryQuery, { prefix });
 server.register(scheduledFaresForTheDateQuery, { prefix });
 
 server.register(searchPlaceQuery, {
+  //adapter: $googleMapsSearchPlace(process.env['API_KEY_GOOGLE_MAPS'] ?? ''),
   adapter: $googleMapsSearchPlace(process.env['API_KEY_GOOGLE_MAPS'] ?? ''),
   prefix
 });
@@ -119,6 +121,7 @@ server.register(deleteFareCommand, { prefix });
 server.register(deleteRegularCommand, { prefix });
 server.register(editRegularCommand, { prefix });
 server.register(editScheduledCommand, { prefix });
+server.register(patchRegularCommand, { prefix });
 server.register(registerRegularCommand, { prefix });
 server.register(scheduleFareCommand, { prefix });
 server.register(schedulePendingCommand, { prefix });
