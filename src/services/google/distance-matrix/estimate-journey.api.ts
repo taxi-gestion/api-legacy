@@ -28,8 +28,8 @@ const callToGoogleMapsDistanceMatrixApi =
       method: 'get',
       url: `https://maps.googleapis.com/maps/api/distancematrix/json
         ?units=metric
-        &origins=${journey.origin.location.latitude},${journey.origin.location.longitude}
-        &destinations=${journey.destination.location.latitude},${journey.destination.location.longitude}
+        &origins=${journey.origin.context}
+        &destinations=${journey.destination.context}
         &departure_time=${nowLiteralOrLaterTimestampInSeconds(journey.departureTime)}
         &mode=driving&traffic_model=best_guess
         &key=${googleMapsApiKey}&language=fr

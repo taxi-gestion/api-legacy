@@ -25,10 +25,12 @@ const callToGoogleMapsPlacesApi =
   async (search: string): Promise<unknown> => {
     const response: axios.AxiosResponse<unknown> = await axios({
       method: 'get',
-      url: `https://maps.googleapis.com/maps/api/place/textsearch/json
-      ?query=${encodeURI(search)}
+      url: `https://maps.googleapis.com/maps/api/place/autocomplete/json
+      ?input=${encodeURI(search)}
       &key=${googleMapsApiKey}
       &language=fr
+      &components=country:fr
+      &locationbias=rectangle:44.9333,3.8833|46.2044,6.1432
       `.replace(/\s+/gu, ''),
       headers: {
         // eslint-disable-next-line @typescript-eslint/naming-convention
