@@ -27,14 +27,14 @@ const applyQueries =
     database.transact(
       async (client: PoolClient): Promise<(QueryResult | undefined)[]> =>
         Promise.all([
-          queryOrEmpty(client, 'scheduled_fares')(scheduledToDelete),
-          queryOrEmpty(client, 'pending_returns')(pendingToDelete),
-          queryOrEmpty(client, 'unassigned_fares')(unassignedToDelete),
-          queryOrEmpty(client, 'recurring_fares')(recurringToDelete)
+          queryOrUndefined(client, 'scheduled_fares')(scheduledToDelete),
+          queryOrUndefined(client, 'pending_returns')(pendingToDelete),
+          queryOrUndefined(client, 'unassigned_fares')(unassignedToDelete),
+          queryOrUndefined(client, 'recurring_fares')(recurringToDelete)
         ])
     );
 
-const queryOrEmpty =
+const queryOrUndefined =
   (client: PoolClient, tableName: string) =>
   async (entity: Entity | undefined): Promise<QueryResult | undefined> =>
     entity === undefined ? undefined : deleteFareEntityPersistence(client, tableName)(entity);

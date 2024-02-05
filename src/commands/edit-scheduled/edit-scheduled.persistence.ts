@@ -2,16 +2,13 @@ import { map as taskEitherMap, TaskEither, tryCatch as taskEitherTryCatch } from
 import type { PoolClient, QueryResult } from 'pg';
 import type { PostgresDb } from '@fastify/postgres';
 import { Errors } from '../../codecs';
-import { Entity, Pending, PendingPersistence, ScheduledPersistence } from '../../definitions';
+import { Entity, ScheduledPersistence } from '../../definitions';
 import { pipe } from 'fp-ts/lib/function';
 import { EditedToPersist } from './edit-scheduled.route';
-import {
-  fromDBtoPendingCandidate,
-  fromDBtoScheduledCandidate,
-  toPendingPersistence,
-  toScheduledEntityPersistence
-} from '../../mappers';
+import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate, toScheduledEntityPersistence } from '../../mappers';
 import { onDatabaseError } from '../../errors';
+import { deleteFareEntityQueryOrUndefined } from '../_common/delete-fare-entity.persistence';
+import { pendingReturnQueryOrUndefined } from '../_common/insert-pending-return.persistence';
 
 export const persistEditedFares =
   (database: PostgresDb) =>
@@ -21,28 +18,16 @@ export const persistEditedFares =
 const applyQueries =
   (database: PostgresDb) =>
   ({ scheduledToEdit, pendingToCreate, pendingToDelete }: EditedToPersist) =>
-  async (): Promise<QueryResult[]> =>
-    database.transact(async (client: PoolClient): Promise<QueryResult[]> => {
-      const promises: Promise<QueryResult>[] = [
+  async (): Promise<(QueryResult | undefined)[]> =>
+    database.transact(async (client: PoolClient): Promise<(QueryResult | undefined)[]> => {
+      const promises: Promise<QueryResult | undefined>[] = [
         updateScheduledFareQuery(client)(toScheduledEntityPersistence(scheduledToEdit)),
-        ...insertPendingToCreateQueryOrEmpty(client)(pendingToCreate, scheduledToEdit.id),
-        ...insertPendingToDeleteQueryOrEmpty(client)(pendingToDelete)
+        pendingReturnQueryOrUndefined(client)(pendingToCreate, scheduledToEdit.id),
+        deleteFareEntityQueryOrUndefined(client, 'pending_returns')(pendingToDelete)
       ];
 
       return Promise.all(promises);
     });
-
-const insertPendingToCreateQueryOrEmpty =
-  (client: PoolClient) =>
-  (pendingToCreate: Pending | undefined, outwardFareId: string): [] | [Promise<QueryResult>] =>
-    pendingToCreate === undefined
-      ? []
-      : [insertPendingQuery(client)(toPendingPersistence({ ...pendingToCreate, outwardFareId }))];
-
-const insertPendingToDeleteQueryOrEmpty =
-  (client: PoolClient) =>
-  (pendingEntityToDelete: Entity | undefined): [] | [Promise<QueryResult>] =>
-    pendingEntityToDelete === undefined ? [] : [deletePendingQuery(client)(pendingEntityToDelete)];
 
 const updateScheduledFareQuery =
   (client: PoolClient) =>
@@ -78,48 +63,8 @@ const updateFareQueryString: string = `
       RETURNING *
     `;
 
-const insertPendingQuery =
-  (client: PoolClient) =>
-  async (pendingPg: PendingPersistence): Promise<QueryResult> =>
-    client.query(insertPendingQueryString, [
-      pendingPg.passenger,
-      pendingPg.datetime,
-      pendingPg.departure,
-      pendingPg.arrival,
-      pendingPg.driver,
-      pendingPg.kind,
-      pendingPg.nature,
-      pendingPg.outwardFareId,
-      pendingPg.creator
-    ]);
-
-const insertPendingQueryString: string = `
-      INSERT INTO pending_returns (
-          passenger,
-          datetime,
-          departure,
-          arrival,
-          driver,
-          kind,
-          nature,
-          outward_fare_id,
-          creator
-      ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9
-      )
-      RETURNING *
-      `;
-
-const deletePendingQuery =
-  (client: PoolClient) =>
-  async (pendingToDelete: Entity): Promise<QueryResult> =>
-    client.query(removeReturnToScheduleQueryString, [pendingToDelete.id]);
-
-const removeReturnToScheduleQueryString: string = `DELETE FROM pending_returns WHERE id = $1 RETURNING *;
-      `;
-
-const toTransfer = (queriesResults: QueryResult[]): unknown => ({
-  scheduledEdited: [queriesResults[0]?.rows[0]].map(fromDBtoScheduledCandidate)[0],
+const toTransfer = (queriesResults: (QueryResult | undefined)[]): unknown => ({
+  scheduledEdited: queriesResults[0] === undefined ? undefined : [queriesResults[0].rows[0]].map(fromDBtoScheduledCandidate)[0],
   pendingCreated: queriesResults[1] === undefined ? undefined : [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0],
   pendingDeleted: queriesResults[2] === undefined ? undefined : [queriesResults[2].rows[0]].map(fromDBtoPendingCandidate)[0]
 });

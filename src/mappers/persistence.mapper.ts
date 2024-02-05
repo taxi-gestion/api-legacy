@@ -25,8 +25,6 @@ export const fromDBtoSubcontractedCandidate = (row: Entity & SubcontractedPersis
     datetime: row.datetime.toISOString(),
     departure: row.departure,
     arrival: row.arrival,
-    distance: Number(row.distance),
-    duration: Number(row.duration),
     kind: row.kind,
     nature: row.nature,
     status: 'subcontracted'
@@ -57,7 +55,7 @@ export const fromDBtoPendingCandidate = (row: Entity & PendingPersistence): unkn
     datetime: row.datetime.toISOString(),
     departure: row.departure,
     arrival: row.arrival,
-    driver: row.driver,
+    driver: row.driver == null ? undefined : row.driver,
     kind: row.kind,
     nature: row.nature,
     status: 'pending',
@@ -155,8 +153,6 @@ export const toSubcontractedPersistence = (subcontracted: Subcontracted): Subcon
   departure: subcontracted.departure,
   arrival: subcontracted.arrival,
   subcontractor: subcontracted.subcontractor,
-  distance: subcontracted.distance,
-  duration: subcontracted.duration,
   kind: subcontracted.kind,
   nature: subcontracted.nature
 });
