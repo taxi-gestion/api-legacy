@@ -1,10 +1,10 @@
-import { Pending, ToScheduledEdited, ToScheduled } from '../definitions';
+import { Pending, ToScheduledEdited, ToScheduled, Scheduled, Unassigned } from '../definitions';
 
-export const toPending = (fare: ToScheduled | ToScheduledEdited): Pending => ({
+export const toPending = (fare: Pending | Scheduled | ToScheduled | ToScheduledEdited | Unassigned): Pending => ({
   passenger: fare.passenger,
   datetime: toZeroedTimeIso8601(fare.datetime),
   nature: fare.nature,
-  driver: fare.driver,
+  driver: 'driver' in fare ? fare.driver : undefined,
   departure: fare.arrival,
   arrival: fare.departure,
   status: 'pending',

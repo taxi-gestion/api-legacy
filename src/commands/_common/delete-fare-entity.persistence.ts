@@ -9,3 +9,8 @@ export const deleteFareEntityPersistence =
   `;
     return client.query(queryString, [entity.id]);
   };
+
+export const deleteFareEntityQueryOrUndefined =
+  (client: PoolClient, tableName: string) =>
+  async (entityToDelete: Entity | undefined): Promise<QueryResult | undefined> =>
+    entityToDelete === undefined ? undefined : deleteFareEntityPersistence(client, tableName)(entityToDelete);

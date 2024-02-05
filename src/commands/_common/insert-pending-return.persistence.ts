@@ -12,6 +12,21 @@ export const insertPendingReturnRelatedToScheduled =
       })
     );
 
+export const pendingReturnQueryOrUndefined =
+  (client: PoolClient) =>
+  async (pendingToCreate: Pending | undefined, outwardFareId: string | undefined): Promise<QueryResult | undefined> =>
+    pendingToCreate === undefined ? undefined : insertPendingReturn(client)(pendingToCreate, outwardFareId);
+
+const insertPendingReturn =
+  (client: PoolClient) =>
+  async (pendingToCreate: Pending, outwardFareId: string | undefined): Promise<QueryResult> =>
+    insertPendingQuery(client)(
+      toPendingPersistence({
+        ...pendingToCreate,
+        outwardFareId: outwardFareId ?? ''
+      })
+    );
+
 const insertPendingQuery =
   (client: PoolClient) =>
   async (pendingPg: PendingPersistence): Promise<QueryResult> =>

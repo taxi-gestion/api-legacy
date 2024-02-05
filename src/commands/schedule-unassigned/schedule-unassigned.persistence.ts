@@ -12,7 +12,7 @@ import {
   toScheduledPersistence
 } from '../../mappers';
 import { deleteFareEntityPersistence } from '../_common/delete-fare-entity.persistence';
-import { insertPendingReturnRelatedToScheduled } from '../_common/insert-pending-return-related-to-scheduled.persistence';
+import { insertPendingReturnRelatedToScheduled } from '../_common/insert-pending-return.persistence';
 import { insertScheduledFareQuery } from '../_common/insert-scheduled-fare.persistence';
 
 export const persistUnassignedScheduled =

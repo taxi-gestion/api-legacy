@@ -16,8 +16,8 @@ const toPlacesCandidate = (transfer: unknown): unknown[] =>
   (transfer as { predictions: AutoCompletePrediction[] }).predictions.map(
     (place: AutoCompletePrediction): Place => ({
       context: place.description,
-      label: place.structured_formatting?.main_text ?? place.description,
-      location: undefined
+      label: place.structured_formatting?.main_text ?? place.description
+      //location: undefined
     })
   );
 /* eslint-enable @typescript-eslint/naming-convention */

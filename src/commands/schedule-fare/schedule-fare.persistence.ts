@@ -13,7 +13,7 @@ import { onDatabaseError, throwEntityNotFoundValidationError } from '../../error
 import { fromDBtoPendingCandidate, fromDBtoScheduledCandidate, toScheduledPersistence } from '../../mappers';
 import { Either } from 'fp-ts/Either';
 
-import { insertPendingReturnRelatedToScheduled } from '../_common/insert-pending-return-related-to-scheduled.persistence';
+import { insertPendingReturnRelatedToScheduled } from '../_common/insert-pending-return.persistence';
 import { insertScheduledFareQuery } from '../_common/insert-scheduled-fare.persistence';
 import { ScheduledAndPendingPersist, ScheduledPersist } from './schedule-fare.route';
 import { ScheduledAndReturnPersist } from '../apply-recurring-for-date/apply-recurring-for-date.route';
