@@ -33,7 +33,8 @@ const toDeleteTransferCodec: Type<FaresToDelete> = ioType({
   scheduledToDelete: ioUnion([entityCodec, ioUndefined]),
   unassignedToDelete: ioUnion([entityCodec, ioUndefined]),
   pendingToDelete: ioUnion([entityCodec, ioUndefined]),
-  recurringToDelete: ioUnion([entityCodec, ioUndefined])
+  recurringToDelete: ioUnion([entityCodec, ioUndefined]),
+  subcontractedToDelete: ioUnion([entityCodec, ioUndefined])
 });
 
 const fetchSingleEntity = async (
@@ -52,19 +53,22 @@ const fetchFaresToDelete = async (db: PostgresDb, fareToDeleteId: string): Promi
     fetchSingleEntity(db, 'pending_returns', 'id', fareToDeleteId),
     fetchSingleEntity(db, 'unassigned_fares', 'id', fareToDeleteId),
     fetchSingleEntity(db, 'scheduled_fares', 'id', fareToDeleteId),
-    fetchSingleEntity(db, 'recurring_fares', 'id', fareToDeleteId)
+    fetchSingleEntity(db, 'recurring_fares', 'id', fareToDeleteId),
+    fetchSingleEntity(db, 'subcontracted_fares', 'id', fareToDeleteId)
   ]);
 
 const fetchRelatedPendingReturns = async (db: PostgresDb, fareToDeleteId: string): Promise<Entity | undefined> =>
   fetchSingleEntity(db, 'pending_returns', 'outward_fare_id', fareToDeleteId);
 
 const toDeleteCandidate = (db: PostgresDb, fareToDeleteId: string) => async (): Promise<unknown> => {
-  const [pendingToDelete, unassignedToDelete, scheduledToDelete, recurringToDelete]: (Entity | undefined)[] =
-    await fetchFaresToDelete(db, fareToDeleteId);
+  const [pendingToDelete, unassignedToDelete, scheduledToDelete, recurringToDelete, subcontractedToDelete]: (
+    | Entity
+    | undefined
+  )[] = await fetchFaresToDelete(db, fareToDeleteId);
 
   if (pendingToDelete !== undefined) return { pendingToDelete };
 
-  if (noValidEntities(scheduledToDelete, unassignedToDelete, recurringToDelete))
+  if (noValidEntities(scheduledToDelete, unassignedToDelete, recurringToDelete, subcontractedToDelete))
     return throwEntityNotFoundValidationError(fareToDeleteId);
 
   const relatedPendingToDelete: Entity | undefined = await fetchRelatedPendingReturns(db, fareToDeleteId);
@@ -72,12 +76,14 @@ const toDeleteCandidate = (db: PostgresDb, fareToDeleteId: string) => async (): 
     scheduledToDelete,
     unassignedToDelete,
     pendingToDelete: relatedPendingToDelete,
-    recurringToDelete
+    recurringToDelete,
+    subcontractedToDelete
   };
 };
 
 const noValidEntities = (
   scheduled: Entity | undefined,
   unassigned: Entity | undefined,
-  recurring: Entity | undefined
-): boolean => unassigned === undefined && scheduled === undefined && recurring === undefined;
+  recurring: Entity | undefined,
+  subcontracted: Entity | undefined
+): boolean => unassigned === undefined && scheduled === undefined && recurring === undefined && subcontracted === undefined;

@@ -10,6 +10,7 @@ import {
   fromDBtoPendingCandidate,
   fromDBtoRecurringCandidate,
   fromDBtoScheduledCandidate,
+  fromDBtoSubcontractedCandidate,
   fromDBtoUnassignedCandidate
 } from '../../mappers';
 
@@ -22,7 +23,7 @@ export const persistDeleteFares =
 
 const applyQueries =
   (database: PostgresDb) =>
-  ({ scheduledToDelete, pendingToDelete, unassignedToDelete, recurringToDelete }: FaresToDelete) =>
+  ({ scheduledToDelete, pendingToDelete, unassignedToDelete, recurringToDelete, subcontractedToDelete }: FaresToDelete) =>
   async (): Promise<(QueryResult | undefined)[]> =>
     database.transact(
       async (client: PoolClient): Promise<(QueryResult | undefined)[]> =>
@@ -30,7 +31,8 @@ const applyQueries =
           queryOrUndefined(client, 'scheduled_fares')(scheduledToDelete),
           queryOrUndefined(client, 'pending_returns')(pendingToDelete),
           queryOrUndefined(client, 'unassigned_fares')(unassignedToDelete),
-          queryOrUndefined(client, 'recurring_fares')(recurringToDelete)
+          queryOrUndefined(client, 'recurring_fares')(recurringToDelete),
+          queryOrUndefined(client, 'subcontracted_fares')(subcontractedToDelete)
         ])
     );
 
@@ -45,5 +47,8 @@ const toTransfer = (queriesResults: (QueryResult | undefined)[]): unknown => ({
   pendingDeleted: queriesResults[1] === undefined ? undefined : [queriesResults[1].rows[0]].map(fromDBtoPendingCandidate)[0],
   unassignedDeleted:
     queriesResults[2] === undefined ? undefined : [queriesResults[2].rows[0]].map(fromDBtoUnassignedCandidate)[0],
-  recurringDeleted: queriesResults[3] === undefined ? undefined : [queriesResults[3].rows[0]].map(fromDBtoRecurringCandidate)[0]
+  recurringDeleted:
+    queriesResults[3] === undefined ? undefined : [queriesResults[3].rows[0]].map(fromDBtoRecurringCandidate)[0],
+  subcontractedDeleted:
+    queriesResults[4] === undefined ? undefined : [queriesResults[4].rows[0]].map(fromDBtoSubcontractedCandidate)[0]
 });

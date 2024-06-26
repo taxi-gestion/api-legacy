@@ -18,6 +18,7 @@ export type FaresToDelete = {
   pendingToDelete: Entity | undefined;
   unassignedToDelete: Entity | undefined;
   recurringToDelete: Entity | undefined;
+  subcontractedToDelete: Entity | undefined;
 };
 
 export const deleteFareCommand = async (

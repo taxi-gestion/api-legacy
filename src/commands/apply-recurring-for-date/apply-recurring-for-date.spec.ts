@@ -134,9 +134,10 @@ describe('apply recurring for date strategies', (): void => {
     passenger
   } as Entity & Recurring;
 
+  // updated to one way kind so as to not create another fare when assigning the fare
   const twoWayWithDriverScheduled: Scheduled = {
     driver: validDriver,
-    kind: twoWayKind,
+    kind: oneWayKind,
     status: 'scheduled',
     datetime: toUTCDateString(`${date}T${departureTime}`, 'Europe/Paris'),
     arrival,
@@ -179,6 +180,7 @@ describe('apply recurring for date strategies', (): void => {
     passenger
   } as Entity & Recurring;
 
+  // updated to one way kind so as to not create another fare when assigning the fare
   const expectedReturn: Scheduled = {
     driver: validDriver,
     kind: twoWayKind,
