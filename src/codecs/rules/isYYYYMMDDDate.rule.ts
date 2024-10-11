@@ -10,6 +10,6 @@ export const isYYYYMMDDDate: BrandC<StringC, DateBrand> = t.brand(
 
 const matchDate = (date: string): boolean => /^\d{4}-\d{2}-\d{2}$/gu.test(date);
 
-type DateBrand = {
+export type DateBrand = {
   readonly isDate: unique symbol;
 };

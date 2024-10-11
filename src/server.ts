@@ -39,6 +39,7 @@ import { applyRecurringForDateCommand } from './commands/apply-recurring-for-dat
 import { Errors } from './codecs';
 import { patchRegularCommand } from './commands/patch-regular/patch-regular.route';
 import { $googleMapsSearchPlace } from './services/google/places/search-place.api';
+import { scheduledFaresForThePeriodQuery } from './queries/scheduled-fares-for-period/scheduled-fares-for-period.route';
 
 const server: FastifyInstance = fastify();
 
@@ -100,6 +101,7 @@ server.register(regularByIdQuery, { prefix });
 server.register(regularHistoryQuery, { prefix });
 
 server.register(scheduledFaresForTheDateQuery, { prefix });
+server.register(scheduledFaresForThePeriodQuery, { prefix });
 
 server.register(searchPlaceQuery, {
   //adapter: $googleMapsSearchPlace(process.env['API_KEY_GOOGLE_MAPS'] ?? ''),
