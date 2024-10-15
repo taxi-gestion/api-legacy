@@ -24,22 +24,26 @@ const $callToGoogleMapsDistanceMatrixApi =
 const callToGoogleMapsDistanceMatrixApi =
   (googleMapsApiKey: string) =>
   async (journey: Journey): Promise<unknown> => {
-    const response: axios.AxiosResponse<unknown> = await axios({
-      method: 'get',
-      url: `https://maps.googleapis.com/maps/api/distancematrix/json
+    const call: string = `https://maps.googleapis.com/maps/api/distancematrix/json
         ?units=metric
         &origins=${journey.origin.context}
         &destinations=${journey.destination.context}
         &departure_time=${nowLiteralOrLaterTimestampInSeconds(journey.departureTime)}
         &mode=driving&traffic_model=best_guess
         &key=${googleMapsApiKey}&language=fr
-        `.replace(/\s+/gu, ''),
+        `.replace(/\s+/gu, '');
+    // eslint-disable-next-line no-console
+    console.log('callToGoogleMapsDistanceMatrixApi', call);
+    const response: axios.AxiosResponse<unknown> = await axios({
+      method: 'get',
+      url: call,
       headers: {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         'Content-Type': 'application/json'
       },
       responseType: 'json'
     });
+
     return response.data;
   };
 
